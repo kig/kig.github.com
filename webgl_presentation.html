@@ -1,0 +1,293 @@
+<html>
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>WebGL Presentation</title>
+    <link rel="stylesheet" type="text/css" href="slides/slides.css" />
+    <script type="text/javascript" src="slides/slides.min.js"></script>
+  </head>
+  <body>
+    <div id="slides">
+      <div>
+        <h1>WebGL</h1>
+        <h2></h2>
+        <h3>Press space for next slide.</h3>
+        <h3>Press backspace for previous slide.</h3>
+      </div>
+      <div>
+        <h1>WebGL</h1>
+        <h2>OpenGL ES 2.0 + JavaScript</h2>
+        <h2>&lt;CANVAS&gt;</h2>
+      </div>
+      <div>
+        <h1>How do I get it?</h1>
+        <h2>Firefox 4 beta or Minefield</h2>
+        <h2>WebKit nightly on OS X 10.6</h2>
+        <h2>Chromium</h2>
+        <p>khronos.org/webgl/wiki/Getting_a_WebGL_Implementation</p>
+      </div>
+      <div>
+        <h1>IE9 support?</h1>
+        <h2>No idea whatsoever.</h2>
+        <h2>Chrome Frame?</h2>
+      </div>
+      <div>
+        <h1>In HTML</h1>
+        <h2>The usual &lt;CANVAS&gt;</h2>
+        <h2>Works like an image</h2>
+        <h2>CSS, toDataURL(), etc.</h2>
+      </div>
+      <div>
+        <h1>OpenGL ES 2.0</h1>
+        <h2>OpenGL for mobile phones.</h2>
+        <h2>Also works on computers.</h2>
+        <h2>Accelerated drawing.</h2>
+      </div>
+      <div>
+        <h1>1.1 vs. 2.0</h1>
+        <h2>Fixed vs. programmable.</h2>
+      </div>
+      <div>
+        <h1>Programmable?</h1>
+        <h2>Shaders, baby, yeah!</h2>
+        <h2>Massive performance.</h2>
+      </div>
+      <div>
+        <h1>No kidding?</h1>
+        <h2>1000x faster than JavaScript</h2>
+        <p>(depending on shader)</p>
+      </div>
+      <div>
+        <h1>Yeah?</h1>
+        <model src="walas.binm"></model>
+        <h2>80 000 triangles</h2>
+      </div>
+      <div>
+        <h1>What's it good for?</h1>
+        <h2>Custom 2D drawing.</h2>
+        <h2>Custom 3D drawing.</h2>
+      </div>
+      <div>
+        <h1>Custom?</h1>
+        <h2>Everything requires shaders.</h2>
+        <h2>No shortcuts.</h2>
+      </div>
+      <div>
+        <h1>Drawing pipeline</h1>
+        <h3>Vertex shader</h3>
+        <h3>⇓</h3>
+        <h3>Fragment shader</h3>
+        <h3>⇓</h3>
+        <h3>Render target</h3>
+      </div>
+      <div>
+        <h1>Vertex shader</h1>
+        <ul>
+          <h2>Computes</h2>
+          <li>Where to draw</li>
+          <li>Varyings for the fragment shader</li>
+        </ul>
+      </div>
+      <div>
+        <h1>Vertex shader</h1>
+        <ul>
+          <h2>Parameters</h2>
+          <li>Buffers (vertex arrays)</li>
+          <li>Textures (images)</li>
+          <li>Uniforms (call parameters)</li>
+        </ul>
+      </div>
+      <div>
+        <h1>Fragment shader</h1>
+        <ul>
+          <h2>Computes</h2>
+          <li>Color of the pixel</li>
+        </ul>
+      </div>
+      <div>
+        <h1>Fragment shader</h1>
+        <ul>
+          <h2>Parameters</h2>
+          <li>Varyings from the vertex shader</li>
+          <li>Textures</li>
+          <li>Uniforms</li>
+        </ul>
+      </div>
+      <div>
+        <h1>Render target</h1>
+        <h2>&lt;CANVAS&gt;</h2>
+        <h2>or</h2>
+        <h2>Framebuffer object (FBO)</h2>
+      </div>
+      <div>
+        <h1>FBO</h1>
+        <h2>In GPU memory</h2>
+        <h2>For rendering to textures</h2>
+        <self></self>
+      </div>
+      <div>
+        <h1>Textures</h1>
+        <ul>
+        <h2>WebGL can load:</h2>
+          <li>&lt;CANVAS&gt;</li>
+          <li>&lt;IMG&gt;</li>
+          <li>&lt;VIDEO&gt;</li>
+          <li>And pixel arrays.</li>
+        </ul>
+      </div>
+      <div>
+        <h1>CANVAS</h1>
+        <h2>All the text here.</h2>
+        <p>(CSS 3D would be nicer, but eh.)</p>
+        <edit></edit>
+      </div>
+      <div>
+        <h1>IMG</h1>
+        <img src="images/tram.jpg" width="360" height="360">
+      </div>
+      <div>
+        <h1>VIDEO</h1>
+        <video oncube="true" preload width="480" height="320" controls="on">
+          <source  src="http://www.html5rocks.com/tutorials/video/basics/Chrome_ImF.webm" type='video/webm; codecs="vp8, vorbis"' />
+          <source  src="http://www.html5rocks.com/tutorials/video/basics/Chrome_ImF.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"' />
+        </video>
+      </div>
+      <div>
+        <h1>Further reading</h1>
+        <p>learningwebgl.com</p>
+        <img src="images/learningwebgl.jpg">
+      </div>
+      <div>
+        <h1>Isn't that a bit...</h1>
+        <h2>...cumbersome? Yes.</h2>
+        <h2>Overkill for simple drawing.</h2>
+        <h2>Libraries to the rescue!</h2>
+      </div>
+      <div>
+        <h1>Libraries</h1>
+        <h2>Alphabetically:</h2>
+        <h3>C3DL</h3>
+        <h3>CopperLight</h3>
+        <h3>CubicVR</h3>
+        <h3>GLGE</h3>
+        <h3>O3D</h3>
+        <h3>SpiderGL</h3>
+        <h3>X3DOM</h3>
+        <h3>XB PointStream</h3>
+      </div>
+      <div>
+        <h1>GLGE</h1>
+        <img src="images/glge.jpg">
+        <p>glge.org</p>
+      </div>
+      <div>
+        <h1>SpiderGL</h1>
+        <img src="images/spidergl.jpg">
+        <p>spidergl.org</p>
+      </div>
+      <div>
+        <h1>Games</h1>
+        <h2>Google's Quake 2 -port</h2>
+        <h2>O3D pool game</h2>
+        <h2>Some Q3 map viewers</h2>
+      </div>
+      <div>
+        <h1>Applications?</h1>
+        <h3>3D model viewers</h3>
+        <h3>ChemDoodle molecule visualizer</h3>
+        <h3>ShaderToy</h3>
+        <h3>WebGL Street View</h3>
+      </div>
+      <div>
+        <h1>ChemDoodle</h1>
+        <p>web.chemdoodle.com</p>
+        <img src="images/chemdoodle.jpg">
+      </div>
+      <div>
+        <h1>ShaderToy</h1>
+        <p>www.iquilezles.org/apps/shadertoy/</p>
+        <img src="images/shadertoy.jpg">
+      </div>
+      <div>
+        <h1>Status</h1>
+        <h2>WebGL 1.0 soon.</h2>
+        <h2>Chrome, Safari, Firefox, Opera(?)</h2>
+        <h3>Shader validation with ANGLE.</h3>
+        <p>CPU rendering with OSMESA.</p>
+      </div>
+      <div>
+        <h1>ANGLE?</h1>
+        <h2>Almost Native Graphics Layer Engine</h2>
+        <h3>angleproject.googlecode.com</h3>
+        <h3>OpenGL ES 2.0 interpreter</h3>
+      </div>
+      <div>
+        <h1>Interpreter?</h1>
+        <h2>Converts WebGL shaders to native.</h2>
+        <h2>GLES 2.0 -> OpenGL 2.1</h2>
+        <h2>GLES 2.0 -> DirectX 9</h2>
+      </div>
+      <div>
+        <h1>OSMESA</h1>
+        <h2>Off-Screen MESA GL</h2>
+        <h2>Draws on the CPU.</h2>
+        <h2>Very slow.</h2>
+      </div>
+      <div>
+      	<h1>Future of WebGL</h1>
+      	<h2>Base technology.</h2>
+        <h2>Extensions.</h2>
+      	<h2>Flexible.</h2>
+      </div>
+      <div>
+        <h1>Base for what?</h1>
+      	<h2>More user-friendly 3D.</h2>
+      	<h2>Advanced drawing.</h2>
+      	<h2>Game-like graphics.</h2>
+      	<h2>Faster JS.</h2>
+      </div>
+      <div>
+        <h1>Conclusion</h1>
+        <h2>Fast custom drawing.</h2>
+        <h2>Quite well supported.</h2>
+        <h2>Web-compatible.</h2>
+        <h2>Requires programming.</h2>
+      </div>
+      <div>
+        <h1>Thank You!</h1>
+        <h2>Ilmari Heikkinen</h2>
+        <h3>ilmari.heikkinen@gmail.com</h3>
+      </div>
+      <div>
+        <h1>File sizes</h1>
+        <p>Javascript 30 kB gzipped</p>
+        <p>Presentation 2 kB gzipped</p>
+        <p>CSS 0.5 kB gzipped</p>
+        <p>Images 250 kB</p>
+        <p>3D model 450 kB gzipped</p>
+        <p>Video 2 MB</p>
+      </div>
+      <div>
+        <h1>Cheats</h1>
+        <p>App.editSlide()</p>
+        <p>App.toggleAllSlidesVisible()</p>
+        <p>App.toggleApp()</p>
+        <p>App.wavyText = false</p>
+        <p>App.cycleColors = true</p>
+        <p>txt = App.scene.getNodesByKlass(Magi.MeshText)[0]</p>
+        <p>txt.alignedNode.material.floats.pitch = 2</p>
+        <p>txt = App.scene.getNodesByKlass(Magi.MeshText)[2]
+        <p>App.addDotShader(txt)</p>
+        <p>txt.alignedNode.material.floats.pitch = 2</p>
+      </div>
+      <div>
+        <h1>The End</h1>
+        <p>Click to return to start.</p>
+      </div>
+    </div>
+    <script type="text/javascript">
+      App = new Slides(byId('slides'));
+    </script>
+	</body>
+
+</html>

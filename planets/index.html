@@ -1,0 +1,471 @@
+<html><head>
+<script src="magi.js"></script>
+<script>
+  window.onload = function() {
+    var glCanvas = document.createElement('canvas');
+    glCanvas.style.left = glCanvas.style.top = '0px';
+    glCanvas.style.position = 'fixed';
+    document.body.style.overflow = 'hidden';
+    document.body.style.margin = '0px';
+    glCanvas.width = window.innerWidth;
+    glCanvas.height = window.innerHeight;
+    window.onresize = function() {
+      glCanvas.width = window.innerWidth;
+      glCanvas.height = window.innerHeight;
+    };
+    byId('display').appendChild(glCanvas);
+    var display = new Magi.Scene(glCanvas);
+    display.supersample = 2;
+    display.useDefaultCameraControls();
+    display.camera.lookAt.set([0,0,0]);
+    display.bg = [0,0,0,1];
+    glDisplay = display
+    
+    cam = display.camera;
+    sc = display.scene;
+    au2km /= 1000;
+    solarSystem = SolarSystem.createModel();
+    solarSystem.setAxis(1,0,0).setAngle(-Math.PI/2);
+    sun = solarSystem.getNodeById('Sun').planet;
+    jupiter = solarSystem.getNodeById('Jupiter').planet;
+    earth = solarSystem.getNodeById('Earth').planet;
+    solarSystem.setScale(10000 / (au2km*1000));
+    t_day = 0.0001;
+    display.scene.appendChild(solarSystem);
+    display.scene.afterTransform(function(m) {
+      mat4.set(m, Magi.DefaultMaterial.lightMatrix);
+    });
+    tracking = null;
+    display.camera.afterTransform(function(){
+      if (tracking) {
+        this.moveTo(tracking.absolutePosition);
+      }
+      var tmp = vec3.create();
+      mat4.multiplyVec3(this.perspectiveMatrix, sun.absolutePosition, tmp);
+/*      var c = display.postEffects[0].material.floats.center;
+      c[0] = 0.5+tmp[0]/200;
+      c[1] = 0.5+tmp[1]/250;*/
+    });
+    trackPlanet = function(name) {
+      var obj = solarSystem.getNodeById(name);
+      tracking = obj.planet;
+      display.camera.targetFov = 15;
+      display.camera.setDistance(obj.body.radius * 15.0);
+    };
+    stopTracking = function() { tracking = null; };
+    var planets = document.forms[0].planet;
+    trackSelected = function() {
+      for (var i=0; i<planets.length; i++) {
+        if (planets[i].checked) 
+          trackPlanet(planets[i].value);
+      }
+    }
+    for (var i=0; i<planets.length; i++)
+      planets[i].addEventListener('click', trackSelected, false);
+    trackSelected();
+//     display.postEffects.push(new Magi.RadialGlowFilter());
+  }
+</script>
+<script>
+var deg2rad = Math.PI/180;
+var min2rad = Math.PI/(180*60);
+var sec2rad = Math.PI/(180*60*60);
+var rad2deg = 180/Math.PI;
+var au2km = 149597870.7;
+var earthMass = 5.9736e24;        // km
+var earthRadius = 6378.1;         // km
+var earthOrbitalPeriod = 365.256363004; // days
+var earthRotationPeriod = 0.99726968;   // days
+var t_day = 0.0001;
+
+SolarSystem = {
+  createModel : function() {
+    var top = new Magi.Node();
+    for (var i in this.bodies) {
+      this.createBodyModel(top, this.bodies[i], i);
+    }
+    return top;
+  },
+  
+  createScale : function() {
+    var top = new Magi.Node();
+    for (var i in this.bodies) {
+      top.appendChild(this.createScaleModel(this.bodies[i], i));
+    }
+    return top;
+  },
+  
+  createScaleModel : function(body, name) {
+    var top = new Magi.Node();
+    top.body = body;
+    top.id = name;
+    body.name = name;
+    
+    var sphere = this.createSphere(body);
+    top.tilt = sphere;
+    top.planet = sphere.planet;
+    top.sphere = sphere.sphere;
+    sphere.setZ(sphere.sphere.scaling[2]);
+    top.appendChild(sphere);
+    
+    if (typeof body.satellites == 'object') {
+      var satellites = [];
+      var off_y = sphere.sphere.scaling[1]*1.2;
+      var off_x = 0;
+      for (var i in body.satellites) {
+        satellites.push(this.createScaleModel(body.satellites[i], i));
+      }
+      satellites.sort(function(a,b){ return -(a.body.orbit.aphelion - b.body.orbit.aphelion); });
+      for (var i=0; i<satellites.length; i++) {
+        satellites[i].setY(off_y);
+        off_x += satellites[i].sphere.scaling[0]*1.2;
+        satellites[i].setX(off_x);
+        off_x += satellites[i].sphere.scaling[0]*1;
+        top.appendChild(satellites[i]);
+      }
+    }
+    return top;
+  },
+  
+  createBodyModel : function(parent, body, name) {
+    var top = new Magi.Node();
+    top.body = body;
+    body.name = name;
+    top.id = name;
+    parent.appendChild(top);
+    
+    var longitude = new Magi.Node();
+    longitude.setAxis(0,0,1);
+    longitude.setAngle(body.orbit.longitude);
+    top.appendChild(longitude);
+    
+    var inclination = new Magi.Node();
+    inclination.setAxis(0,1,0);
+    inclination.setAngle(body.orbit.inclination);
+    longitude.appendChild(inclination);
+    
+    var argument = new Magi.Node();
+    argument.setAxis(0,0,1);
+    argument.setAngle(body.orbit.argument);
+    inclination.appendChild(argument);
+    
+    var orbit = new Magi.Node();
+    if (parent.body)
+      body.orbit.semiMajorAxis += 2*parent.body.radius*earthRadius/au2km;
+    orbit.addFrameListener(function(t,dt) {
+      var year = t*t_day / (earthOrbitalPeriod*body.orbit.period);
+      var angle = 2*Math.PI*year;
+      var x_offset = (body.orbit.aphelion-body.orbit.perihelion) / 2;
+      var x = au2km*(x_offset+Math.cos(angle)*body.orbit.semiMajorAxis);
+      var y = au2km*Math.sin(angle)*body.orbit.semiMajorAxis*(1-body.orbit.eccentricity);
+      this.setPosition(x, y, 0);
+    });
+    top.orbit = orbit;
+    argument.appendChild(orbit);
+    if (body.orbit.semiMajorAxis > 0) {
+      var ovr = body.radius * 1000;
+      var orbitVis = new Magi.Disk(au2km*body.orbit.semiMajorAxis-ovr, au2km*body.orbit.semiMajorAxis+ovr, ovr*2, 150, 1);
+      orbitVis.setZ(-ovr);
+      orbitVis.blendFuncSrc = 'ONE';
+      orbitVis.blendFuncDst = 'ONE';
+      orbitVis.transparent = true;
+      orbitVis.material.floats.MaterialDiffuse.set([0, 0.75, 0, 0.1]);
+      orbitVis.material.floats.MaterialEmit.set([0, 0.75, 0, 0.3]);
+      orbitVis.setScale(1, 1-body.orbit.eccentricity, 1);
+      orbitVis.setX(au2km*(body.orbit.aphelion-body.orbit.perihelion) / 2);
+      argument.appendChild(orbitVis);
+    }
+
+    var tilt = this.createSphere(body);
+    orbit.appendChild(tilt);
+    orbit.tilt = tilt;
+    tilt.body = body;
+    top.planet = tilt.planet;
+    tilt.sphere.addFrameListener(function(t,dt) {
+      var day = t*t_day / body.rotationPeriod;
+      this.setAngle(2*Math.PI*day);
+    });
+
+    if (typeof body.satellites == 'object') {
+      for (var i in body.satellites) {
+        this.createBodyModel(tilt, body.satellites[i], i);
+      }
+    }
+  },
+  
+  createSphere : function(body) {
+    var tilt = new Magi.Node();
+    tilt.setAxis(0,1,0);
+    tilt.setAngle(body.tilt);
+    var planet = new Magi.Node();
+    tilt.appendChild(planet);
+    tilt.planet = planet;
+    var sphere = new Magi.Sphere(100,50);
+    planet.appendChild(sphere);
+    tilt.sphere = sphere;
+    sphere.setScale(body.radius*earthRadius, body.radius*earthRadius, body.radius*earthRadius * (1-body.flattening));
+    Magi.Texture.load("planets/"+body.name.toLowerCase()+"map.jpg", function(tex) {
+      sphere.material.textures.DiffTex = tex;
+      if (body.luminosity) {
+        sphere.material.textures.EmitTex = tex;
+        vec4.setLeft(sphere.material.floats.MaterialEmit, [0.9, 0.85, 0.5, 1]);
+      }
+    });
+    if (body.luminosity) {
+      vec4.setLeft(sphere.material.floats.MaterialDiffuse, [1,1,1,1]);
+    } else {
+      vec4.setLeft(sphere.material.floats.MaterialDiffuse, [0,0,0,1]);
+    }
+    sphere.material.floats.MaterialShininess = 3;
+    vec4.setLeft(sphere.material.floats.MaterialAmbient, [0,0,0,0]);
+    vec4.setLeft(sphere.material.floats.MaterialSpecular, [body.albedo,body.albedo,body.albedo,1]);
+    vec4.setLeft(sphere.material.floats.LightPos, [0,0,0,1]);
+    vec4.setLeft(sphere.material.floats.LightDiffuse, [0.75,0.75,0.75,1]);
+    vec4.setLeft(sphere.material.floats.LightSpecular, [0.75,0.75,0.75,1]);
+    vec4.setLeft(sphere.material.floats.LightAmbient, [0,0,0,1]);
+    if (body.specularMap) {
+      Magi.Texture.load("planets/"+body.name.toLowerCase()+"spec.jpg", function(tex) {
+        vec4.setLeft(sphere.material.floats.MaterialSpecular, [0,0,0,1]);
+        sphere.material.textures.SpecTex = tex;
+      });
+    }
+    sphere.setAxis(0,0,1);
+    
+    if (body.ring) {
+      var ring = new Magi.Disk(body.ring.r1, body.ring.r2, body.ring.thickness, 100, 1);
+      ring.material.floats.MaterialShininess = 3;
+      vec4.setLeft(ring.material.floats.MaterialDiffuse, [0,0,0,0]);
+      vec4.setLeft(ring.material.floats.LightPos, [0,0,0,1]);
+      vec4.setLeft(ring.material.floats.MaterialSpecular, [0.03,0.03,0.03,1]);
+      vec4.setLeft(ring.material.floats.LightDiffuse, [0.75,0.75,0.75,1]);
+      vec4.setLeft(ring.material.floats.LightSpecular, [0.75,0.75,0.75,1]);
+      vec4.setLeft(ring.material.floats.LightAmbient, [0.03,0.02,0,1]);
+      Magi.Texture.load("planets/"+body.name.toLowerCase()+"ring.png", function(tex) {
+        ring.material.textures.DiffTex = tex;
+      });
+      ring.transparent = true;
+      sphere.ring = ring;
+      planet.appendChild(ring);
+    }
+    return tilt;
+  },
+  
+  bodies : {
+    Sun: {
+      radius: 109.05, // times earth radius, equatorial radius
+      flattening: 9e-6, // 1 - r_equatorial/r_polar
+      mass: 11990, // earth masses
+      rotationPeriod: 25.12, // earth rotation periods
+      poleRotationPeriod: 34.49, // earth rotation periods
+      tilt: 0, //7.25*deg2rad, // radians
+      symbol: '☉',
+      albedo: 0, // geometric albedo
+      luminosity: 3.846e26, // W
+      orbit: {
+        aphelion: 0, // AU
+        perihelion: 0, // AU
+        semiMajorAxis: 0, // AU
+        period: 1, // earth orbital periods, 1 here to avoid division by zero
+        inclination: 0, // radians
+        eccentricity : 0,
+        longitude : 0,
+        argument : 0
+      },
+      satellites: {
+        Mercury: {
+          radius: 0.382,
+          flattening: 0,
+          mass: 0.06,
+          rotationPeriod: 58.64,
+          tilt: 2.11*min2rad,
+          albedo: 0.138,
+          satellites: 0,
+          symbol: '☿',
+          orbit: {
+            aphelion: 0.466697,
+            perihelion: 0.307499,
+            semiMajorAxis: 0.387098,
+            period: 0.24,
+            inclination: 3.38*deg2rad,
+            eccentricity : 0.205630,
+            longitude : 48.331*deg2rad,
+            argument : 29.124*deg2rad
+          }
+        },
+        Venus: { 
+          radius: 0.949, flattening: 0,
+          mass: 0.82,
+          rotationPeriod: -243.02,
+          tilt: 177.3*deg2rad,
+          albedo: 0.65,
+          satellites: 0,
+          symbol: '♀',
+          orbit: {
+            aphelion: 0.72823128,
+            perihelion: 0.71843270,
+            semiMajorAxis: 0.723332,
+            radius: 0.72,
+            period: 0.62,
+            inclination: 3.86*deg2rad,
+            eccentricity : 0.0068,
+            longitude : 76.67069*deg2rad,
+            argument : 54.85229*deg2rad
+          } },
+        Earth: { 
+          radius: 1.00, flattening: 0.0033528,
+          mass: 1.00,
+          rotationPeriod: 1.00,
+          tilt: 23*deg2rad + 26*min2rad + 21.4119*sec2rad,
+          albedo: 0.367,
+          satellites: 1,
+          symbol: '⊕',
+          specularMap : true,
+          orbit: {
+            aphelion: 1.01671388,
+            perihelion: 0.98329134,
+            semiMajorAxis: 1.00000261,
+            radius: 1.00,
+            period: 1.00,
+            inclination: 7.25*deg2rad,
+            eccentricity : 0.01671123,
+            longitude : 348.73936*deg2rad,
+            argument : 114.20783*deg2rad
+          } },
+        Mars: {
+          radius: 0.532, flattening: 0.00589,
+          mass: 0.11,
+          rotationPeriod: 1.03,
+          albedo: 0.15,
+          satellites: 2,
+          symbol: '♂',
+          tilt: 25.19*deg2rad,
+          orbit: {
+            aphelion: 1.665861,
+            perihelion: 1.381497,
+            semiMajorAxis: 1.523679,
+            radius: 1.52,
+            period: 1.88,
+            inclination: 5.65*deg2rad,
+            eccentricity : 0.093315,
+            longitude : 49.562*deg2rad,
+            argument : 286.537*deg2rad
+          } },
+        Jupiter: { radius: 11.209, flattening: 0.06487,
+          mass: 317.8,
+          rotationPeriod: 0.41,
+          satellites: 63,
+          albedo: 0.52,
+          symbol: '♃',
+          tilt: 3.13*deg2rad,
+          orbit: {
+            aphelion: 5.458104,
+            perihelion: 4.950429,
+            semiMajorAxis: 5.204267,
+            radius: 5.20,
+            period: 11.86,
+            inclination: 6.09*deg2rad,
+            eccentricity : 0.048775,
+            longitude : 100.492*deg2rad,
+            argument : 275.066*deg2rad
+          } },
+        Saturn: { radius: 9.449, flattening: 0.09796,
+          mass: 95.2,
+          rotationPeriod: 0.43,
+          satellites: 61,
+          albedo: 0.47,
+          symbol: '♄',
+          tilt: 26.73*deg2rad,
+          ring: {r1: 66900, r2: 140180, thickness: 0.015}, // km
+          orbit: {
+            aphelion: 10.11595804,
+            perihelion: 9.04807635,
+            semiMajorAxis: 9.58201720,
+            radius: 9.54,
+            period: 29.46,
+            inclination: 5.51*deg2rad,
+            eccentricity : 0.055723219,
+            longitude : 113.642811*deg2rad,
+            argument : 336.013862*deg2rad
+          } },
+        Uranus: { radius: 4.007, flattening: 0.0229,
+          mass: 14.6,
+          rotationPeriod: -0.72,
+          satellites: 27,
+          albedo: 0.51,
+          tilt: 97.77*deg2rad,
+          symbol: '♅',
+          ring: {r1: 32000, r2: 51149, thickness: 0.15}, // km
+          orbit: {
+            aphelion: 20.08330526,
+            perihelion: 18.37551863,
+            semiMajorAxis: 19.22941195,
+            radius: 19.22,
+            period: 84.01,
+            inclination: 6.48*deg2rad,
+            eccentricity : 0.044405586,
+            longitude : 73.989821,
+            argument : 96.541318
+          } },
+        Neptune: { radius: 3.883, flattening: 0.0171,
+          mass: 17.2,
+          rotationPeriod: 0.67,
+          albedo: 0.41,
+          satellites: 13,
+          tilt: 28.32*deg2rad,
+          symbol: '♆',
+          orbit: {
+            aphelion: 30.44125206,
+            perihelion: 29.76607095,
+            semiMajorAxis: 30.10366151,
+            radius: 30.06,
+            period: 164.8,
+            inclination: 6.43*deg2rad,
+            eccentricity : 0.011214269,
+            longitude : 131.794310,
+            argument : 265.646853
+          } }
+      }
+    }
+  }
+}
+</script>
+<style>
+  #controls {
+    position: fixed;
+    left: 10px;
+    top: 10px;
+    padding: 10px;
+    padding-right: 20px;
+    background-color: rgba(0,0,0,0.8);
+    color: #eee;
+    font-family: sans-serif;
+    border-radius: 8px;
+    z-index: 100;
+    font-size: 15px;
+  }
+  h3 {
+    margin: 0px;
+    margin-bottom: 8px;
+    font-size: 18px;
+    text-align: center;
+  }
+</style>
+
+</head>
+<body>
+<div id="controls">
+  <h3>Track planet</h3>
+  <form>
+  <input type="radio" name="planet" value="Mercury" /> Mercury<br>
+  <input type="radio" name="planet" value="Venus" /> Venus<br>
+  <input type="radio" name="planet" value="Earth" checked/> Earth<br>
+  <input type="radio" name="planet" value="Mars" /> Mars<br>
+  <input type="radio" name="planet" value="Jupiter" /> Jupiter<br>
+  <input type="radio" name="planet" value="Saturn" /> Saturn<br>
+  <input type="radio" name="planet" value="Uranus" /> Uranus<br>
+  <input type="radio" name="planet" value="Neptune" /> Neptune
+  </form>
+</div>
+<div id="display"></div>
+</body>
+</html>

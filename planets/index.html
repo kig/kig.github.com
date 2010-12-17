@@ -437,6 +437,7 @@ SolarSystem = {
     padding: 10px;
     padding-right: 20px;
     background-color: rgba(0,0,0,0.8);
+    width: 200px;
     color: #eee;
     font-family: sans-serif;
     border-radius: 8px;
@@ -449,10 +450,16 @@ SolarSystem = {
     font-size: 18px;
     text-align: center;
   }
+  a {
+    color: #88c;
+  }
+  a:visited {
+    color: #a8c;
+  }
 </style>
 
-</head>
-<body>
+</head> 
+<body> 
 <div id="controls">
   <h3>Track planet</h3>
   <form>
@@ -465,6 +472,20 @@ SolarSystem = {
   <input type="radio" name="planet" value="Uranus" /> Uranus<br>
   <input type="radio" name="planet" value="Neptune" /> Neptune
   </form>
+  <h3>Details</h3>
+  <div id="description">
+    <p>Planets are to scale, orbits are shrunk to a one-thousandth original radius. Time flows at a rate of one day per ten seconds.</p> 
+  </div>
+  <h4>Points of note</h4>
+  <div>
+    <p>The Sun is big. Jupiter spins fast. Mercury and Venus are almost tidally locked with the Sun. Uranus is off-kilter and its orbit is tilted too.</p>
+  </div>
+  <div>
+    <p>Map textures courtesy of <a href="http://planetpixelemporium.com/planets.html">James Hastings-Trew</a>. Planet orbit info gleaned from Wikipedia.</p>
+  </div>
+  <div>
+    <p><small>Ilmari Heikkinen - <a href="http://fhtr.org">fhtr.org</a></small></p>
+  </div>
 </div>
 <div id="display"></div>
 </body>

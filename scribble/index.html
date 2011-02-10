@@ -719,14 +719,14 @@
 
         keepResizingBrush : function() {
           if (!this.resizingBrush) return;
-          var dx = Math.max(1, this.current.x - this.brushResizeX);
+          var dx = Math.max(0.75, this.current.x - this.brushResizeX);
           this.setLineWidth(dx);
         },
 
         stopResizingBrush : function() {
           if (!this.resizingBrush) return;
           this.resizingBrush = false;
-          var dx = Math.max(1, this.current.x - this.brushResizeX);
+          var dx = Math.max(0.75, this.current.x - this.brushResizeX);
           this.setLineWidth(dx);
         },
 

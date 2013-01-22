@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      h2 { margin-left: 0em; }
+      h3 { margin-left: 1em; }
+      h4 { margin-left: 2em; }
+      p,table,ul { margin-left: 3em; }
+      td { vertical-align: top; }
+      @media print {
+        a:after {
+          content: "[" attr(href) "]";
+          font-size: smaller;
+          position: relative;
+          top: -0.1em;
+          left: 0.25em;
+          padding-right: 0.15em;
+          display: inline-block;
+          color: black;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1>CV / Resume</h1>
+      <h1>Ilmari Heikkinen</h1>
+      <p>Email: <a href="mailto:ilmari.heikkinen@gmail.com" target="_blank">ilmari.heikkinen@gmail.com</a></p>
+      <p>Mobile: +44 [0]74 27139588</p>
+      <p>Web: <a href="http://fhtr.org">fhtr.org</a></p>
+      <p>Location: London, UK</p>
+
+      <h2>Interests</h2>
+      <p>I like making applications and demos that look good. As one might imagine, this also leads me into visual arts like illustration, photography and graphic design.</p>
+      <p>
+      <p>Another interest of mine is managing large amounts of information. Thus far, this has manifested in zoomable file managers. <a href="http://www.youtube.com/watch?v=iy2RMqe_iXg">Here's a video</a> of a web-based prototype I wrote. The UI is HTML.</p>
+      <p>Filezoo is another zoomable file manager I wrote a year later, this time for the local filesystem using Gtk# and Cairo. <a href="http://www.youtube.com/watch?v=itsOMpMpPto">Here's</a> a video of Filezoo in action.</p>
+
+      <h4>Code on the web</h4>
+      <ul>
+        <li><a href="http://fhtr.org">Links to work and projects</a></li>
+        <li><a href="http://github.com/kig">My GitHub repos</a></li>
+        <li><a href="http://cakejs.googlecode.com">Cake.js</a> - a HTML Canvas scene graph (with a partial SVG renderer implementation)</li>
+      </ul>
+
+      <h4>Programming languages</h4>
+      <p>Several years of use (10+ thousand lines): JavaScript, OCaml, Ruby</p>
+      <p>Basic proficiency (5-10 thousand lines): C#, C/C++, Haskell</p>
+      <p>Beginner (&lt;5 thousand lines): OpenCL, GLSL, Python, Go</p>
+      <p>Rusty: PHP, Java</p>
+
+      <h4>Web technologies</h4>
+      <p>WebGL, HTML5 Canvas, HTML, some XHTML, CSS</p>
+
+      <h2>Work experience</h2>
+      <table border="0" cellspacing="2" cellpadding="4">
+        <tr>
+          <td width="150">2012-</td>
+          <td>        FHTR Ltd - Freelance Contractor<br>
+            I started a limited company to do contract work for clients. In that capacity, I've been doing consulting, prototyping and engineering of innovative web applications for Potato Ltd and the Google Creative Lab.
+        </tr><tr>
+          <td width="150">2012-</td>
+          <td>        Concerto UK - Web Developer, Photographer<br>
+            I've been working at the <a href="http://concertouk.com">Concerto UK</a> clothes store as a second job. During my time, I designed and built the international website, set up PayPal payments, took tens of thousands of photographs for advertising the clothes and helped with all aspects of running the store, excluding customer service.
+        </tr><tr>
+          <td width="150">2011-2012</td>
+          <td>        Google - Developer Programs Engineer<br>
+            I worked at Google UK in the London office as a Developer Programs Engineer on the Chrome browser team. The job was about teaching web developers how to use new graphics features in Chrome. As part of my job I wrote articles on the <a href="http://html5rocks.com">HTML5Rocks</a> site, prepared and gave presentations at conferences, supported internal product teams and external developers, and built a bunch of feature demos. 
+          </td>
+        </tr><tr>
+          <td width="150">2010-2011</td>
+          <td>        Mozilla - Freelance Contractor<br>
+            I built the <a href="https://developer.mozilla.org/en-US/demos/detail/runfield/launch">Runfield</a> and <a href="https://developer.mozilla.org/en-US/demos/detail/remixing-reality/launch">Remixing Reality</a> demos for the Firefox 4 launch, demonstrating the capabilities of modern browsers with a graphically fancy 2D side-scroller and an augmented reality demo that processes video in real-time.
+          </td>
+        </tr><tr>
+          <td width="150">2006-2010</td>
+          <td>        Doqoni - Founder, Programmer, UI designer<br>
+            Founded a startup project to build a web application to visualize and manage large amounts of bookmarks and saved files. You could think of it like Pinterest for people who have 50 thousand pins or more. Wrote a Google Maps -style zoomable tilemap with smooth panning and animated zoom, a file thumbnailer, a file metadata extractor, JS image slideshow for arbitrary numbers of files, document reader, document annotation system, drag'n'drop uploading, inline media players for music and video, search query parser and the query execution engine, tile drawing library with custom optimized draw routines, a backend on PostgreSQL and memcached. Ran a private version for a few friends from 2006-2008 before version two -syndrome sunk it.<br>
+          </td>
+        </tr><tr>
+          <td>2006 Summer</td>
+          <td>		Student programmer in Google Summer of Code<br>
+	        Wrote an OpenGL GUI toolkit for Ruby.
+          </td>
+        </tr><tr>
+          <td>2000-2004</td>
+          <td>		Freelance GUI graphics artist for The Skins Factory<br>
+	        Drew graphics and animations for Windows Media Player themes. Scripted the UI for some themes. We worked for clients ranging from Sony Pictures and Warner Bros to Microsoft Games, Valve Software and TDK Electronics. One of the themes I made was included in the Windows XP Media Plus Pack. Another was featured on www.harrypotter.com. Fun times.
+          </td>
+        </tr><tr>
+          <td>2001-2002</td>
+          <td>        Art director<br>
+            The Student Union of the Helsinki University of Technology<br>
+            Drew posters and flyers, layouted books with InDesign.
+          </td>
+        </tr>
+      </table>
+
+      <h3>Open source</h3>
+      <p>I have written several open source libraries and applications, usually using GPL or MIT/BSD as the license. A few of the libraries have been packaged by Linux distros.</p>
+      <p>I have filed bugs, testcases and the occasional patch on the bug trackers of open source projects like Chromium, Mozilla, WebKit, GIMP and Ocsigen.</p>
+
+      <h3>Hobbies</h3>
+      <p>Jogging, reading, coding, photography, drawing and painting.</p>
+
+      <h2>Education</h2>
+      <table border="0" cellspacing="2" cellpadding="4">
+        <tr>
+          <td>2010</td>
+          <td>		BSc from Computer Science at the Helsinki University.
+          </td>
+        </tr><tr>
+          <td>2000</td>
+          <td>		Graduated from the upper secondary school of Joutseno.
+          </td>
+        </tr>
+      </table>
+
+      <h2>Language skills</h2>
+      <ul>
+        <li>Finnish (native speaker)</li>
+        <li>English (quite fluent)</li>
+        <li>Basic Swedish, German and some Japanese</li>
+      </ul>
+    </div>
+
+  </body>
+</html>

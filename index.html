@@ -2,6 +2,7 @@
   <head>
     <title>fhtr - creative agency</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <script src="E.js"></script>
     <style type="text/css">
       html {
         font-family: Century Schoolbook, Times New Roman, Didot, serif;
@@ -58,9 +59,12 @@
         width: 100%;
       }
     </style>
+
   </head>
   <body>
-    <div><img src="images/crystal_10.jpg" width="307" height="352"></div>
+    <div id="title">
+      <img src="images/crystal_10.jpg" width="307" height="352">
+    </div>
     <div>
       <h1>fhtr</h1>
       <hr>
@@ -92,19 +96,19 @@
       <div id="work">
         <h4>
           <a href="magi/">
-            <img src="images/magi.jpg"><br>
+            <img src="images/magi.jpg" width="300" height="150"><br>
             hello, webgl
           </a>
         </h4>
         <h4>
           <a href="http://www.google.com/worldwonders">
-            <img src="images/webglglobe.png"><br>
+            <img src="images/webglglobe.png" width="300" height="170"><br>
             world wonders 3D globe
           </a>
         </h4>
         <h4>
           <a href="https://developer.cdn.mozilla.net/media/uploads/demos/p/a/paulrouget/47e916de488e745f95aee0bc32d5fd31/runfield_1327576901_demo_package/index.html">
-            <img src="images/runfield.jpg"><br>
+            <img src="images/runfield.jpg" width="300" height="152"><br>
             runfield
           </a> | <a href="https://developer.cdn.mozilla.net/media/uploads/demos/p/a/paulrouget/a0e65782260e33cf52864aeb7859e51e/runfield-mobile_1307440224_demo_package/index.html">mobile (works best on firefox)</a>
         </h4>
@@ -112,6 +116,9 @@
       </div>
 
     </div>
+    <script>
+      E.Spinner.loadAllImages();
+    </script>
 <script type="text/javascript">
 
   var _gaq = _gaq || [];

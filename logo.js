@@ -16,7 +16,32 @@
 
     var w = canvas.width;
     var h = canvas.height;
+    var fps = 60;
+    var pt = Date.now();
+    var slowFrames = 0;
+    var slow = false;
     var draw = function(t) {
+        var rt = Date.now();
+        var elapsed = rt-pt;
+        fps = 1000/elapsed;
+        pt = rt;
+
+        if (slowFrames == 0) {
+            slow = false;
+        }
+        if (fps < 50) {
+            slowFrames++;
+            if (slowFrames > 10) {
+                slowFrames = 11;
+                slow = true;
+            }
+        } else {
+            slowFrames--;
+            if (slowFrames < 0) {
+                slowFrames = 0;
+            }
+        }
+
         ctx.clearRect(0, 0, w, h);
         ctx.save();
         {
@@ -62,14 +87,15 @@
 
             // spokes
             var pi2 = Math.PI*2;
-            for (var i=0; i<116; i++) {
+            var count = slow ? 116 : 348;
+            for (var i=0; i<count; i++) {
                 var a = (pi2 * i/58) % pi2;
                 var b = (t/1000 + pi2 * (i/58)+i/1000) % pi2;
                 var f = Math.sin(t/723);
                 var ff = Math.sin(t/1800);
                 var z = Math.sin(a)*0.2+ff*ff;
-                var x = (Math.cos(a)+f*Math.sin(b));
-                var y = Math.sin(b)+(1-f)*Math.cos(a);
+                var x = ff*(Math.cos(a)+f*Math.sin(b));
+                var y = f*(Math.sin(b)+(1-f)*Math.cos(a));
                 var id = r/Math.sqrt(x*x + y*y + z*z);
                 x *= id;
                 y *= id;
@@ -90,9 +116,9 @@
                     var dy = y/r;
                     var rr = r*0.1;
                     ctx.lineTo(x+rr*dx, y+rr*dy);
-                    var red = Math.abs(x+z)|0;
-                    var green = Math.abs(y)|0;
-                    var blue = Math.min(255, Math.abs(y+z)|0);
+                    var red = Math.min(255, (1.5*Math.abs(x+z)/r*170)|0);
+                    var green = Math.min(255, (1.5*Math.abs(y)/r*170)|0);
+                    var blue = Math.min(255, (1.5*Math.abs(y+z)/r*170)|0);
                     ctx.lineWidth = 2;
                     ctx.strokeStyle = 'rgb('+red+','+green+','+blue+')';
                     ctx.stroke();

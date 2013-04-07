@@ -41,8 +41,8 @@ window.addEventListener('load', function() {
                 var b = (t/1000 + pi2 * (i/58)+i/1000) % pi2;
                 var f = Math.sin(t/723);
                 var ff = Math.sin(t/1800);
-                var z = Math.sin(a)*0.2+ff*f;
-                var x = Math.cos(a)+f*Math.sin(b);
+                var z = Math.sin(a)*0.2 //+ff*f;
+                var x = ff*(Math.cos(a)+f*Math.sin(b));
                 var y = Math.sin(b)+(1-f)*Math.cos(a);
                 var id = r/Math.sqrt(x*x + y*y + z*z);
                 x *= id;
@@ -51,11 +51,13 @@ window.addEventListener('load', function() {
                 ctx.beginPath();
                 ctx.save();
                 {
-                    //ctx.translate(x, y);
+                    /*
+                    ctx.translate(x, y);
                     //ctx.rotate(x);
                     //ctx.rotate(a);
-                    //ctx.rotate(z);
-                    //ctx.rect(0, 0, 5, 1);
+                    ctx.rotate(z);
+                    ctx.rect(0, 0, 5, 1);
+                    */
                     ctx.beginPath();
                     ctx.moveTo(x,y);
                     var dx = x/r;

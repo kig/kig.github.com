@@ -20,25 +20,30 @@
     var pt = Date.now();
     var slowFrames = 0;
     var slow = false;
+    var frame = 0;
     var draw = function(t) {
         var rt = Date.now();
         var elapsed = rt-pt;
         fps = 1000/elapsed;
         pt = rt;
 
-        if (slowFrames == 0) {
-            slow = false;
-        }
-        if (fps < 50) {
-            slowFrames++;
-            if (slowFrames > 10) {
-                slowFrames = 11;
-                slow = true;
+        frame++;
+
+        if (frame < 50) {
+            if (slowFrames == 0) {
+                slow = false;
             }
-        } else {
-            slowFrames--;
-            if (slowFrames < 0) {
-                slowFrames = 0;
+            if (fps < 50) {
+                slowFrames++;
+                if (slowFrames > 10) {
+                    slowFrames = 10;
+                    slow = true;
+                }
+            } else {
+                slowFrames--;
+                if (slowFrames < 0) {
+                    slowFrames = 0;
+                }
             }
         }
 

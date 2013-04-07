@@ -81,19 +81,20 @@
             }
             ctx.restore();
 
-            s = Math.max(0, Math.min(1, (-200+t)/500));
+            s = Math.max(0, Math.min(1, (-500+t)/2500));
             s = 0.5-0.5*Math.cos(s*Math.PI);
             ctx.scale(s, s);
 
             // spokes
             var pi2 = Math.PI*2;
-            var count = slow ? 116 : 348;
+            var count = slow ? 58 : 348;
+            var sf = slow ? 0 : 1/1000;
             for (var i=0; i<count; i++) {
                 var a = (pi2 * i/58) % pi2;
-                var b = (t/1000 + pi2 * (i/58)+i/1000) % pi2;
+                var b = (t/1000 + pi2 * (i/58)+sf*i) % pi2;
                 var f = Math.sin(t/723);
                 var ff = Math.sin(t/1800);
-                var z = Math.sin(a)*0.2+ff*ff;
+                var z = Math.sin(a)*0.2+ff*f;
                 var x = ff*(Math.cos(a)+f*Math.sin(b));
                 var y = f*(Math.sin(b)+(1-f)*Math.cos(a));
                 var id = r/Math.sqrt(x*x + y*y + z*z);
@@ -116,9 +117,9 @@
                     var dy = y/r;
                     var rr = r*0.1;
                     ctx.lineTo(x+rr*dx, y+rr*dy);
-                    var red = Math.min(255, (1.5*Math.abs(x+z)/r*170)|0);
-                    var green = Math.min(255, (1.5*Math.abs(y)/r*170)|0);
-                    var blue = Math.min(255, (1.5*Math.abs(y+z)/r*170)|0);
+                    var red = Math.min(255, (1.5*Math.abs(x+z)/r*150)|0);
+                    var green = Math.min(255, (1.5*Math.abs(y)/r*150)|0);
+                    var blue = Math.min(255, (1.5*Math.abs(y+z)/r*150)|0);
                     ctx.lineWidth = 2;
                     ctx.strokeStyle = 'rgb('+red+','+green+','+blue+')';
                     ctx.stroke();

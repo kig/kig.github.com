@@ -1,4 +1,4 @@
-window.addEventListener('load', function() {
+(function() {
     var canvas = E.id('logo');
     var ctx = canvas.getContext('2d');
     var w = canvas.width;
@@ -95,8 +95,9 @@ window.addEventListener('load', function() {
     var tick = function() {
         draw(t);
         t += 16;
-        E.requestAnimationFrame(tick, canvas);
+        setTimeout(tick, 16);
+        //E.requestAnimationFrame(tick, canvas);
     };
 
     tick();
-}, false);
+})();

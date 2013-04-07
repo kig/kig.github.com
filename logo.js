@@ -1,6 +1,19 @@
 (function() {
+
     var canvas = E.id('logo');
     var ctx = canvas.getContext('2d');
+
+    var iw = window.innerWidth;
+    var ow = window.outerWidth;
+    var dpr = window.devicePixelRatio || 1;
+    var bspr = (ctx.webkitBackingStorePixelRatio || 1);
+    var ratio = dpr * (ow/iw) / bspr;
+
+    canvas.style.width = canvas.width + 'px';
+    canvas.style.height = canvas.height + 'px';
+    canvas.width *= ratio;
+    canvas.height *= ratio;
+
     var w = canvas.width;
     var h = canvas.height;
     var draw = function(t) {
@@ -13,7 +26,7 @@
             ctx.fillStyle = '#000';
             ctx.strokeStyle = '#888';
 
-            var r = 140;
+            var r = w/2.2;
             var logoHeight = 2*r/Math.E;
             var logoWidth = logoHeight/Math.E;
             var lh = logoHeight/2;
@@ -75,7 +88,7 @@
                     ctx.moveTo(x,y);
                     var dx = x/r;
                     var dy = y/r;
-                    var rr = 15;//i%5+5;
+                    var rr = r*0.1;
                     ctx.lineTo(x+rr*dx, y+rr*dy);
                     var red = Math.abs(x+z)|0;
                     var green = Math.abs(y)|0;

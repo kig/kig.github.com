@@ -13,36 +13,49 @@ window.addEventListener('load', function() {
             ctx.fillStyle = '#000';
             ctx.strokeStyle = '#888';
 
-            var r = 150;
+            var r = 140;
             var logoHeight = 2*r/Math.E;
             var logoWidth = logoHeight/Math.E;
             var lh = logoHeight/2;
             var lw = logoWidth/2;
 
-            // circle
-            ctx.beginPath();
-            ctx.arc(0, 0, r, 0, Math.PI*2, false);
-            // ctx.stroke();
+            var s = Math.min(1, t/500);
+            s = 0.5-0.5*Math.cos(s*Math.PI);
+            ctx.save();
+            {
+                ctx.scale(s, s);
+                ctx.globalAlpha = s;
 
-            // logo
-            ctx.beginPath();
-            ctx.moveTo(0, lh*1.1);
-            ctx.lineTo(0, -lh);
-            ctx.lineTo(lw, -lh+lw);
-            ctx.lineTo(lw, lh-lw);
-            ctx.lineTo(-lw*1.1, lh-lw);
-            ctx.lineTo(0, lh*1.1);
-            ctx.stroke();
+                // circle
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI*2, false);
+                // ctx.stroke();
+
+                // logo
+                ctx.beginPath();
+                ctx.moveTo(0, lh*1.1);
+                ctx.lineTo(0, -lh);
+                ctx.lineTo(lw, -lh+lw);
+                ctx.lineTo(lw, lh-lw);
+                ctx.lineTo(-lw*1.1, lh-lw);
+                ctx.lineTo(0, lh*1.1);
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            s = Math.max(0, Math.min(1, (-200+t)/500));
+            s = 0.5-0.5*Math.cos(s*Math.PI);
+            ctx.scale(s, s);
 
             // spokes
             var pi2 = Math.PI*2;
-            for (var i=0; i<300; i++) {
+            for (var i=0; i<116; i++) {
                 var a = (pi2 * i/58) % pi2;
                 var b = (t/1000 + pi2 * (i/58)+i/1000) % pi2;
                 var f = Math.sin(t/723);
                 var ff = Math.sin(t/1800);
-                var z = Math.sin(a)*0.2 //+ff*f;
-                var x = ff*(Math.cos(a)+f*Math.sin(b));
+                var z = Math.sin(a)*0.2+ff*ff;
+                var x = (Math.cos(a)+f*Math.sin(b));
                 var y = Math.sin(b)+(1-f)*Math.cos(a);
                 var id = r/Math.sqrt(x*x + y*y + z*z);
                 x *= id;

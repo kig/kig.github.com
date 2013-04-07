@@ -61,6 +61,9 @@
       img {
         opacity: 0;
       }
+      #content > * {
+          opacity: 0;
+      }
     </style>
 
   </head>
@@ -69,9 +72,8 @@
       <canvas id="logo" width="320" height="440">
         <img src="images/crystal_10.jpg" width="307" height="352">
       </canvas>
-      <script src="logo.js"></script>
     </div>
-    <div>
+    <div id="content">
       <h1>fhtr</h1>
       <hr>
 
@@ -122,8 +124,46 @@
       </div>
 
     </div>
+    <script src="logo.js"></script>
     <script>
       E.Spinner.loadAllImages();
+      var t = 4000;
+      var hasCanvas = false;
+      if (E('canvas').getContext('2d')) {
+          hasCanvas = true;
+      }
+      if (window.localStorage) {
+          if (window.localStorage.getItem('seenIntro')) {
+              t = -10000;
+          }
+      }
+      E.toArray(E.qAll("#content > *")).forEach(function(e, i) {
+        if (!hasCanvas) {
+            e.style.opacity = 1;
+            return;
+        }
+        E.css(e, 'transition', '0.5s');
+        E.css(e, 'position', 'relative');
+        E.css(e, 'top', '-20px');
+        setTimeout(function() {
+            E.css(e, 'opacity', 1);
+            E.css(e, 'top', '0px');
+        }, t);
+        if (e.tagName) {
+            if (/^HR$/.test(e.tagName)) {
+                t += 500;
+            } else if (/^H1$/.test(e.tagName)) {
+                t += 1200;
+            } else if (/^BR$/.test(e.tagName)) {
+                t += 300;
+            } else {
+                t += 300;
+            }
+        }
+      });
+      if (window.localStorage) {
+          window.localStorage.setItem('seenIntro', true);
+      }
     </script>
 <script type="text/javascript">
 

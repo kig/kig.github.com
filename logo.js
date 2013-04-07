@@ -29,7 +29,7 @@
 
         frame++;
 
-        if (frame < 50) {
+        if (frame < 40) {
             if (slowFrames == 0) {
                 slow = false;
             }
@@ -138,8 +138,9 @@
 
     var t = 0;
     var tick = function() {
+        var dt = Date.now()-pt;
         draw(t);
-        t += 16;
+        t += dt;
         setTimeout(tick, 16);
         //E.requestAnimationFrame(tick, canvas);
     };

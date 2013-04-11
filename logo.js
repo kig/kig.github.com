@@ -92,8 +92,8 @@
 
             // spokes
             var pi2 = Math.PI*2;
-            var count = slow ? 58 : 348;
-            var sf = slow ? 0 : 1/1000;
+            var count = 58; //slow ? 58 : 348;
+            var sf = 0; //slow ? 0 : 1/1000;
             for (var i=0; i<count; i++) {
                 var a = (pi2 * i/58) % pi2;
                 var b = (t/1000 + pi2 * (i/58)+sf*i) % pi2;

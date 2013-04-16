@@ -1,8 +1,9 @@
 <html>
   <head>
-    <title>fhtr</title>
+    <title>fhtr - freelance development</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <script src="E..js"></script>
+    <script src="logo.js"></script>
     <style type="text/css">
       html {
         font-family: Futura, Helvetica, Arial;
@@ -76,20 +77,19 @@
   </head>
   <body>
     <div id="title">
-      <canvas id="logo" width="320" height="440">
-        <img src="images/crystal_10.jpg" width="307" height="352">
-      </canvas>
+      <img src="images/crystal_10.jpg" width="307" height="352">
     </div>
     <div id="content">
       <h1>fhtr</h1>
       <hr>
 
-      <h2>focus</h2>
-      <h4>animated UI development</h4>
+      <h2>work loved by millions</h2>
+      <h4>fully-animated UIs with exquisite detail</h4>
 
       <h3>services</h3>
       <hr>
       <div id="services">
+        <h4>animated UI development</h4>
         <h4>Canvas graphics</h4>
         <h4>WebGL and CSS 3D graphics</h4>
         <h4>fantasy UI design</h4>
@@ -122,46 +122,49 @@
       </div>
 
     </div>
-    <script src="logo.js"></script>
     <script>
       E.Spinner.loadAllImages();
-      var t = 3000;
-      var hasCanvas = false;
-      if (E('canvas').getContext('2d')) {
-          hasCanvas = true;
-      }
-      if (window.localStorage) {
-          if (window.localStorage.getItem('seenIntro')) {
-              t = -10000;
-          }
-      }
+      var t = 1000;
+      E.on(E.q("#title img"), 'click', function() {
+          var pn = this.parentNode;
+          E.fadeOut(this, 500, function() {
+              var c = E('canvas');
+              c.width = 320;
+              c.height = 352;
+              pn.appendChild(c);
+              Logo(c);
+          });
+      });
+      E.css(E.q("#content"), {
+          perspective: '800px',
+          perspectiveOrigin: '50% 0%'
+      });
       E.toArray(E.qAll("#content > *")).forEach(function(e, i) {
-        if (!hasCanvas) {
-            e.style.opacity = 1;
-            return;
-        }
-        E.css(e, 'transition', '0.5s');
-        E.css(e, 'position', 'relative');
-        E.css(e, 'top', '-20px');
+        E.css(e, {
+            position: 'relative',
+            transform: 'rotateY(90deg) rotateX(-32deg) translate3d(-230px, 20px, 50px)',
+            transition: '1s'
+        });
         setTimeout(function() {
-            E.css(e, 'opacity', 1);
-            E.css(e, 'top', '0px');
+            E.css(e, {
+                opacity: 1,
+                transform: 'rotateY(0deg) translate(0px, 0px)'
+            });
         }, t);
         if (e.tagName) {
             if (/^HR$/.test(e.tagName)) {
                 t += 500;
             } else if (/^H1$/.test(e.tagName)) {
-                t += 1200;
-            } else if (/^BR$/.test(e.tagName)) {
-                t += 300;
+                t += 600;
+            } else if (/^H4$/.test(e.tagName)) {
+                t += 600;
+            } else if (/^DIV$/.test(e.tagName)) {
+                t += 500;
             } else {
                 t += 300;
             }
         }
       });
-      if (window.localStorage) {
-          window.localStorage.setItem('seenIntro', true);
-      }
     </script>
 <script type="text/javascript">
 

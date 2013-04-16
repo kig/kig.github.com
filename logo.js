@@ -1,6 +1,5 @@
-(function() {
+var Logo = function(canvas) {
 
-    var canvas = E.id('logo');
     var ctx = canvas.getContext('2d');
 
     var iw = window.innerWidth;
@@ -146,4 +145,4 @@
     };
 
     tick();
-})();
+};

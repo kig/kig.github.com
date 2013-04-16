@@ -106,12 +106,36 @@ E.toArray = function(obj) {
 })();
 
 E.css = function(elem, property, value) {
-    if (E.styleProperties[property] || !E.vendorProperties[property]) {
-        elem.style[property] = value;
+    if (value !== undefined) {
+        if (E.styleProperties[property] || !E.vendorProperties[property]) {
+            elem.style[property] = value;
+        } else {
+            elem.style[E.vendorProperties[property]] = value;
+        }
     } else {
-        elem.style[E.vendorProperties[property]] = value;
+        for (var i in property) {
+            E.css(elem, i, property[i]);
+        }
     }
 };
+
+E.on = function(elem, eventName, eventListener, bubble) {
+    bubble = bubble || false;
+    elem.addEventListener(eventName, eventListener, bubble);
+    return eventListener;
+};
+
+E.off = function(elem, eventName, eventListener, bubble) {
+    bubble = bubble || false;
+    elem.removeEventListener(eventName, eventListener, bubble);
+    return eventListener;
+};
+
+E.replace = function(elem, replacement) {
+    elem.parentNode.insertBefore(replacement, elem);
+    elem.parentNode.removeChild(elem);
+};
+
 
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
@@ -251,20 +275,28 @@ E.deferStyle = function(elem, name, value) {
     });
 };
 
-E.fadeOut = function(elem, duration) {
+E.fadeOut = function(elem, duration, onComplete) {
     duration = duration || 500;
     E.css(elem, 'transition', (duration/1000)+'s');
     E.deferStyle(elem, 'opacity', 0);
     setTimeout(function() {
+        if (onComplete) {
+            onComplete.call(elem, elem);
+        }
         elem.parentNode.removeChild(elem);
     }, duration);
 };
 
-E.fadeIn = function(elem, duration) {
+E.fadeIn = function(elem, duration, onComplete) {
     duration = duration || 500;
     E.css(elem, 'transition', (duration/1000)+'s');
     elem.style.opacity = 0;
     E.deferStyle(elem, 'opacity', 1);
+    setTimeout(function() {
+        if (onComplete) {
+            onComplete.call(elem, elem);
+        }
+    }, duration);
 };
 
 E.fadeInImage = function(src, rotation, jitter, onload) {
@@ -415,6 +447,7 @@ E.Listener.prototype = {
 };
 
 E.onDocument = new E.Listener(document);
+E.onWindow = new E.Listener(window);
 
 
 E.Spinner = {

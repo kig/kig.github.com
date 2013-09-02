@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>fhtr - freelance development</title>
+    <title>FHTR</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <script src="E..js"></script>
     <script src="logo.js"></script>
@@ -52,6 +52,7 @@
       }
       h4 img {
         width: 300px;
+        border: 1px solid #eee;
       }
       hr {
         background-color: #d9d9d9;
@@ -83,14 +84,13 @@
       <h1>fhtr</h1>
       <hr>
 
-      <h2>work loved by millions</h2>
+      <h2>enjoyable interfaces</h2>
       <h3 class="small">fully-animated UIs with exquisite detail</h3>
 
       <h3>services</h3>
       <hr>
       <h4>animated UI development</h4>
-      <h4>Canvas graphics</h4>
-      <h4>WebGL and CSS 3D graphics</h4>
+      <h4>WebGL, CSS 3D and Canvas graphics</h4>
       <h4>fantasy UI design</h4>
 
       <h3>contact</h3>
@@ -101,6 +101,12 @@
 
       <h3>work</h3>
       <hr>
+      <h4>
+          <a href="https://message.fhtr.net" target="_blank">
+              <img src="images/message.png" width="300" height="163"><br>
+              Message - Perfect Your Presentations
+          </a><br>
+      </h4>
       <h4>
           <a href="http://poemyou.com" target="_blank">
               <img src="images/poemyou.jpg" width="300" height="170"><br>
@@ -137,10 +143,10 @@
     </div>
     <script>
       E.Spinner.loadAllImages();
-      var t = 1000;
+      var t = 0;
       E.on(E.q("#title img"), 'click', function() {
           var pn = this.parentNode;
-          E.fadeOut(this, 500, function() {
+          E.fadeOut(this, 300, function() {
               var c = E('canvas');
               c.width = 320;
               c.height = 352;
@@ -166,15 +172,15 @@
         }, t);
         if (e.tagName) {
             if (/^HR$/.test(e.tagName)) {
-                t += 500;
-            } else if (/^H1$/.test(e.tagName)) {
-                t += 600;
-            } else if (/^H4$/.test(e.tagName)) {
                 t += 200;
-            } else if (/^DIV$/.test(e.tagName)) {
-                t += 500;
-            } else {
+            } else if (/^H1$/.test(e.tagName)) {
                 t += 300;
+            } else if (/^H4$/.test(e.tagName)) {
+                t += 100;
+            } else if (/^DIV$/.test(e.tagName)) {
+                t += 200;
+            } else {
+                t += 100;
             }
         }
       });

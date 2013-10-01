@@ -44,15 +44,17 @@
         margin-top: 18px;
         margin-bottom: 16px;
         letter-spacing: 0px;
-        font-size: 13px;
+        font-size: 14px;
+        font-weight: normal;
       }
       h2 a, h3 a, h4 a {
         text-decoration: none;
         color: #6C7885;
       }
       h4 img {
-        width: 300px;
         border: 1px solid #eee;
+        margin-top: 12px;
+        margin-bottom: 6px;
       }
       hr {
         background-color: #d9d9d9;
@@ -69,8 +71,11 @@
       img {
         opacity: 0;
       }
-      #content > * {
-        opacity: 0;
+      #content {
+        padding-bottom: 200px;
+      }
+      @media (max-width: 700px) {
+        h4 img{ width: 300px; height: auto; }
       }
 
     </style>
@@ -81,66 +86,49 @@
       <img src="images/crystal_10.jpg" width="307" height="352">
     </div>
     <div id="content">
-      <h1>fhtr</h1>
+      <h1>fhtr ltd</h1>
       <hr>
 
       <h2>enjoyable interfaces</h2>
       <h3 class="small">fully-animated UIs with exquisite detail</h3>
 
-      <h3>services</h3>
-      <hr>
-      <h4>animated UI development</h4>
-      <h4>WebGL, CSS 3D and Canvas graphics</h4>
-      <h4>fantasy UI design</h4>
-
       <h3>contact</h3>
       <hr>
       <div id="contact">
+        <h4>Ilmari Heikkinen</h4>
         <h4>email <a href="mailto:contact@fhtr.org">contact@fhtr.org</a></h4>
       </div>
 
-      <h3>work</h3>
+      <h3>portfolio</h3>
       <hr>
       <h4>
           <a href="https://message.fhtr.net" target="_blank">
-              <img src="images/message.png" width="300" height="163"><br>
-              Message - Perfect Your Presentations
+              <img src="images/message.png" width="600" height="326"><br>
+              Message - Presentation Web App
           </a><br>
       </h4>
       <h4>
           <a href="http://poemyou.com" target="_blank">
-              <img src="images/poemyou.jpg" width="300" height="170"><br>
+              <img src="images/poemyou.jpg" width="600" height="340"><br>
               PoemYou! - The Mystery Box
           </a><br>
       </h4>
       <h4>
-          <a href="http://fhtr.net/drawcam" target="_blank">
-              <img src="images/drawcam.png" width="300" height="225"><br>
-              DrawCam - Canvas-based webcam filter
-          </a><br>
-      </h4>
-      <h4>
-          <a href="https://ironman3.verizon.com" target="_blank">
-              <img src="images/im3.jpg" width="300" height="170"><br>
-              front-end dev on the Verizon Iron Man 3 site
-          </a><br>
-          as part of the <a href="http://satelliteoffice.tv/">Satellite Office</a> team
-      </h4>
-      <h4>
-          <a href="http://www.google.com/worldwonders" target="_blank">
-              <img src="images/webglglobe.png" width="300" height="170"><br>
-              Google World Wonders 3D globe widget
-          </a>
-      </h4>
-      <h4>
           <a href="https://developer.cdn.mozilla.net/media/uploads/demos/p/a/paulrouget/47e916de488e745f95aee0bc32d5fd31/runfield_1327576901_demo_package/index.html" target="_blank">
-              <img src="images/runfield.jpg" width="300" height="152"><br>
+              <img src="images/runfield.jpg" width="600" height="304"><br>
               Runfield demo
           </a> for <a href="http://www.mozilla.org/en-US/firefox/features/#highperformance">Firefox</a>
       </h4>
-      <h4><a href="projects.html">all the rest</a></h4>
+      <h4>And <a href="projects.html">many more</a> strange projects</h4>
+
+      <h3>services</h3>
+      <hr>
+      <h4>front-end development</h4>
+      <h4>WebGL, CSS 3D and Canvas gfx and image processing</h4>
+      <h4>fantasy UI artwork</h4>
 
     </div>
+
     <script>
       E.Spinner.loadAllImages();
       var t = 0;
@@ -153,36 +141,6 @@
               pn.appendChild(c);
               Logo(c);
           });
-      });
-      E.css(E.q("#content"), {
-          perspective: '800px',
-          perspectiveOrigin: '50% 0%'
-      });
-      E.toArray(E.qAll("#content > *")).forEach(function(e, i) {
-        E.css(e, {
-            position: 'relative',
-            transform: 'rotateY(90deg) rotateX(-32deg) translate3d(-230px, 20px, 50px)',
-            transition: '1s'
-        });
-        setTimeout(function() {
-            E.css(e, {
-                opacity: 1,
-                transform: 'rotateY(0deg) translate(0px, 0px)'
-            });
-        }, t);
-        if (e.tagName) {
-            if (/^HR$/.test(e.tagName)) {
-                t += 200;
-            } else if (/^H1$/.test(e.tagName)) {
-                t += 300;
-            } else if (/^H4$/.test(e.tagName)) {
-                t += 100;
-            } else if (/^DIV$/.test(e.tagName)) {
-                t += 200;
-            } else {
-                t += 100;
-            }
-        }
       });
     </script>
 <script type="text/javascript">

@@ -55,7 +55,7 @@ vec3 hash3( float n )
     return fract(sin(vec3(n,n+1.0,n+2.0))*vec3(43758.5453123,22578.1459123,19642.3490423));
 }
 
-// LUT based 3d value noise
+// from iq
 float noise( in vec3 x )
 {
     vec3 p = floor(x);
@@ -67,6 +67,7 @@ float noise( in vec3 x )
 	return mix( rg.x, rg.y, f.z );
 }
 
+// iq's cloud fBm with flow direction tweaks & exponential y-scale
 float map( in vec3 p )
 {
 	p.y = pow(p.y, 1.3);
@@ -77,10 +78,10 @@ float map( in vec3 p )
 	dir.y = 0.0;
 	vec3 q = p - dir+vec3(-0.0,3.0,-0.0)*(0.2*iGlobalTime);
 	float f;
-    f  = 0.5000*noise( q ); q = q*2.02;
-    f += 0.2500*noise( q ); q = q*2.03;
-    f += 0.1250*noise( q ); q = q*2.01;
-    f += 0.0625*noise( q );
+	f  = 0.5000*noise( q ); q = q*2.02;
+	f += 0.2500*noise( q ); q = q*2.03;
+	f += 0.1250*noise( q ); q = q*2.01;
+	f += 0.0625*noise( q );
 
 	d += 3.5 * f;
 

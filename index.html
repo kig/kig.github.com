@@ -1,184 +1,111 @@
+<!doctype html>
 <html>
-  <head>
-    <title>fhtr ltd - freelance front-end dev</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <script src="E..js"></script>
-    <script src="logo.js"></script>
-    <style type="text/css">
-      html {
-        font-family: Helvetica, Arial;
-      }
-      body {
-        background: #fff;
-        color: #000;
-        text-align: center;
-        margin: 0;
-        padding: 0;
-      }
-      h1,h2,h3,h4 {
-        font-weight: 300;
-        margin: 0px;
-        color: #000;
-      }
-      h1 {
-        font-size: 36px;
-        margin-bottom: 16px;
-        letter-spacing: 14px;
-        padding-left: 14px;
-        text-shadow: 0px -1px 1px rgba(0,0,0,0.2);
-      }
-      h2, h3 {
-        font-size: 18px;
-        margin-top: 24px;
-        padding-left: 3px;
-        letter-spacing: 3px;
-      }
-      h2 {
-        font-size: 20px;
-      }
-      h3 {
-        margin-top: 64px;
-        margin-bottom: 16px;
-      }
-      h4, h3.small {
-        margin-top: 18px;
-        margin-bottom: 16px;
-        letter-spacing: 0px;
-        font-size: 14px;
-        font-weight: normal;
-      }
-      h2 a, h3 a, h4 a {
-        text-decoration: none;
-        color: #6C7885;
-      }
-      h4 img, h4 iframe {
-        border: 1px solid #eee;
-        margin-top: 12px;
-        margin-bottom: 6px;
-      }
-      hr {
-        background-color: #d9d9d9;
-        border: 0px;
-        width: 198px;
-        height: 1px;
-      }
-      .footer {
-        position: absolute;
-        left: 0px;
-        bottom: 0px;
-        width: 100%;
-      }
-      img {
-        opacity: 0;
-      }
-      #content {
-        padding-bottom: 200px;
-      }
-      @media (max-width: 700px) {
-        h4 img{ width: 300px; height: auto; }
-        h4 iframe{ width: 300px; height: 169px; }
-      }
-
-    </style>
-
-  </head>
-  <body>
-    <div id="title">
-      <img src="images/crystal_10.jpg" width="307" height="352">
-    </div>
-    <div id="content">
-      <h1>fhtr ltd</h1>
-      <hr>
-
-      <h2>freelance front-end development</h2>
-      <h3 class="small">creative prototyping & animated UIs</h3>
-      <h3 class="small">Heya, I'm a freelance front-end dev with some<br>experience in building weird web stuff</h3>
-      <h3 class="small">from augmented reality to making web games<br>from smile recognition to building drawing apps</h3>
-
-      <h3>contact</h3>
-      <hr>
-      <div id="contact">
-        <h4>Ilmari Heikkinen</h4>
-        <h4>email <a href="mailto:contact@fhtr.net">contact@fhtr.net</a></h4>
-      </div>
-
-      <h3>portfolio</h3>
-      <hr>
-      <h4>
-          <iframe width="600" height="336" src="http://www.youtube.com/embed/2wPWGPNRD0w?showinfo=0" frameborder="0" allowfullscreen></iframe><br>
-          <a href="http://www.toasterltd.com/portfolios/google-comic-relief-hangout-comedy-club/" target="_blank">
-              Hangout Comedy Club with Toaster, Potato and Google Creative Lab
-          </a><br>
-          <p>Project highlights</p>
-          <p>Developed a method to figure out how much you're smiling in a Google+ Hangout.
-              <br>
-          Worked on creating, tweaking and polishing UI animations to make the site feel good.</p>
-      </h4>
-      <h4>
-          <a href="http://satelliteoffice.tv/portfolio/verizon-fios-iron-man-3/" target="_blank">
-              <img src="images/im3.jpg" width="600" height="339"><br>
-              Verizon FiOS Iron Man 3 with SatelliteOffice and MEplusYOU
-          </a><br>
-          <p>Project highlights</p>
-          <p>Customizable armor creator where you can make your own paintjob for your suit.
-              <br>
-          Complete weekly challenges to add new parts to your armor.</p>
-      </h4>
-      <h4>
-          <a href="https://developer.cdn.mozilla.net/media/uploads/demos/p/a/paulrouget/47e916de488e745f95aee0bc32d5fd31/runfield_1327576901_demo_package/index.html" target="_blank">
-              <img src="images/runfield.jpg" width="600" height="304"><br>
-              Runfield demo
-          </a> for <a href="http://www.mozilla.org/en-US/firefox/features/#highperformance">Firefox</a>
-          <p>Project highlights</p>
-          <p>High-speed action game to demonstrate that you can make those kinds of games in the browser.
-              <br>
-          Procedurally generated levels with multiple layers of parallax.</p>
-      </h4>
-      <h3>fhtr apps</h3>
-      <hr>
-      <h4>
-          <a href="https://message.fhtr.net" target="_blank">
-              <img src="images/message.png" width="600" height="326"><br>
-              FHTR Message - make preso slides fast & do full customization
-          </a><br>
-      </h4>
-      <h4>
-          <a href="http://poemyou.com" target="_blank">
-              <img src="images/poemyou.jpg" width="600" height="340"><br>
-              The mystery box
-          </a><br>
-      </h4>
-      <br><br>
-      <h4>And <a href="projects.html">many more</a> quirky projects</h4>
-
-    </div>
-
-    <script>
-      E.Spinner.loadAllImages();
-      var t = 0;
-      E.on(E.q("#title img"), 'click', function() {
-          var pn = this.parentNode;
-          E.fadeOut(this, 300, function() {
-              var c = E('canvas');
-              c.width = 320;
-              c.height = 352;
-              pn.appendChild(c);
-              Logo(c);
-          });
-      });
-    </script>
-<script type="text/javascript">
-
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-40828118-1']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
-</script>
-  </body>
+	<head>
+		<title>fhtr + building a brighter future</title>
+		<style>
+			html,body {
+				margin: 0;
+				padding: 0;
+				overflow: hidden;
+				font-family: 'Helvetica Neue', 'Open Sans';
+				text-align: center;
+				-webkit-perspective: 1200px;
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+			}
+			#about, #contact {
+				opacity: 0;
+				font-family: 'Open Sans', sans-serif;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				width: 500px;
+				height: 400px;
+				margin-left: -250px;
+				margin-top: -200px;
+				background: rgba(0,0,0,0.5);
+				box-shadow: 0px 8px 20px rgba(0,0,0,0.5);
+				-webkit-transform: translate3D(0px, -40px, 20px) rotateY(90deg);
+				transition: 0.5s;
+				color: white;
+				box-sizing: border-box;
+				padding: 50px;
+			}
+			#about a, #contact a {
+				color: white;
+			}
+			#about.visible, #contact.visible {
+				opacity: 1;
+				-webkit-transform: rotateY(0deg);
+			}
+			#footer {
+				font-family: 'Open Sans', 'Helvetica Neue', Helvetica, sans-serif;
+				color: white;
+				position: absolute;
+				right: 16px;
+				bottom: 8px;
+				font-size: 11px;
+				opacity: 0.15;
+			}
+			#footer a {
+				text-decoration: none;
+				color: white;
+			}
+			#title {
+				position: absolute;
+				left: 0px;
+				top: 40px;
+				font-size: 80px;
+				font-family: 'Helvetica Neue', 'Open Sans';
+				font-weight: 100;
+				width: 100%;
+				text-align: center;
+				color: black;
+			}
+			h1 {
+				font-size: 80px;
+				font-weight: 100;
+				margin: 0;
+			}
+			hr {
+				width: 400px;
+				background: black;
+				height: 1px;
+				border: 0px;
+				margin: 15px auto 20px auto;
+				opacity: 0.2;
+			}
+			h3 {
+				font-size: 15px;
+				font-weight: 100;
+				margin: 0;
+				text-transform: uppercase;
+				letter-spacing: 10px;
+				margin-left: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="title">
+			<h1>fhtr</h1>
+			<hr>
+			<h3>opus aeterna</h3>
+		</div>
+		<div id="contact">
+			<h3>FHTR Ltd</h3>
+			<hr>
+			<h4>Ilmari Heikkinen</h4>
+			<hr>
+			<p><a href="mailto:contact@fhtr.net">contact@fhtr.net</a><p>
+			<p>Skype: ilmarihe</p>
+			<p>Tel: +447427139588</p>
+			<p><a href="http://twitter.com/ilmarihei">@ilmarihei</a></p>
+		</div>
+		<div id="footer">
+			<a href="#contact" id="contact-link">Contact</a>
+		</div>
+		<script src="three.js"></script>
+		<script src="zardoz.js"></script>
+	</body>
 </html>

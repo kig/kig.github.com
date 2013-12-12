@@ -2,6 +2,7 @@
 
 	var legacy = navigator.userAgent.match(/windows/i);
 
+	/*
 	var contact = document.getElementById('contact');
 
 	document.getElementById('contact-link').onclick = function(ev){
@@ -12,6 +13,7 @@
 			contact.classList.add('visible');
 		}
 	};
+	 */
 
 	var loadFiles = function(files, callback) {
 		var results = [];
@@ -55,24 +57,23 @@
 	tex.flipY = false;
 	tex.needsUpdate = true;	
 
+	var plane;
+	var renderer = new THREE.WebGLRenderer();
+	var resize = function() {
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		plane.material.uniforms.iResolution.value.x = renderer.domElement.width;
+		plane.material.uniforms.iResolution.value.y = renderer.domElement.height;
+	};
+	document.body.appendChild(renderer.domElement);
+	renderer.setClearColor(0xffffff);
 
 	loadFiles(['rt.vert', legacy ? 'zardoz_1999.frag' : 'zardoz_2001.frag'], function(rtVert, rtFrag) {
-		var renderer = new THREE.WebGLRenderer();
-		var resize = function() {
-			renderer.setSize(window.innerWidth, window.innerHeight);
-			plane.material.uniforms.iResolution.value.x = renderer.domElement.width;
-			plane.material.uniforms.iResolution.value.y = renderer.domElement.height;
-		};
-		document.body.appendChild(renderer.domElement);
-		renderer.setClearColor(0x0000ff);
-
 		var scene = new THREE.Scene();
 		var camera = new THREE.OrthographicCamera(-1, 1, -1, 1, -1, 1);
 		scene.add(camera);
-		var plane = new THREE.Mesh(
+		plane = new THREE.Mesh(
 			new THREE.PlaneGeometry(2, 2, 1, 1),
 			new THREE.ShaderMaterial({
-				clean: true,
 				attributes: {},
 				uniforms: {
 					iChannel0: {type: "t", value: tex},
@@ -108,7 +109,7 @@
 			return v;
 		};
 
-		var t = 1269.5;
+		var t = 0;
 		var targetRot = 0;
 		var targetOpen = 0;
 
@@ -136,11 +137,11 @@
 		};
 
 		var tick = function() {
-			var r =	plane.material.uniforms.iRot;
+			var r = plane.material.uniforms.iRot;
 			r.value += (targetRot - r.value) * 0.1;
 			if (Math.abs(targetRot-r.value) < 0.01) {
 				r.value = targetRot;
-				var r =	plane.material.uniforms.iOpen;
+				var r = plane.material.uniforms.iOpen;
 				r.value += (targetOpen - r.value) * 0.15;
 				if (Math.abs(targetOpen - r.value) < 0.01) {
 					r.value = targetOpen;

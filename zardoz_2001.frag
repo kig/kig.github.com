@@ -18,7 +18,6 @@ uniform float iOpen;
 
 float aa_size = 2.0;
 
-
 struct ray
 {
 	vec3 p; // ray origin
@@ -99,7 +98,6 @@ float map( in vec3 p )
 	
 	return d*d;
 }
-
 
 float scene(vec3 p)
 {
@@ -241,7 +239,7 @@ vec3 trace(vec2 uv, vec2 uvD, inout float sceneDist)
 				r = setupRay(uv+(uvD*mod(xy(k, aa_size), aa_size)/aa_size), k);
 				maxDiffuseSum = max(diffuseSum, maxDiffuseSum);
 				diffuseSum = 0.0;
-			}			
+			}
 		} else if (dist > MAX_DISTANCE) {
 			vec3 bg = shadeBg(-r.d);
 			if (minDist > THRESHOLD*1.5) {
@@ -250,7 +248,7 @@ vec3 trace(vec2 uv, vec2 uvD, inout float sceneDist)
 			}
 			accum += r.light + r.transmit * bg;
 			k++;
-			r = setupRay(uv+(uvD*mod(xy(k, aa_size), aa_size)/aa_size), k);			
+			r = setupRay(uv+(uvD*mod(xy(k, aa_size), aa_size)/aa_size), k);
 			maxDiffuseSum = max(diffuseSum, maxDiffuseSum);
 			diffuseSum = 0.0;
 		}
@@ -284,5 +282,5 @@ void main(void)
 	}
 	r.light = r.transmit * light;
 	
-	gl_FragColor = vec4( 1.0 - exp(-1.5 * r.light), 1.0 );
+	gl_FragColor = mix( vec4(1.0), vec4( 1.0 - exp(-1.5 * r.light), 1.0 ), 0.5-0.5*cos(3.14159*min(1.0, iGlobalTime/1.0)) );
 }

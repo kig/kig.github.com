@@ -156,5 +156,5 @@ void main(void)
 	}
 	r.light = r.transmit * light;
 	
-	gl_FragColor = vec4( 1.0 - exp(-1.5 * r.light), 1.0 );
+	gl_FragColor = mix( vec4(1.0), vec4( 1.0 - exp(-1.5 * r.light), 1.0 ), min(1.0, iGlobalTime/3.0) );
 }

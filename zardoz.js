@@ -1,5 +1,7 @@
 (function(){
 
+	var legacy = navigator.userAgent.match(/windows/i);
+
 	var contact = document.getElementById('contact');
 
 	document.getElementById('contact-link').onclick = function(ev){
@@ -54,7 +56,7 @@
 	tex.needsUpdate = true;	
 
 
-	loadFiles(['rt.vert', 'zardoz_2001.frag'], function(rtVert, rtFrag) {
+	loadFiles(['rt.vert', legacy ? 'zardoz_1999.frag' : 'zardoz_2001.frag'], function(rtVert, rtFrag) {
 		var renderer = new THREE.WebGLRenderer();
 		var resize = function() {
 			renderer.setSize(window.innerWidth, window.innerHeight);

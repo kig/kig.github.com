@@ -9,16 +9,6 @@ uniform float iRot;
 uniform float iRot2;
 uniform float iOpen;
 
-#define THRESHOLD 0.01
-#define MAX_DISTANCE 8.0
-
-#define RAY_STEPS 120
-#define MAX_SAMPLES 4.0
- // max(4.0, 16.0*maxDiffuseSum)
-
-float aa_size = 2.0;
-
-
 struct ray
 {
 	vec3 p; // ray origin
@@ -99,38 +89,6 @@ float map( in vec3 p )
 	return d*d;
 }
 
-
-float scene(vec3 p)
-{
-	mat3 m = rotationXY(vec2(0.0, iRot));
-	float cube = length(max(abs((m*p) - vec3(0.0, 2.0, 0.0)) - vec3(0.95), 0.0)) - 0.05;
-	cube = min(cube, length(max(abs(p - vec3(0.0, 0.6-iOpen*0.5, 0.0)) - vec3(0.95, 0.25, 0.95), 0.0)) - 0.05);
-	cube = min(cube, length(max(abs(p - vec3(0.0, 3.4+iOpen*0.5, 0.0)) - vec3(0.95, 0.25, 0.95), 0.0)) - 0.05);
-	return cube;
-}
-
-mat material(vec3 p)
-{
-	float cube = length(max(abs(p - vec3(0.0, 2.0, 0.0)) - vec3(0.95), 0.0)) - 0.05;
-	mat m;
-	m.emit = vec3(0.0);
-	m.transmit = vec3(1.0);
-	m.diffuse = 0.0;
-	m.transmit = vec3(0.5); // 0.95, 0.7, 0.5);
-	m.transmit += pow(iOpen, 2.0) * vec3(0.4, 0.5, 0.7);
-	m.diffuse = 0.1; //0.45-0.45*sin(iGlobalTime*5.2)+0.1;
-	return m;
-}
-
-vec3 normal(ray r, float d)
-{
-	float e = 0.001;
-	float dx = scene(vec3(e, 0.0, 0.0) + r.p) - d;
-	float dy = scene(vec3(0.0, e, 0.0) + r.p) - d;
-	float dz = scene(vec3(0.0, 0.0, e) + r.p) - d;
-	return normalize(vec3(dx, dy, dz));
-}
-
 vec3 lightPos_ = vec3(0.5, -1.5, 8.0);
 /*
 vec3 lightPos_ = vec3(
@@ -164,32 +122,6 @@ vec3 shadeBg(vec3 nml)
 	return bgCol;
 }
 
-float shade(inout ray r, vec3 nml, float d)
-{
-	mat m = material(r.p);
-	r.light += m.emit * r.transmit;
-	r.transmit *= m.transmit;
-	return m.diffuse;
-}
-
-vec2 xy(float k, float n)
-{
-	return vec2(floor(k/n), k-(floor(k/n)*n));
-}
-
-void offset(inout vec3 nml, float k, float count, float diffuse) {
-	vec3  uu  = normalize( cross( nml, vec3(0.01,1.0,1.0) ) );
-	vec3  vv  = normalize( cross( uu, nml ) );
-	vec2  aa = hash2( count );
-	float ra = sqrt(aa.y);
-	float rx = ra*cos(6.2831*aa.x); 
-	float ry = ra*sin(6.2831*aa.x);
-	float rz = sqrt( sqrt(k)*(1.0-aa.y) );
-	vec3  rr = vec3( rx*uu + ry*vv + rz*nml );	
-	nml = normalize(mix(nml, rr, diffuse));
-}
-
-
 ray setupRay(vec2 uv, float k) {
 	mat3 rot = rotationXY( vec2( -0.603, 3.14159*0.25 )); //iGlobalTime*0.0602 ) );
 	ray r;
@@ -199,64 +131,6 @@ ray setupRay(vec2 uv, float k) {
 	r.d = rot * normalize(vec3(uv, 1.0));
 
 	return r;
-}
-
-vec3 trace(vec2 uv, vec2 uvD, inout float sceneDist)
-{	
-	float minDist = 9999999.0;
-	float count = 0.0;
-	float diffuseSum = 0.0, maxDiffuseSum = 0.0;
-	
-	vec3 accum = vec3(0.0);
-	sceneDist = 9999999.0;
-
-	ray r = setupRay(uv, 1.0);
-	vec3 op = r.p;
-	float k = 1.0;
-	
-	for (int i=0; i<RAY_STEPS; i++) {
-		if (k > MAX_SAMPLES) break;
-		float dist = scene(r.p);
-		minDist = min(minDist, dist);
-		r.p += dist * r.d;
-		if (dist < THRESHOLD) {
-			if (sceneDist == 9999999.0) {
-				sceneDist = length(r.p - op);
-			}
-			r.p -= dist * r.d;
-			vec3 nml = normal(r, dist);
-			float diffuse = shade(r, nml, dist);
-			diffuseSum += diffuse;
-			offset(r.d, k, k+10.0*dot(nml, r.d), diffuse*0.5);
-			r.d = reflect(r.d, nml);
-			r.p += 4.0*THRESHOLD * r.d;
-			count++;
-			
-			if (dot(r.transmit, sun) < 0.2) {
-				// if even the brightest light in the scene can't
-				// make the ray brighter, let's bail.
-				accum += r.light;
-				k++;
-				r = setupRay(uv+(uvD*mod(xy(k, aa_size), aa_size)/aa_size), k);
-				maxDiffuseSum = max(diffuseSum, maxDiffuseSum);
-				diffuseSum = 0.0;
-			}			
-		} else if (dist > MAX_DISTANCE) {
-			vec3 bg = shadeBg(-r.d);
-			if (minDist > THRESHOLD*1.5) {
-				r.light = bg;
-				break;
-			}
-			accum += r.light + r.transmit * bg;
-			k++;
-			r = setupRay(uv+(uvD*mod(xy(k, aa_size), aa_size)/aa_size), k);			
-			maxDiffuseSum = max(diffuseSum, maxDiffuseSum);
-			diffuseSum = 0.0;
-		}
-	}
-	
-	accum += r.light;
-	return accum / k;
 }
 
 void main(void)
@@ -272,14 +146,12 @@ void main(void)
 	
 	float dist;
 	
-	vec3 light = trace(uv, uvD, dist);
-	if (dist > 10000.0) {
-		r.p += 4.6*r.d;
-		for (int i=0; i<10; i++) {
-			float c = map( r.p );
-			r.p += 0.7*r.d;
-			r.transmit *= 1.0+c*0.09;
-		}
+	vec3 light = shadeBg(-r.d);
+	r.p += 4.6*r.d;
+	for (int i=0; i<10; i++) {
+	  float c = map( r.p );
+	  r.p += 0.7*r.d;
+	  r.transmit *= 1.0+c*0.09;
 	}
 	r.light = r.transmit * light;
 	

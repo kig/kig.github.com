@@ -4,7 +4,6 @@
 
 	document.getElementById('contact-link').onclick = function(ev){
 		ev.preventDefault();
-		about.classList.remove('visible');
 		if (contact.classList.contains('visible')) {
 			contact.classList.remove('visible');
 		} else {

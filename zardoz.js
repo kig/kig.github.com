@@ -1,6 +1,11 @@
 (function(){
 
-	var legacy = navigator.userAgent.match(/windows/i);
+	var legacy = /windows/i.test(navigator.userAgent);
+	var mobile = /mobile/i.test(navigator.userAgent);
+	if (mobile) {
+		// This is a bit heavy on mobes.
+		return;
+	}
 
 	/*
 	var contact = document.getElementById('contact');
@@ -48,6 +53,35 @@
 		}
 	}
 	canvas.getContext('2d').putImageData(id, 0, 0);
+/*
+	var createTexture = function(gl, canvas) {
+		gl.activeTexture( gl.TEXTURE0 );
+		var tex = gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, tex);
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+		gl.generateMipmap(gl.TEXTURE_2D);
+	};
+	var createBuffer = function(gl) {
+		var buf = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+		var arr = new Float32Array([
+			-1,-1, 0,
+			 1,-1, 0,
+			 1, 1, 0,
+			-1,-1, 0,
+			 1, 1, 0,
+			-1, 1, 0
+		]);
+		gl.bufferData(gl.ARRAY_BUFFER, arr);
+		return buf;
+	};
+*/
+
 
 	var tex = new THREE.Texture(canvas);
 	tex.wrapT = tex.wrapS = THREE.RepeatWrapping;
@@ -89,6 +123,9 @@
 			})
 		);
 		scene.add(plane);
+		if (legacy) {
+			// toss in a thing of some sort.
+		}
 
 		var sin = Math.sin;
 		var cos = Math.cos;

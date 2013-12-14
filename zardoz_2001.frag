@@ -9,10 +9,10 @@ uniform float iRot;
 uniform float iRot2;
 uniform float iOpen;
 
-#define THRESHOLD 0.01
+#define THRESHOLD 0.02
 #define MAX_DISTANCE 8.0
 
-#define RAY_STEPS 120
+#define RAY_STEPS 90
 #define MAX_SAMPLES 4.0
  // max(4.0, 16.0*maxDiffuseSum)
 
@@ -87,22 +87,36 @@ float map( in vec3 p )
 	dir.y = 0.0;
 	vec3 q = p - dir+vec3(-0.0,3.0,-0.0)*(0.2*iGlobalTime);
 	float f;
-    f  = 0.5000*noise( q ); q = q*2.02;
-    f += 0.2500*noise( q ); q = q*2.03;
-    f += 0.1250*noise( q ); q = q*2.01;
-    f += 0.0625*noise( q );
+    f  = 0.6*noise( q ); q = q*3.01;
+    f += 0.3*noise( q ); q = q*3.02;
+    f += 0.1*noise( q );
 
 	d += 3.5 * f;
 
 	d = clamp( d, 0.0, 1.0 );
 	
-	return d*d;
+	return d;
 }
+
+mat3 transpose(in mat3 inMatrix)
+{
+	vec3 i0 = inMatrix[0];
+	vec3 i1 = inMatrix[1];
+	vec3 i2 = inMatrix[2];
+
+	mat3 outMatrix = mat3(
+                 vec3(i0.x, i1.x, i2.x),
+                 vec3(i0.y, i1.y, i2.y),
+                 vec3(i0.z, i1.z, i2.z)
+                 );
+	return outMatrix;
+}
+
+mat3 mp = rotationXY(vec2(0.0, iRot));
 
 float scene(vec3 p)
 {
-	mat3 m = rotationXY(vec2(0.0, iRot));
-	float cube = length(max(abs((m*p) - vec3(0.0, 2.0, 0.0)) - vec3(0.95), 0.0)) - 0.05;
+	float cube = length(max(abs(mp*p - vec3(0.0, 2.0, 0.0)) - vec3(0.95), 0.0)) - 0.05;
 	cube = min(cube, length(max(abs(p - vec3(0.0, 0.6-iOpen*0.5, 0.0)) - vec3(0.95, 0.25, 0.95), 0.0)) - 0.05);
 	cube = min(cube, length(max(abs(p - vec3(0.0, 3.4+iOpen*0.5, 0.0)) - vec3(0.95, 0.25, 0.95), 0.0)) - 0.05);
 	return cube;
@@ -210,7 +224,8 @@ vec3 trace(vec2 uv, vec2 uvD, inout float sceneDist)
 	sceneDist = 9999999.0;
 
 	ray r = setupRay(uv, 1.0);
-	vec3 op = r.p;
+	vec3 op = r.p + 5.0*r.d;
+	r.p = op;
 	float k = 1.0;
 	
 	for (int i=0; i<RAY_STEPS; i++) {
@@ -269,15 +284,19 @@ void main(void)
 	ray r;
 	r = setupRay(uv, 0.0);
 	
-	float dist;
-	
-	vec3 light = trace(uv, uvD, dist);
+	float dist = 999999.0;
+	vec3 light = vec3(0.0);
+	if (abs(uv.x) < 0.4 && abs(uv.y) < 0.6) {
+		light = trace(uv, uvD, dist);
+	} else {
+		light = shadeBg(-r.d);
+	}
 	if (dist > 10000.0) {
-		r.p += 4.6*r.d;
-		for (int i=0; i<10; i++) {
+		r.p += 5.0*r.d;
+		for (int i=0; i<5; i++) {
 			float c = map( r.p );
-			r.p += 0.7*r.d;
-			r.transmit *= 1.0+c*0.09;
+			r.p += 1.8*r.d;
+			r.transmit *= 1.0+c*0.15;
 		}
 	}
 	r.light = r.transmit * light;

@@ -9,10 +9,10 @@ uniform float iRot;
 uniform float iRot2;
 uniform float iOpen;
 
-#define THRESHOLD 0.02
+#define THRESHOLD 0.01
 #define MAX_DISTANCE 8.0
 
-#define RAY_STEPS 90
+#define RAY_STEPS 120
 #define MAX_SAMPLES 4.0
  // max(4.0, 16.0*maxDiffuseSum)
 
@@ -264,6 +264,7 @@ vec3 trace(vec2 uv, vec2 uvD, inout float sceneDist)
 			accum += r.light + r.transmit * bg;
 			k++;
 			r = setupRay(uv+(uvD*mod(xy(k, aa_size), aa_size)/aa_size), k);
+			r.p += (min(MAX_DISTANCE, sceneDist)*0.95)*r.d;
 			maxDiffuseSum = max(diffuseSum, maxDiffuseSum);
 			diffuseSum = 0.0;
 		}

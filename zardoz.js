@@ -173,23 +173,33 @@
 			resize();
 		};
 
+		var blurred = false;
+		window.onblur = function() {
+			blurred = true;
+		};
+		window.onfocus = function() {
+			blurred = false;
+		};
+
 		var tick = function() {
-			var r = plane.material.uniforms.iRot;
-			r.value += (targetRot - r.value) * 0.1;
-			if (Math.abs(targetRot-r.value) < 0.01) {
-				r.value = targetRot;
-				var r = plane.material.uniforms.iOpen;
-				r.value += (targetOpen - r.value) * 0.15;
-				if (Math.abs(targetOpen - r.value) < 0.01) {
-					r.value = targetOpen;
-					if (r.value === 1) {
-						plane.material.uniforms.iRot2.value += 0.01;
+			if (!blurred) {
+				var r = plane.material.uniforms.iRot;
+				r.value += (targetRot - r.value) * 0.1;
+				if (Math.abs(targetRot-r.value) < 0.01) {
+					r.value = targetRot;
+					var r = plane.material.uniforms.iOpen;
+					r.value += (targetOpen - r.value) * 0.15;
+					if (Math.abs(targetOpen - r.value) < 0.01) {
+						r.value = targetOpen;
+						if (r.value === 1) {
+							plane.material.uniforms.iRot2.value += 0.01;
+						}
 					}
 				}
+				plane.material.uniforms.iGlobalTime.value = t;
+				renderer.render(scene, camera);
+				t += 0.016;
 			}
-			plane.material.uniforms.iGlobalTime.value = t;
-			renderer.render(scene, camera);
-			t += 0.016;
 			requestAnimationFrame(tick, renderer.domElement);
 		};
 		resize();

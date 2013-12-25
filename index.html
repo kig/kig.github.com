@@ -85,6 +85,32 @@
 				letter-spacing: 10px;
 				margin-left: 10px;
 			}
+			#shaders {
+				list-style: none;
+				position: absolute;
+				bottom: 10px;
+				right: 10px;
+				margin: 0;
+				padding: 0;
+			}
+			#shaders li {
+				display: inline-block;
+				margin: 2px;
+				padding-top: 2px;
+				border: 1px solid black;
+				color: black;
+				width: 20px;
+				height: 20px;
+				font-size: 11px;
+				box-sizing: border-box;
+				font-weight: bold;
+				text-align: center;
+				cursor: pointer;
+				transition: 0.5s;
+			}
+			#shaders li:hover {
+				background: rgba(255,255,255,0.8);
+			}
 		</style>
 	</head>
 	<body>
@@ -103,6 +129,8 @@
 			<p>Tel: +447427139588</p>
 			<p><a href="http://twitter.com/ilmarihei">@ilmarihei</a></p>
 		</div>
+		<ul id="shaders">
+		</ul>
 		<div id="footer">
 			<!--<a href="#contact" id="contact-link">Contact</a> -->
 		</div>

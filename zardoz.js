@@ -101,13 +101,28 @@
 	document.body.appendChild(renderer.domElement);
 	renderer.setClearColor(0xffffff);
 
-	loadFiles(['rt.vert', 'mblur.frag' /* legacy ? 'zardoz_1999.frag' : 'zardoz_2001.frag' */], function(rtVert, rtFrag) {
-		var scene = new THREE.Scene();
-		var camera = new THREE.OrthographicCamera(-1, 1, -1, 1, -1, 1);
-		scene.add(camera);
-		plane = new THREE.Mesh(
-			new THREE.PlaneGeometry(2, 2, 1, 1),
-			new THREE.ShaderMaterial({
+	var shaderURLs = [
+		'mblur.frag',
+		(legacy ? 'zardoz_1999.frag' : 'zardoz_2001.frag')
+	];
+
+	loadFiles(['rt.vert'].concat(shaderURLs), function(rtVert) {
+		var sel = document.body.querySelector('#shaders');
+		var shaders = [];
+		var currentShader = 0;
+		var setShader = function(idx) {
+			currentShader = idx;
+			plane.material = shaders[currentShader];
+		};
+		for (var i=1; i<arguments.length; i++) {
+			var el = document.createElement('li');
+			el.innerHTML = i;
+			el.onclick = function(ev) {
+				setShader(parseInt(this.innerHTML)-1);
+				ev.preventDefault();
+			};
+			sel.appendChild(el);
+			shaders.push(new THREE.ShaderMaterial({
 				attributes: {},
 				uniforms: {
 					iChannel0: {type: "t", value: tex},
@@ -119,8 +134,14 @@
 					iMouse: { type: "v4", value: new THREE.Vector4(-1, -1, -1, -1) }
 				},
 				vertexShader: rtVert,
-				fragmentShader: rtFrag
-			})
+				fragmentShader: arguments[i]
+			}));
+		}
+		var scene = new THREE.Scene();
+		var camera = new THREE.OrthographicCamera(-1, 1, -1, 1, -1, 1);
+		scene.add(camera);
+		plane = new THREE.Mesh(
+			new THREE.PlaneGeometry(2, 2, 1, 1), shaders[currentShader]
 		);
 		scene.add(plane);
 		if (legacy) {

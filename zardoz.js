@@ -101,7 +101,7 @@
 	document.body.appendChild(renderer.domElement);
 	renderer.setClearColor(0xffffff);
 
-	loadFiles(['rt.vert', legacy ? 'zardoz_1999.frag' : 'zardoz_2001.frag'], function(rtVert, rtFrag) {
+	loadFiles(['rt.vert', 'mblur.frag' /* legacy ? 'zardoz_1999.frag' : 'zardoz_2001.frag' */], function(rtVert, rtFrag) {
 		var scene = new THREE.Scene();
 		var camera = new THREE.OrthographicCamera(-1, 1, -1, 1, -1, 1);
 		scene.add(camera);

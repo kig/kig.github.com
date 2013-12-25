@@ -21,7 +21,7 @@ uniform float iOpen;
 #define L_COUNT 1.0
 #define M_COUNT 1.0
 #define N_COUNT 3.0
-#define I_COUNT 3.0
+#define I_COUNT 1.0
 #define J_COUNT 3.0
 
 struct tSphere {

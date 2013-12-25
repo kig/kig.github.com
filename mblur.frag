@@ -14,7 +14,7 @@ uniform float iOpen;
 #define SECOND_BOUNCE
 //#define OCULUS
 #define SAILS
-#define MBLUR_SAMPLES 1.0
+#define MBLUR_SAMPLES 2.0
 
 #define FOG_D 80.0
 

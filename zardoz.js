@@ -19,14 +19,14 @@
 			if (self.sound.paused) {
 				self.play.innerHTML = '&#9654;';				
 			} else {
-				self.play.innerHTML = '❙❙';
+				self.play.innerHTML = '&#10073;&#10073;';
 			}
 		};
 		this.sound.onpause = function() {
 			self.play.innerHTML = '&#9654;';
 		};
 		this.sound.onplay = function() {
-			self.play.innerHTML = '❙❙';
+			self.play.innerHTML = '&#10073;&#10073;';
 		};
 		self.authorEl.textContent = self.artist;
 		self.authorEl.href = self.artistURL;

@@ -1,3 +1,55 @@
+(function() {
+	var SCPlayer = function(sound, el, params) {
+		this.sound = sound;
+		this.el = el;
+		for (var i in params) this[i] = params[i];
+		this.initializeDOM();
+	};
+
+	SCPlayer.prototype.initializeDOM = function() {
+		var self = this;
+		this.el.style.opacity = 0.5;
+		this.play = this.el.querySelector('.music-play');
+		this.linkEl = this.el.querySelector('.music-link');
+		this.authorEl = this.el.querySelector('.music-author');
+		this.titleEl = this.el.querySelector('.music-title');
+
+		this.play.onclick = function() {
+			self.sound.togglePause();
+			if (self.sound.paused) {
+				self.play.innerHTML = '&#9654;';				
+			} else {
+				self.play.innerHTML = '❙❙';
+			}
+		};
+		this.sound.onpause = function() {
+			self.play.innerHTML = '&#9654;';
+		};
+		this.sound.onplay = function() {
+			self.play.innerHTML = '❙❙';
+		};
+		self.authorEl.textContent = self.artist;
+		self.authorEl.href = self.artistURL;
+		self.titleEl.textContent = self.title;
+		self.titleEl.href = self.url;
+		self.linkEl.href = self.url;
+	};
+
+	SC.initialize({
+	    client_id: "7edc86ef9d085d9b071f1c1b7199a205"
+	});
+	SC.get("/tracks/40512091", function(track){
+		SC.stream("/tracks/40512091", function(sound){
+			window.scplayer = new SCPlayer(sound, document.getElementById('music'), {
+				title: track.title,
+				url: track.permalink_url,
+				artist: track.user.username,
+				artistURL: track.user.permalink_url
+			});
+		});
+	});
+})();
+
 (function(){
 
 	var legacy = /windows/i.test(navigator.userAgent);

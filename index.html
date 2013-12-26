@@ -113,9 +113,51 @@
 				color: white;
 			}
 			#music {
+				opacity: 0;
+				transition: 1s;
 				position: absolute;
 				left: 10px;
 				bottom: 10px;
+				color: white;
+				height: 46px;
+				width: 300px;
+				text-overflow: ellipsis;
+			}
+			#music:hover {
+				opacity: 1 !important;
+			}
+			#music a {
+				text-decoration:none;
+				color: white;
+			}
+			.music-play {
+				font-size: 39px;
+				position: absolute;
+				left: 74px;
+				top: 0px;
+				white-space: nowrap;
+				cursor: pointer;
+				letter-spacing: 3px;
+				width: 40px;
+			}
+			.music-author {
+				font-size: 12px;
+				position: absolute;
+				left: 124px;
+				top: 7px;
+				white-space: nowrap;
+			}
+			.music-title {
+				font-size: 12px;
+				position: absolute;
+				left: 124px;
+				top: 25px;
+				white-space: nowrap;
+			}
+			.music-link {
+				position: absolute;
+				left: 0px;
+				top: 0px;
 			}
 		</style>
 	</head>
@@ -137,11 +179,17 @@
 		</div>
 		<ul id="shaders">
 		</ul>
-		<div id="music"></div>
+		<div id="music">
+			<div class="music-play">&#9654;</div>
+			<a class="music-author"></a>
+			<a class="music-title"></a>
+			<a class="music-link"><img src="http://developers.soundcloud.com/assets/logo_big_white.png"></a>
+		</div>
 		<div id="footer">
 			<!--<a href="#contact" id="contact-link">Contact</a> -->
 		</div>
-		<script src="three.min.js"></script>
+		<script src="//connect.soundcloud.com/sdk.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r61/three.min.js"></script>
 		<script src="zardoz.js"></script>
 <script type="text/javascript">
   var _gaq = _gaq || [];

@@ -1,9 +1,30 @@
 (function() {
-	var SCPlayer = function(sound, el, params) {
-		this.sound = sound;
+	var SCPlayer = function(trackURL, el, params) {
+		var self = this;
+		this.trackURL = trackURL;
 		this.el = el;
+		SC.get(trackURL, function(track){
+			self.title = track.title;
+			self.url = track.permalink_url;
+			self.artist = track.user.username;
+			self.artistURL = track.user.permalink_url;
+			self.track = track;
+			self.initializeDOM();
+		});
 		for (var i in params) this[i] = params[i];
 		this.initializeDOM();
+	};
+
+	SCPlayer.prototype.onpause = function() {
+		this.play.innerHTML = '&#9654;';
+	};
+
+	SCPlayer.prototype.onstop = function() {
+		this.play.innerHTML = '&#9654;';
+	};
+
+	SCPlayer.prototype.onplay = function() {
+		this.play.innerHTML = '&#10073;&#10073;';
 	};
 
 	SCPlayer.prototype.initializeDOM = function() {
@@ -14,19 +35,48 @@
 		this.authorEl = this.el.querySelector('.music-author');
 		this.titleEl = this.el.querySelector('.music-title');
 
+		this.streaming = false;
 		this.play.onclick = function() {
-			self.sound.togglePause();
-			if (self.sound.paused) {
-				self.play.innerHTML = '&#9654;';				
+			if (!self.streaming) {
+				self.play.innerHTML = '';
+				var c = document.createElement('canvas');
+				c.width = 40;
+				c.height = 46;
+				var ctx = c.getContext('2d');
+				ctx.fillStyle = 'white';
+				var tick = function() {
+					ctx.clearRect(0,0,c.width,c.height);
+					var r = c.width/2 - 6;
+					var t = Date.now();
+					ctx.save();
+					ctx.translate(c.width/2, c.height/2);
+					ctx.beginPath();
+					ctx.arc(Math.sin(t/1000)*r, Math.cos(t/1000)*r, 3, 0, 2*Math.PI, true);
+					ctx.fill();
+					ctx.beginPath();
+					ctx.arc(Math.sin(Math.PI*(2/3)+t/1000)*r, Math.cos(Math.PI*(2/3)+t/1000)*r, 3, 0, 2*Math.PI, true);
+					ctx.fill();
+					ctx.beginPath();
+					ctx.arc(Math.sin(Math.PI*(4/3)+t/1000)*r, Math.cos(Math.PI*(4/3)+t/1000)*r, 3, 0, 2*Math.PI, true);
+					ctx.fill();
+					ctx.restore();
+					if (c.parentNode) {
+						requestAnimationFrame(tick, c);
+					}
+				};
+				self.play.appendChild(c);
+				requestAnimationFrame(tick, c);
+				SC.stream(self.trackURL, {
+					autoPlay: true,
+					onpause: self.onpause.bind(self),
+					onplay: self.onplay.bind(self),
+					onstop: self.onstop.bind(self)
+				}, function(sound){
+					self.sound = sound;
+				});
 			} else {
-				self.play.innerHTML = '&#10073;&#10073;';
+				self.sound.togglePause();
 			}
-		};
-		this.sound.onpause = function() {
-			self.play.innerHTML = '&#9654;';
-		};
-		this.sound.onplay = function() {
-			self.play.innerHTML = '&#10073;&#10073;';
 		};
 		self.authorEl.textContent = self.artist;
 		self.authorEl.href = self.artistURL;
@@ -38,16 +88,7 @@
 	SC.initialize({
 	    client_id: "7edc86ef9d085d9b071f1c1b7199a205"
 	});
-	SC.get("/tracks/40512091", function(track){
-		SC.stream("/tracks/40512091", function(sound){
-			window.scplayer = new SCPlayer(sound, document.getElementById('music'), {
-				title: track.title,
-				url: track.permalink_url,
-				artist: track.user.username,
-				artistURL: track.user.permalink_url
-			});
-		});
-	});
+	window.scplayer = new SCPlayer("/tracks/40512091", document.getElementById('music'));
 })();
 
 (function(){

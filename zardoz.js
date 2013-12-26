@@ -8,7 +8,7 @@
 
 	SCPlayer.prototype.initializeDOM = function() {
 		var self = this;
-		this.el.style.opacity = 0.5;
+		this.el.style.opacity = 0.3;
 		this.play = this.el.querySelector('.music-play');
 		this.linkEl = this.el.querySelector('.music-link');
 		this.authorEl = this.el.querySelector('.music-author');

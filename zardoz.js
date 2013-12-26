@@ -38,6 +38,7 @@
 		this.streaming = false;
 		this.play.onclick = function() {
 			if (!self.streaming) {
+				self.streaming = true;
 				self.play.innerHTML = '';
 				var c = document.createElement('canvas');
 				c.width = 40;

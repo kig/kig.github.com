@@ -134,7 +134,7 @@
 		for (var i=0; i<files.length; i++) {
 			(function(i){
 				var xhr = new XMLHttpRequest();
-				xhr.open('GET', files[i]);
+				xhr.open('GET', files[i], true);
 				xhr.onload = function(ev) {
 					results[i] = this.responseText;
 					count++;

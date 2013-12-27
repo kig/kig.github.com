@@ -71,6 +71,7 @@
 					autoPlay: true,
 					onpause: self.onpause.bind(self),
 					onplay: self.onplay.bind(self),
+					onfinish: self.onstop.bind(self),
 					onstop: self.onstop.bind(self)
 				}, function(sound){
 					self.sound = sound;

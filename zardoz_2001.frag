@@ -64,7 +64,7 @@ vec3 hash3( float n )
     return fract(sin(vec3(n,n+1.0,n+2.0))*vec3(43758.5453123,22578.1459123,19642.3490423));
 }
 
-// from iq
+// iq's LUT-based 3D noise
 float noise( in vec3 x )
 {
     vec3 p = floor(x);
@@ -76,7 +76,7 @@ float noise( in vec3 x )
 	return mix( rg.x, rg.y, f.z );
 }
 
-// iq's cloud fBm with flow direction tweaks & exponential y-scale
+// cloud fBm with three noise samples, flow direction & exponential y-scale
 float map( in vec3 p )
 {
 	p.y = pow(p.y, 1.3);
@@ -302,5 +302,5 @@ void main(void)
 	}
 	r.light = r.transmit * light;
 	
-	gl_FragColor = mix( vec4(1.0), vec4( 1.0 - exp(-1.5 * r.light), 1.0 ), 0.5-0.5*cos(3.14159*min(1.0, iGlobalTime/1.0)) );
+	gl_FragColor = mix( vec4(0.0), vec4( 1.0 - exp(-1.5 * r.light), 1.0 ), 0.5-0.5*cos(3.14159*min(1.0, iGlobalTime/1.0)) );
 }

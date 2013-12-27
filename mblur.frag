@@ -14,15 +14,15 @@ uniform float iOpen;
 #define SECOND_BOUNCE
 //#define OCULUS
 #define SAILS
-#define MBLUR_SAMPLES 2.0
+#define MBLUR_SAMPLES 2
 
 #define FOG_D 80.0
 
-#define L_COUNT 1.0
-#define M_COUNT 1.0
-#define N_COUNT 3.0
-#define I_COUNT 1.0
-#define J_COUNT 3.0
+#define L_COUNT 1
+#define M_COUNT 1
+#define N_COUNT 3
+#define I_COUNT 1
+#define J_COUNT 3
 
 struct tSphere {
 	vec3 center;
@@ -86,23 +86,17 @@ bool rayBV(vec3 ray, vec3 dir, vec3 center, float radius, float closestHit)
 	if (d < 0.0) {
 		return true;
 	};
-	float t = -b - sqrt(d);
-	return (t < -(2.0*radius) || t > closestHit+(2.0*radius));
+	float t = -b - sqrt(abs(d));
+	return (d < 0.0 || t < -(2.0*radius) || t > closestHit+(2.0*radius));
 }
 
 float rayIntersectsSphere(vec3 ray, vec3 dir, vec3 center, float radius, float closestHit)
 {
 	float b;
 	float d = raySphereDet(ray, dir, center, radius, closestHit, b); // 7
-	if (d < 0.0) { // 1
-		return -1.0;
-	}
-	float t = -b - sqrt(d); // 3
-	if (t < 0.0 || t > closestHit) { // 2
-		return -1.0;
-	} else {
-		return t;
-	}
+	float t = -b - sqrt(abs(d));
+	float st = step(0.0, min(t,d));
+	return mix(closestHit, t, st);
 }
 
 // rotate position around axis
@@ -127,7 +121,8 @@ float intersect(float time, inout vec3 ray, vec3 dir, inout vec3 nml, inout tSph
 	float tl = l+time;
 	vec3 mContrib = vec3(0.0, 0.0, 0.0);
 	
-	for (float n=0.0; n<N_COUNT; n++) {
+	for (int ni=0; ni<N_COUNT; ni++) {
+		float n = float(ni);
 		float r = min(n, 1.0)*10.0;
 		float tn = time + (n*6.28/9.0);
 		vec3 nContrib = mContrib + (vec3(sin(tn), -cos(tn), -cos(tn))*r);
@@ -137,7 +132,8 @@ float intersect(float time, inout vec3 ray, vec3 dir, inout vec3 nml, inout tSph
 		
 		doAA = max(doAA, -0.5);
 
-		for (float i=0.0; i<I_COUNT; i++) {
+		for (int ii=0; ii<I_COUNT; ii++) {
+			float i = float(ii);
 			float ikOff = sin(time+i)*5.0;
 			float sikOff = cos(time+i)*5.0;
 			vec3 iContrib = nContrib + vec3(ikOff, sikOff, ikOff);
@@ -146,10 +142,11 @@ float intersect(float time, inout vec3 ray, vec3 dir, inout vec3 nml, inout tSph
 			}
 	
 			doAA = max(doAA, -0.3);
-			for (float j=0.0; j<J_COUNT; j++) {
+			for (int ji=0; ji<J_COUNT; ji++) {
+				float j = float(ji);
 				float kOff = + cos(time*5.0+j)*2.5;
 				float skOff = - sin(time*5.0+j)*2.5;
-				k = l*(M_COUNT*N_COUNT*I_COUNT*J_COUNT) + m*(N_COUNT*I_COUNT*J_COUNT) + n*(I_COUNT*J_COUNT) + i*J_COUNT + j;
+				k = l*float(M_COUNT*N_COUNT*I_COUNT*J_COUNT) + m*float(N_COUNT*I_COUNT*J_COUNT) + n*float(I_COUNT*J_COUNT) + i*float(J_COUNT) + j;
 				r = 0.8+0.5*cos(k);
 				vec3 cen = iContrib + vec3(kOff, skOff, kOff);
 	
@@ -321,7 +318,7 @@ vec3 doReflections(float time, vec3 oray, vec3 dir, vec3 onml, tSphere oSphere, 
 	vec3 xvec = normalize(cross(onml, vec3(1.0, 0.0, 0.0)));
 	vec3 yvec = normalize(cross(onml, vec3(0.0, 1.0, 0.0)));
 	float doAA_, target, k=0.0;
-	//for (float ix=0.0; ix<3.0; ix++) 
+	//for (int x=0; x<3; x++) 
 	//{
 		float ix = 0.0;
 		k++;
@@ -391,9 +388,10 @@ void main(void)
 	
 	float picked = -2.0;
 	float k = 0.0;
-	const float mblur_sample_count = MBLUR_SAMPLES;
-	float box_size = ceil(sqrt(MBLUR_SAMPLES));
-	for (float dt = 0.0; dt < mblur_sample_count; dt++) {
+	const float mblur_sample_count = float(MBLUR_SAMPLES);
+	float box_size = ceil(sqrt(mblur_sample_count));
+	for (int dti = 0; dti < MBLUR_SAMPLES; dti++) {
+		float dt = float(dti);
 		k++;
 		float tx = floor(dt/box_size);
 		float ty = dt - tx*box_size;
@@ -425,5 +423,5 @@ void main(void)
 		}
 	}
 	col = 1.0 - exp((-col/k) * iso * shutterSpeed * pow(2.0, exposureCompensation));
-	gl_FragColor = vec4(col, 1.0);
+	gl_FragColor = mix( vec4(0.0), vec4( col, 1.0 ), 0.5-0.5*cos(3.14159*min(1.0, iGlobalTime/1.0)) );
 }

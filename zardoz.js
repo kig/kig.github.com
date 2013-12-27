@@ -1,4 +1,10 @@
 (function() {
+    var ga = document.createElement('script');
+    ga.type = 'text/javascript';
+    ga.async = true;
+    ga.src = "//connect.soundcloud.com/sdk.js";
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(ga, s);
 	var SCPlayer = function(trackURL, el, params) {
 		var self = this;
 		this.trackURL = trackURL;
@@ -87,10 +93,17 @@
 		self.linkEl.href = self.url;
 	};
 
-	SC.initialize({
-	    client_id: "7edc86ef9d085d9b071f1c1b7199a205"
-	});
-	window.scplayer = new SCPlayer("/tracks/40512091", document.getElementById('music'));
+	var sctick = function() {
+		if (window.SC) {
+			SC.initialize({
+			    client_id: "7edc86ef9d085d9b071f1c1b7199a205"
+			});
+			window.scplayer = new SCPlayer("/tracks/40512091", document.getElementById('music'));			
+		} else {
+			setTimeout(sctick, 100);
+		}
+	};
+	sctick();
 })();
 
 (function(){
@@ -135,20 +148,18 @@
 		return results;
 	};
 
-	var canvas = document.createElement('canvas');
-	canvas.width = canvas.height = 256;
-	var id = canvas.getContext('2d').createImageData(256,256);
-	for (var y=0; y<id.height; y++) {
-		for (var x=0; x<id.width; x++) {
-			var off = y*id.width + x;
-			var off2 = ((y+17) % id.height)*id.width + ((x+37) % id.width);
-			var v = Math.floor(256 * Math.random());
-			id.data[off*4] = id.data[off2*4+1] = v;
-			id.data[off*4+3] = 255;
+	window.requestAnimationFrame || (window.requestAnimationFrame = 
+		window.webkitRequestAnimationFrame || 
+		window.mozRequestAnimationFrame    || 
+		window.oRequestAnimationFrame      || 
+		window.msRequestAnimationFrame     || 
+		function(callback, element) {
+			return window.setTimeout(function() {
+				callback(Date.now());
+			}, 1000 / 60);
 		}
-	}
-	canvas.getContext('2d').putImageData(id, 0, 0);
-/*
+	);
+
 	var createTexture = function(gl, canvas) {
 		gl.activeTexture( gl.TEXTURE0 );
 		var tex = gl.createTexture();
@@ -172,122 +183,143 @@
 			 1, 1, 0,
 			-1, 1, 0
 		]);
-		gl.bufferData(gl.ARRAY_BUFFER, arr);
+		gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STATIC_DRAW);
 		return buf;
 	};
-*/
-
-
-	var tex = new THREE.Texture(canvas);
-	tex.wrapT = tex.wrapS = THREE.RepeatWrapping;
-	tex.minFilter = THREE.LinearMipMapLinearFilter;
-	tex.magFilter = THREE.LinearFilter;
-	tex.generateMipmaps = true;
-	tex.flipY = false;
-	tex.needsUpdate = true;	
-
-	var plane;
-	var renderer = new THREE.WebGLRenderer();
-	var resize = function() {
-		renderer.setSize(window.innerWidth, window.innerHeight);
-		plane.material.uniforms.iResolution.value.x = renderer.domElement.width;
-		plane.material.uniforms.iResolution.value.y = renderer.domElement.height;
+	var createShader = function(gl, source, type) {
+		var s = gl.createShader(type);
+		gl.shaderSource(s, source);
+		gl.compileShader(s);
+		if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+			throw new Error(gl.getShaderInfoLog(s));
+		}
+		return s;
 	};
-	document.body.appendChild(renderer.domElement);
-	renderer.setClearColor(0xffffff);
+	var createProgram = function(gl, vert, frag) {
+		var p = gl.createProgram();
+		var vs = createShader(gl, vert, gl.VERTEX_SHADER);
+		var fs = createShader(gl, frag, gl.FRAGMENT_SHADER);
+		gl.attachShader(p, vs);
+		gl.attachShader(p, fs);
+		gl.linkProgram(p);
+		return p;
+	};
+	var getUniform = function(gl, p, name) {
+		return gl.getUniformLocation(p, name);
+	};
+	var u4fv = function(gl, p, name, v) {
+		gl.uniform4fv(getUniform(gl, p, name), v);
+	};
+	var u3f = function(gl, p, name, x,y,z) {
+		gl.uniform3f(getUniform(gl, p, name), x,y,z);
+	};
+	var u1f = function(gl, p, name, x) {
+		gl.uniform1f(getUniform(gl, p, name), x);
+	};
+	var u1i = function(gl, p, name, x) {
+		gl.uniform1i(getUniform(gl, p, name), x);
+	};
+
+
+
+	var canvas = document.createElement('canvas');
+	canvas.width = canvas.height = 256;
+	var id = canvas.getContext('2d').createImageData(256,256);
+	for (var y=0; y<id.height; y++) {
+		for (var x=0; x<id.width; x++) {
+			var off = y*id.width + x;
+			var off2 = ((y+17) % id.height)*id.width + ((x+37) % id.width);
+			var v = Math.floor(256 * Math.random());
+			id.data[off*4] = id.data[off2*4+1] = v;
+			id.data[off*4+3] = 255;
+		}
+	}
+	canvas.getContext('2d').putImageData(id, 0, 0);
 
 	var shaderURLs = [
 		'mblur.frag',
 		(legacy ? 'zardoz_1999.frag' : 'zardoz_2001.frag')
 	];
 
-	loadFiles(['rt.vert'].concat(shaderURLs), function(rtVert) {
+	loadFiles(shaderURLs, function() {
+		var glc = document.createElement('canvas');
+		document.body.appendChild(glc);
+		var gl;
+		try {
+			gl = glc.getContext('webgl');
+			if (!gl) { gl = glc.getContext('experimental-webgl'); }
+		} catch (e) {
+			gl = glc.getContext('experimental-webgl');
+		}
+		if (!gl) {
+			return; // no WebGL.
+		}
+		var gl = glc.getContext('webgl');
+		var buf = createBuffer(gl);
+		var p;
+		var tex = createTexture(gl, canvas);
+
+		var resize = function() {
+			glc.width = window.innerWidth;
+			glc.height = window.innerHeight;
+			gl.viewport(0,0, glc.width, glc.height);
+			u3f(gl, p, 'iResolution', glc.width, glc.height, 1.0);
+		};
+
 		var sel = document.body.querySelector('#shaders');
 		var shaders = [];
 		var currentShader = 0;
 		var setShader = function(idx) {
 			currentShader = idx;
-			plane.material = shaders[currentShader];
+			p = shaders[currentShader];
+			gl.useProgram(p);
+			u3f(gl, p, 'iResolution', glc.width, glc.height, 1.0);
 		};
-		for (var i=1; i<arguments.length; i++) {
+		var rtVert = 'precision highp float;attribute vec3 position;void main() {gl_Position = vec4(position, 1.0);}';
+		for (var i=0; i<arguments.length; i++) {
 			var el = document.createElement('li');
-			el.innerHTML = i;
+			el.innerHTML = i+1;
 			el.onclick = function(ev) {
 				setShader(parseInt(this.innerHTML)-1);
 				ev.preventDefault();
 			};
 			sel.appendChild(el);
-			shaders.push(new THREE.ShaderMaterial({
-				attributes: {},
-				uniforms: {
-					iChannel0: {type: "t", value: tex},
-					iGlobalTime: { type: "f", value: 0 },
-					iRot: { type: "f", value: 0 },
-					iRot2: { type: "f", value: 0 },
-					iOpen: { type: "f", value: 0 },
-					iResolution: { type: "v3", value: new THREE.Vector3(window.innerWidth, window.innerHeight, 1.0) },
-					iMouse: { type: "v4", value: new THREE.Vector4(-1, -1, -1, -1) }
-				},
-				vertexShader: rtVert,
-				fragmentShader: arguments[i]
-			}));
+			p = createProgram(gl, rtVert, arguments[i]);
+			gl.useProgram(p);
+			u1f(gl, p, 'iRot', 0);
+			u1f(gl, p, 'iRot2', 0);
+			u1f(gl, p, 'iOpen', 0);
+			u1i(gl, p, 'iChannel0', 0);
+			u1f(gl, p, 'iGlobalTime', 0);
+			var pos = gl.getAttribLocation(p, 'position');
+			gl.enableVertexAttribArray(pos);
+			gl.vertexAttribPointer(pos, 3, gl.FLOAT, false, 0, 0);
+			shaders.push(p);
 		}
-		var scene = new THREE.Scene();
-		var camera = new THREE.OrthographicCamera(-1, 1, -1, 1, -1, 1);
-		scene.add(camera);
-		plane = new THREE.Mesh(
-			new THREE.PlaneGeometry(2, 2, 1, 1), shaders[currentShader]
-		);
-		scene.add(plane);
-		if (legacy) {
-			// toss in a thing of some sort.
-		}
-
-		var sin = Math.sin;
-		var cos = Math.cos;
-		var getCenter = function(time, k, i, n) {
-			var m = 1.0;
-			time *= 0.3;
-			var r = 20.0;
-			if (n == 0.0) {
-				r = 0.0;
-			}
-			var v = new THREE.Vector3(
-				-80.0+sin(m*2.0+time) * (-100.0+sin(time*0.4+m)*40.0 + 
-							 sin(time+n*(6.28/3.0))*r + 4.0*sin(m+n+i+4.0*time)+(i)*5.0),
-				-40.0+(m)*30.0 - cos(time+n*(6.28/3.0))*r - cos(i)*9.0 + k*2.5,
-				2.0+cos(m*2.0+time) * (-cos(time*0.2+m)*28.0 + (n)*9.0 + sin(i)*9.0)
-			);
-			v.r = 1.0;
-			return v;
-		};
+		setShader(currentShader);
 
 		var t = 0;
 		var targetRot = 0;
 		var targetOpen = 0;
+		var mouse = new Float32Array(4);
+		var iRot = 0;
+		var iOpen = 0;
 
-		renderer.domElement.onmousedown = function(ev) {
-			var m = plane.material.uniforms.iMouse;
-			m.value.z = ev.layerX;
-			m.value.w = this.offsetHeight-ev.layerY;
+		glc.onmousedown = function(ev) {
+			mouse[2] = ev.layerX;
+			mouse[3] = this.offsetHeight-ev.layerY;
 			targetRot -= 0.25*Math.PI;
-			//renderer.render(scene, camera);
 		};
-		renderer.domElement.onmouseup = function(ev) {
-			var m = plane.material.uniforms.iMouse;
-			m.value.z = -1;
-			m.value.w = -1;
+		glc.onmouseup = function(ev) {
+			mouse[2] = -1;
+			mouse[3] = -1;
 			targetOpen = targetOpen ? 0 : 1;
-			//renderer.render(scene, camera);
 		};
-		renderer.domElement.onmousemove = function(ev) {
-			var m = plane.material.uniforms.iMouse;
-			m.value.x = ev.layerX;
-			m.value.y = this.offsetHeight-ev.layerY;
+		glc.onmousemove = function(ev) {
+			mouse[0] = ev.layerX;
+			mouse[1] = this.offsetHeight-ev.layerY;
 		};
-		window.onresize = function() {
-			resize();
-		};
+		window.onresize = resize;
 
 		var blurred = false;
 		window.onblur = function() {
@@ -299,24 +331,23 @@
 
 		var tick = function() {
 			if (!blurred) {
-				var r = plane.material.uniforms.iRot;
-				r.value += (targetRot - r.value) * 0.1;
-				if (Math.abs(targetRot-r.value) < 0.01) {
-					r.value = targetRot;
-					var r = plane.material.uniforms.iOpen;
-					r.value += (targetOpen - r.value) * 0.15;
-					if (Math.abs(targetOpen - r.value) < 0.01) {
-						r.value = targetOpen;
-						if (r.value === 1) {
-							plane.material.uniforms.iRot2.value += 0.01;
-						}
+				iRot += (targetRot - iRot) * 0.1;
+				if (Math.abs(targetRot-iRot) < 0.01) {
+					iRot = targetRot;
+					iOpen += (targetOpen - iOpen) * 0.15;
+					if (Math.abs(targetOpen - iOpen) < 0.01) {
+						iOpen = targetOpen;
 					}
 				}
-				plane.material.uniforms.iGlobalTime.value = t;
-				renderer.render(scene, camera);
-				t += 0.016;
-			}
-			requestAnimationFrame(tick, renderer.domElement);
+				t += 16;
+				u1f(gl, p, 'iGlobalTime', t/1000);
+				u1f(gl, p, 'iRot', iRot);
+				u1f(gl, p, 'iOpen', iOpen);
+				u4fv(gl, p, 'iMouse', mouse);
+				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+				gl.drawArrays(gl.TRIANGLES, 0, 6);
+			}	
+			requestAnimationFrame(tick, glc);
 		};
 		resize();
 		tick();

@@ -189,6 +189,58 @@
 		<div id="footer">
 			<!--<a href="#contact" id="contact-link">Contact</a> -->
 		</div>
+		<script>
+			window.startScript = Date.now();
+			window.legacy = /windows/i.test(navigator.userAgent);
+			window.shaderURLs = [
+				'mblur.frag',
+				(legacy ? 'zardoz_1999.frag' : 'zardoz_2001.frag')
+			];
+			window.Loader = {
+				cache: {},
+				get: function(files, callback) {
+					var results = [];
+					var count = 0;
+					var ondone = function(i){ 
+						return function(data) {
+							results[i] = data;
+							count++;
+							if (count === files.length) {
+								if (callback) {
+									callback.apply(null, results);
+								}
+							}
+						}
+					};
+					var self = this;
+					for (var i=0; i<files.length; i++) {
+						var f = this.cache[files[i]];
+						if (f) {
+							if (f.listeners !== undefined) {
+								f.listeners.push(ondone(i));
+							} else {
+								ondone(i)(f);
+							}
+						} else {
+							f = this.cache[files[i]] = {listeners: [ondone(i)]};
+							(function(i){
+								var xhr = new XMLHttpRequest();
+								xhr.open('GET', files[i], true);
+								xhr.onload = function(ev) {
+									var l = self.cache[files[i]].listeners;
+									var f = self.cache[files[i]] = this.responseText;
+									for (var j=0; j<l.length; j++) {
+										l[j](f);
+									}
+								};
+								xhr.send(null);
+							})(i);
+						}
+					}
+				}
+			};
+			Loader.get(shaderURLs);
+		</script>
 		<script src="zardoz.js"></script>
 <script type="text/javascript">
   var _gaq = _gaq || [];

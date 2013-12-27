@@ -108,7 +108,6 @@
 
 (function(){
 
-	var legacy = /windows/i.test(navigator.userAgent);
 	var mobile = /mobile/i.test(navigator.userAgent);
 	if (mobile) {
 		// This is a bit heavy on mobes.
@@ -127,26 +126,6 @@
 		}
 	};
 	 */
-
-	var loadFiles = function(files, callback) {
-		var results = [];
-		var count = 0;
-		for (var i=0; i<files.length; i++) {
-			(function(i){
-				var xhr = new XMLHttpRequest();
-				xhr.open('GET', files[i], true);
-				xhr.onload = function(ev) {
-					results[i] = this.responseText;
-					count++;
-					if (count === files.length) {
-						callback.apply(null, results);
-					}
-				};
-				xhr.send(null);
-			})(i);
-		}
-		return results;
-	};
 
 	window.requestAnimationFrame || (window.requestAnimationFrame = 
 		window.webkitRequestAnimationFrame || 
@@ -236,12 +215,7 @@
 	}
 	canvas.getContext('2d').putImageData(id, 0, 0);
 
-	var shaderURLs = [
-		'mblur.frag',
-		(legacy ? 'zardoz_1999.frag' : 'zardoz_2001.frag')
-	];
-
-	loadFiles(shaderURLs, function() {
+	Loader.get(shaderURLs, function() {
 		var glc = document.createElement('canvas');
 		document.body.appendChild(glc);
 		var gl;
@@ -331,6 +305,10 @@
 
 		var tick = function() {
 			if (!blurred) {
+				if (window.startScript) {
+					console.log('script start to first frame: '+(Date.now()-window.startScript)+' ms');
+					window.startScript = 0;
+				}
 				iRot += (targetRot - iRot) * 0.1;
 				if (Math.abs(targetRot-iRot) < 0.01) {
 					iRot = targetRot;

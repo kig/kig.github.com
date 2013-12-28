@@ -3,6 +3,58 @@
 	<head>
 		<meta charset="utf-8">
 		<title>fhtr + building a brighter future</title>
+		<script>
+			window.startScript = Date.now();
+			window.legacy = /windows/i.test(navigator.userAgent);
+			window.shaderURLs = [
+				'mblur.frag',
+				(legacy ? 'zardoz_1999.frag' : 'zardoz_2001.frag')
+			];
+			window.Loader = {
+				cache: {},
+				get: function(files, callback) {
+					var results = [];
+					var count = 0;
+					var ondone = function(i){ 
+						return function(data) {
+							results[i] = data;
+							count++;
+							if (count === files.length) {
+								if (callback) {
+									callback.apply(null, results);
+								}
+							}
+						}
+					};
+					var self = this;
+					for (var i=0; i<files.length; i++) {
+						var f = this.cache[files[i]];
+						if (f) {
+							if (f.listeners !== undefined) {
+								f.listeners.push(ondone(i));
+							} else {
+								ondone(i)(f);
+							}
+						} else {
+							f = this.cache[files[i]] = {listeners: [ondone(i)]};
+							(function(i){
+								var xhr = new XMLHttpRequest();
+								xhr.open('GET', files[i], true);
+								xhr.onload = function(ev) {
+									var l = self.cache[files[i]].listeners;
+									var f = self.cache[files[i]] = this.responseText;
+									for (var j=0; j<l.length; j++) {
+										l[j](f);
+									}
+								};
+								xhr.send(null);
+							})(i);
+						}
+					}
+				}
+			};
+			Loader.get(shaderURLs);
+		</script>
 		<style>
 			html,body {
 				margin: 0;
@@ -184,63 +236,11 @@
 			<div class="music-play">&#9654;</div>
 			<a class="music-author"></a>
 			<a class="music-title"></a>
-			<a class="music-link"><img src="http://developers.soundcloud.com/assets/logo_big_white.png"></a>
+			<a class="music-link"><img width="64" height="43" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAArCAYAAADIWo5HAAAGRElEQVRoQ+2Ze0zVZRjHAcUAuUTTIKUmpIfD4U6AEC7M+qfU1WzZatLstlyl5JRlSjbz1m2WbpWstryVUrYy121paM5AucpV7mAKMhBk41bCoc/Dfj+HeC5wOJPgnLN99z6/533ey/N9n/f9Pe/vODrY+M/Rxv13sBNgjwAbZ8C+Bf4PAZCXl7fS29t7/fTp032cnZ0dp0yZ4tDX1zeAzs7Oa83NzbktLS3LEhISqq093zGJgIyMDPcZM2acam1tXREWFpbp5uZmdh56vd6hrq7uAmTExsXFNVmLCLMDW2sgtZ+srCwfFxeXl8LDwzfX1NTUBgQE+I9kjJ6env6ioqJnY2NjD4yknTHbW05Ab29vf2VlZY5Wq42GgAsQcM9IHZFoKC4sTgmPDP9wpG2H2ludgLNnzy5zdHTs8fHxSWtoaNB5enqm63S6+erATF4IKNJoNKGWEiB9yfmQn5+/MCYm5ufRkGA1AgoKClJxfBp7OhkHS+fMmaOrqKgowNGI4uLi/UFBQUklJSU7Q0NDpX7UBIjTHR0deg8Pj0ljTsC5c+c+FserqqoqZs+erVFXFgIGHFXLsrKyk4R+orUIEMdLS0uPBwcHP2wpCVaJAA6lQyEhIU+pjt9KAnhN6t3d3S2OglERIPudld9fXV39C/v8kbEgQFY+Ozs7ydK3wqgIUFdeDfGxIuD8+fM5nDExlmyDCUFAU1NTd1tbW4mXl1fQZH5dXV1Xrl69+llERMQWc6QMiwBCLMTPz+9MY2PjOg61nRxmi8jkDpLJHWPvLxnrCDDmJKT0lpeXz4uPjz9jUSIkWRuh1cAe3xYZGZnK6yxdDju1HHrKj9UWMLXKkjTxltoSFRX1liE7kxGQmZk5l7w7a6jj44kAcZrs0yE3N9fX0B3CIAFyWZk1a1YlN7CV0dHR3453AoSE2trai6Tddw8rFTa38uMtAsRpuUS5uro62SwB/f39Dk5OTjdFvMEtMBEjQFaeu4rtEiC3R1IE2yWAZKnH19fXdVhngLz/ubVd4r2+mvf/ronwFigsKDT4AcUm8gBjr8CBc8FUFnX69Ol7yacrSSe3jtdM0JTzZglQyREi/P39Cy5fvrw+MDBwJ4Qky52ADyAb2Sqby8vKU7Q67Qfss1Y+hd1BipxO0rFUiOOanFpYWJjEl6B93CG2ol9XX1v/kUarWUt9Gqn1ikmTLL7O37R+kvp2d3fr29vbO7i7rCGR+8LUIg/rMmTuRjWe6+0EjOfVs8bc7RFgjEVy51XUxYK/QBpZZB86+ez0MmgB29G1o1uJ/DXyFeRQZA34FcjXmBT0veifQ/4deIDXQSc4Sd0RGZ96N4p1YCbYj/4EOhnnR+RGdY6D7PzQ7aHuT3ThyAHI3yt9bUJ+W2kfhU7a70VXa8hXgxFA4/kYbwbyEeF5sAb0gQqwDcwFbnS6GFv5Y+IV5DrkhcjSdju4Iu3Q70C/F3kHuBO8BtJBChBidyv103iWE1uISACHwEbqS9WJD7KTMd8B4mAEiMPuTbHDpgw5iPIwj8eANxDStejb1L7U0hgBj2KQDF6lUZXS8QuUoTxLZzJQvTL4V5SGCPgD/VTwAHgXqAQsoo9k2t+F7qhMHjSAmeivoXei1CsOXCeA58nYXAJ+it1G5G4gi2KMgIH2tN2ATRvyp8MiQHHwGUqBMPg0WA4a6eRzpf43ytXgfbAKfQ0DLUaeB94DsgK7wFJwbSgBSh9llA+Cn2h/3+DJGSDAl/qj2A18/aV+CYWQe1zGRP+Goi9F1g1uj/wYdfHoJbpu+BmLAC+sXGjQRONU5HZQA14ETwIhJQcEAtke9dgewFbCMhecAofRLUC3D/l+8ASQLaBGgDi+Vp6B7M9E7Ouxj6LMM0CAzFXmkAguAtkuJ4AsxEHwEJCzYTftF6rteS4He8B36H+gvOFnjAAJyzQgIXYbeFyZ3CfIsj2cgWyPIwwk/+7uBrJCEo7LgRxqKgG3IxcDOR+EANkyfwNxQrbOJfpYoEyyWbGV7SZnQDDoEWAXr9h9yXMvkMN5OXo5nDchS/R1gQ3oTioE6Hj+B3yDTs6lm34mX4N0MpWGcmJf/6ETQv5F3z9EPxmdTMzin/RNHzJhkz/sJDqFmMHzsmh8ex5gju2JXv8fcGmyd4hLhFMAAAAASUVORK5CYII="></a>
 		</div>
 		<div id="footer">
 			<!--<a href="#contact" id="contact-link">Contact</a> -->
 		</div>
-		<script>
-			window.startScript = Date.now();
-			window.legacy = /windows/i.test(navigator.userAgent);
-			window.shaderURLs = [
-				'mblur.frag',
-				(legacy ? 'zardoz_1999.frag' : 'zardoz_2001.frag')
-			];
-			window.Loader = {
-				cache: {},
-				get: function(files, callback) {
-					var results = [];
-					var count = 0;
-					var ondone = function(i){ 
-						return function(data) {
-							results[i] = data;
-							count++;
-							if (count === files.length) {
-								if (callback) {
-									callback.apply(null, results);
-								}
-							}
-						}
-					};
-					var self = this;
-					for (var i=0; i<files.length; i++) {
-						var f = this.cache[files[i]];
-						if (f) {
-							if (f.listeners !== undefined) {
-								f.listeners.push(ondone(i));
-							} else {
-								ondone(i)(f);
-							}
-						} else {
-							f = this.cache[files[i]] = {listeners: [ondone(i)]};
-							(function(i){
-								var xhr = new XMLHttpRequest();
-								xhr.open('GET', files[i], true);
-								xhr.onload = function(ev) {
-									var l = self.cache[files[i]].listeners;
-									var f = self.cache[files[i]] = this.responseText;
-									for (var j=0; j<l.length; j++) {
-										l[j](f);
-									}
-								};
-								xhr.send(null);
-							})(i);
-						}
-					}
-				}
-			};
-			Loader.get(shaderURLs);
-		</script>
 		<script src="zardoz.js"></script>
 <script type="text/javascript">
   var _gaq = _gaq || [];

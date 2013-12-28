@@ -217,6 +217,7 @@
 		resize();
 		tick();
 		document.body.appendChild(glc);
+		document.querySelector('#shaders').style.opacity = 1;
 	});
 })();
 

@@ -1,0 +1,11 @@
+CACHE MANIFEST
+# v1
+
+CACHE:
+/zardoz.js
+/mblur.frag
+/zardoz_2001.frag
+/zardoz_1999.frag
+
+NETWORK:
+*

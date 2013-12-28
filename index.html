@@ -141,31 +141,35 @@
 			#shaders {
 				list-style: none;
 				position: absolute;
-				bottom: 10px;
+				bottom: 0px;
 				right: 10px;
 				margin: 0;
 				padding: 0;
 				opacity: 0;
 				transition: 1s;
+				vertical-align: top;
+				height: 40px;
 			}
 			#shaders li {
+				vertical-align: top;
 				display: inline-block;
-				margin: 2px;
-				padding-top: 2px;
-				border: 1px solid black;
+				margin-left: 4px;
+				padding-top: 6px;
+				margin-bottom: 10px;
+				border-bottom: 4px solid black;
 				color: black;
 				width: 20px;
 				height: 20px;
 				font-size: 11px;
-				box-sizing: border-box;
 				font-weight: bold;
 				text-align: center;
 				cursor: pointer;
-				transition: 0.5s;
+				transition: 0.25s;
 			}
 			#shaders li:hover {
-				background: black;
-				color: white;
+				background: rgba(255,255,255,0.5);
+				border-bottom: 14px solid black;
+				margin-bottom: 0px;
 			}
 			#music {
 				opacity: 0;

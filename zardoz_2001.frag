@@ -169,11 +169,9 @@ vec3 shadeBg(vec3 nml)
 	vec3 bgCol = vec3(0.0);
 	bgCol += max(0.0, bgDiff)*vec3(0.25, 0.5, 0.6);
 	bgCol += max(0.0, -bgDiff)*vec3(0.3, 0.2, 0.3);
-	bgCol += vec3(0.43, 0.07, 0.25)*(pow(1.0-abs(bgDiff), 16.0)*(0.2*dot(uv,uv)));
-	bgCol += 0.02*sun*pow( sp, 3.0);
-	bgCol += bgColz*pow( sp, 8.0);
-	bgCol += sun*pow( sp, 256.0);
-	bgCol += bgColz*pow( sp, abs(bgLight.y)*128.0);
+	bgCol += vec3(0.43, 0.07, 0.25)*( pow(1.0-abs(bgDiff), 16.0)*(0.2*dot(uv,uv)) );
+	bgCol += sun*(0.02*pow( sp, 3.0) + pow( sp, 256.0));
+	bgCol += bgColz*(pow( sp, 8.0) + pow( sp, abs(bgLight.y)*128.0));
 	return bgCol;
 }
 

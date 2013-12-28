@@ -244,11 +244,9 @@ vec3 shadeBg(vec3 dir, vec3 nml)
 	vec3 bgCol = vec3(0.2, 0.15, 0.1);
 	float bgDiff = dot(nml, vec3(0.0, 1.0, 0.0));
 	float sunPow = dot(nml, bgLight);
-	bgCol += 0.1*sun*pow( max(sunPow, 0.0), 2.0);
-	bgCol += 2.0*bgCol*pow( max(-sunPow, 0.0), 2.0);
 	bgCol += bgDiff*vec3(0.25, 0.5, 0.5);
-	bgCol += sun*pow( max(sunPow, 0.0), abs(bgLight.y)*256.0);
-	bgCol += bgCol*pow( max(sunPow, 0.0), abs(bgLight.y)*128.0);
+	bgCol += sun*(0.1*pow( max(sunPow, 0.0), 2.0) + pow( max(sunPow, 0.0), abs(bgLight.y)*256.0));
+	bgCol += bgCol*(2.0*pow( max(-sunPow, 0.0), 2.0)+ pow( max(sunPow, 0.0), abs(bgLight.y)*128.0));
 	return max(vec3(0.0), bgCol);
 }
 

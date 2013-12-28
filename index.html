@@ -55,24 +55,6 @@
 				}
 			};
 			Loader.get(shaderURLs);
-
-			(function() {
-				// Overlap random texture creation with loading network assets.
-				var t0 = Date.now();
-				var canvas = document.createElement('canvas');
-				var id = new Uint8Array(256*256*4);
-				for (var y=0; y<256; y++) {
-					for (var x=0; x<256; x++) {
-						var off = (y*256 + x) | 0;
-						var off2 = (((y+17) % 256)*256 + ((x+37) % 256)) | 0;
-						var v = (256 * Math.random()) | 0;
-						id[off*4] = id[off2*4+1] = v;
-						id[off*4+3] = 255;
-					}
-				}
-				window.randomTex = id;
-				if (DEBUG) console.log('Create random texture: '+(Date.now()-t0)+' ms');
-			})();
 		</script>
 		<style>
 			html,body {
@@ -261,8 +243,42 @@
 		<div id="footer">
 			<!--<a href="#contact" id="contact-link">Contact</a> -->
 		</div>
-		<script src="zardoz.js"></script>
-<script type="text/javascript">
+		<script src="zardoz.js" async="true"></script>
+		<script>
+			(function() {
+				// Overlap random texture creation with loading network assets.
+				var t0 = Date.now();
+				var canvas = document.createElement('canvas');
+				var id = new Uint8Array(256*256*4);
+				for (var y=0; y<256; y++) {
+					for (var x=0; x<256; x++) {
+						var off = (y*256 + x) | 0;
+						var off2 = (((y+17) % 256)*256 + ((x+37) % 256)) | 0;
+						var v = (256 * Math.random()) | 0;
+						id[off*4] = id[off2*4+1] = v;
+						id[off*4+3] = 255;
+					}
+				}
+				window.randomTex = id;
+				if (DEBUG) console.log('Create random texture: '+(Date.now()-t0)+' ms'); t0 = Date.now();
+				var glc = document.createElement('canvas');
+				var gl;
+				try {
+					gl = glc.getContext('webgl');
+					if (!gl) { gl = glc.getContext('experimental-webgl'); }
+				} catch (e) {
+					gl = glc.getContext('experimental-webgl');
+				}
+				if (!gl) {
+					return; // no WebGL.
+				}
+				window.gl = gl;
+				window.glc = glc;
+				gl.clearColor(1,1,1,1);
+				if (DEBUG) console.log('WebGL context creation: '+(Date.now()-t0)+' ms'); t0 = Date.now();
+			})();
+		</script>
+		<script type="text/javascript">
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-40828118-1']);
   _gaq.push(['_trackPageview']);

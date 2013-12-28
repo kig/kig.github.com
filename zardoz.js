@@ -1,4 +1,5 @@
 (function(){
+var init = function() {
 	if (DEBUG) console.log('script start to execute: '+(Date.now()-window.startScript)+' ms');
 
 	var mobile = /mobile/i.test(navigator.userAgent);
@@ -100,18 +101,6 @@
 	Loader.get(shaderURLs, function() {
 		var t1 = Date.now();
 		var t0 = Date.now();
-		var glc = document.createElement('canvas');
-		var gl;
-		try {
-			gl = glc.getContext('webgl');
-			if (!gl) { gl = glc.getContext('experimental-webgl'); }
-		} catch (e) {
-			gl = glc.getContext('experimental-webgl');
-		}
-		if (!gl) {
-			return; // no WebGL.
-		}
-		gl.clearColor(1,1,1,1);
 		var buf = createBuffer(gl);
 		var tex = createTexture(gl, randomTex);
 		if (DEBUG) console.log('Set up WebGL: '+(Date.now()-t0)+' ms');
@@ -219,6 +208,12 @@
 		document.body.appendChild(glc);
 		document.querySelector('#shaders').style.opacity = 1;
 	});
+};
+var ticker = function() {
+	if (window.gl) init();
+	else setTimeout(ticker, 0);
+};
+ticker();
 })();
 
 (function() {

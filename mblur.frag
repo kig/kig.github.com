@@ -423,5 +423,5 @@ void main(void)
 		}
 	}
 	col = 1.0 - exp((-col/k) * iso * shutterSpeed * pow(2.0, exposureCompensation));
-	gl_FragColor = mix( vec4(0.0, 0.0, 0.0, 1.0), vec4( col, 1.0 ), 0.5-0.5*cos(3.14159*min(1.0, iGlobalTime/1.0)) );
+	gl_FragColor = mix( vec4(0.0), vec4( col, 1.0 ), 0.5-0.5*cos(3.14159*min(1.0, iGlobalTime/1.0)) );
 }

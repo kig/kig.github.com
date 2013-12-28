@@ -93,13 +93,15 @@
 		self.linkEl.href = self.url;
 	};
 
+	var ticks = 0;
 	var sctick = function() {
 		if (window.SC) {
 			SC.initialize({
 			    client_id: "7edc86ef9d085d9b071f1c1b7199a205"
 			});
 			window.scplayer = new SCPlayer("/tracks/40512091", document.getElementById('music'));			
-		} else {
+		} else if (ticks < 100) {
+			ticks++;
 			setTimeout(sctick, 100);
 		}
 	};

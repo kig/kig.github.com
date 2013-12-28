@@ -4,7 +4,6 @@
 	var mobile = /mobile/i.test(navigator.userAgent);
 	if (mobile) {
 		// This is a bit heavy on mobes.
-		document.body.style.background = 'white';
 		return;
 	}
 
@@ -102,7 +101,6 @@
 		var t1 = Date.now();
 		var t0 = Date.now();
 		var glc = document.createElement('canvas');
-		document.body.appendChild(glc);
 		var gl;
 		try {
 			gl = glc.getContext('webgl');
@@ -113,6 +111,7 @@
 		if (!gl) {
 			return; // no WebGL.
 		}
+		gl.clearColor(1,1,1,1);
 		var buf = createBuffer(gl);
 		var tex = createTexture(gl, randomTex);
 		//console.log('Set up WebGL: '+(Date.now()-t0)+' ms');
@@ -217,6 +216,7 @@
 		};
 		resize();
 		tick();
+		document.body.appendChild(glc);
 	});
 })();
 

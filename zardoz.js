@@ -306,6 +306,9 @@
 		var tick = function() {
 			if (!blurred) {
 				if (window.startScript) {
+					if (window.performance && performance.timing && performance.timing.navigationStart) {
+						console.log('navigationStart to first frame: '+(Date.now()-performance.timing.navigationStart)+' ms');
+					}
 					console.log('script start to first frame: '+(Date.now()-window.startScript)+' ms');
 					window.startScript = 0;
 				}

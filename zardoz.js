@@ -1,5 +1,5 @@
 (function(){
-	//console.log('script start to execute: '+(Date.now()-window.startScript)+' ms');
+	if (DEBUG) console.log('script start to execute: '+(Date.now()-window.startScript)+' ms');
 
 	var mobile = /mobile/i.test(navigator.userAgent);
 	if (mobile) {
@@ -32,12 +32,12 @@
 		}
 	);
 
-	var createTexture = function(gl, canvas) {
+	var createTexture = function(gl, buf) {
 		gl.activeTexture( gl.TEXTURE0 );
 		var tex = gl.createTexture();
 		gl.bindTexture(gl.TEXTURE_2D, tex);
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256,256,0, gl.RGBA, gl.UNSIGNED_BYTE, buf);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
@@ -78,7 +78,7 @@
 		gl.attachShader(p, vs);
 		gl.attachShader(p, fs);
 		gl.linkProgram(p);
-		//console.log('Create program: '+(Date.now()-t0)+' ms');
+		if (DEBUG) console.log('Create program: '+(Date.now()-t0)+' ms');
 		return p;
 	};
 	var getUniform = function(gl, p, name) {
@@ -114,7 +114,7 @@
 		gl.clearColor(1,1,1,1);
 		var buf = createBuffer(gl);
 		var tex = createTexture(gl, randomTex);
-		//console.log('Set up WebGL: '+(Date.now()-t0)+' ms');
+		if (DEBUG) console.log('Set up WebGL: '+(Date.now()-t0)+' ms');
 
 		var resize = function() {
 			glc.width = window.innerWidth;
@@ -185,7 +185,7 @@
 		window.onfocus = function() {
 			blurred = false;
 		};
-		//console.log('WebGL setup total: '+(Date.now()-t1)+' ms'); 
+		if (DEBUG) console.log('WebGL setup total: '+(Date.now()-t1)+' ms'); 
 
 		var tick = function() {
 			if (!blurred) {

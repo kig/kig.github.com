@@ -4,6 +4,7 @@
 		<meta charset="utf-8">
 		<title>fhtr + building a brighter future</title>
 		<script>
+			window.DEBUG = false;
 			window.startScript = Date.now();
 			window.legacy = /windows/i.test(navigator.userAgent);
 			window.shaderURLs = [
@@ -59,20 +60,18 @@
 				// Overlap random texture creation with loading network assets.
 				var t0 = Date.now();
 				var canvas = document.createElement('canvas');
-				canvas.width = canvas.height = 256;
-				var id = canvas.getContext('2d').createImageData(256,256);
-				for (var y=0; y<id.height; y++) {
-					for (var x=0; x<id.width; x++) {
-						var off = y*id.width + x;
-						var off2 = ((y+17) % id.height)*id.width + ((x+37) % id.width);
-						var v = Math.floor(256 * Math.random());
-						id.data[off*4] = id.data[off2*4+1] = v;
-						id.data[off*4+3] = 255;
+				var id = new Uint8Array(256*256*4);
+				for (var y=0; y<256; y++) {
+					for (var x=0; x<256; x++) {
+						var off = (y*256 + x) | 0;
+						var off2 = (((y+17) % 256)*256 + ((x+37) % 256)) | 0;
+						var v = (256 * Math.random()) | 0;
+						id[off*4] = id[off2*4+1] = v;
+						id[off*4+3] = 255;
 					}
 				}
-				canvas.getContext('2d').putImageData(id, 0, 0);
-				window.randomTex = canvas;
-				//console.log('Create random texture: '+(Date.now()-t0)+' ms');
+				window.randomTex = id;
+				if (DEBUG) console.log('Create random texture: '+(Date.now()-t0)+' ms');
 			})();
 		</script>
 		<style>

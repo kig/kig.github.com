@@ -298,6 +298,9 @@ ticker();
 		this.trackURL = trackURL;
 		this.el = el;
 		SC.get(trackURL, function(track){
+			if (track.tracks) {
+				track = track.tracks[0];	
+			}
 			self.title = track.title;
 			self.url = track.permalink_url;
 			self.artist = track.user.username;
@@ -387,7 +390,7 @@ ticker();
 			SC.initialize({
 			    client_id: "7edc86ef9d085d9b071f1c1b7199a205"
 			});
-			window.scplayer = new SCPlayer("/tracks/40512091", document.getElementById('music'));			
+			window.scplayer = new SCPlayer("/tracks/5667639", document.getElementById('music'));			
 		} else if (ticks < 100) {
 			ticks++;
 			setTimeout(sctick, 100);

@@ -5,9 +5,14 @@ uniform vec3      iResolution;
 uniform float     iGlobalTime;
 uniform vec4      iMouse;
 uniform sampler2D iChannel0;
+uniform sampler2D iChannel1;
 uniform float iRot;
 uniform float iRot2;
 uniform float iOpen;
+uniform vec4 iCamera;
+uniform vec4 iCameraTarget;
+uniform vec4 iCameraV;
+uniform vec4 iCameraTargetV;
 
 #define SHADOWS
 #define REFLECTION
@@ -18,18 +23,18 @@ uniform float iOpen;
 
 #define FOG_D 80.0
 
-#define L_COUNT 1
-#define M_COUNT 1
-#define N_COUNT 3
-#define I_COUNT 1
-#define J_COUNT 3
-
 struct tSphere {
 	vec3 center;
 	float radius;
 	vec3 color;
 	float spec;
 };
+
+// rotate position around axis
+vec2 rotate(vec2 p, float a)
+{
+	return vec2(p.x * cos(a) - p.y * sin(a), p.x * sin(a) + p.y * cos(a));
+}
 
 // return ray p,d distance to triangle v0,v1,v2
 // returns -1.0 if no intersection
@@ -83,9 +88,6 @@ bool rayBV(vec3 ray, vec3 dir, vec3 center, float radius, float closestHit)
 {
 	float b;
 	float d = raySphereDet(ray, dir, center, radius, closestHit, b);
-	if (d < 0.0) {
-		return true;
-	};
 	float t = -b - sqrt(abs(d));
 	return (d < 0.0 || t < -(2.0*radius) || t > closestHit+(2.0*radius));
 }
@@ -99,10 +101,30 @@ float rayIntersectsSphere(vec3 ray, vec3 dir, vec3 center, float radius, float c
 	return mix(closestHit, t, st);
 }
 
-// rotate position around axis
-vec2 rotate(vec2 p, float a)
+float rayIntersectsPlane(vec3 ro, vec3 rd, vec3 p, vec3 pnml, inout vec3 nml, float closestHit)
 {
-	return vec2(p.x * cos(a) - p.y * sin(a), p.x * sin(a) + p.y * cos(a));
+	float pd = dot(pnml, rd);
+	float dist = dot(pnml, p-ro) / pd;
+	if (abs(pd) > 0.00001 && dist > 0.0 && dist < closestHit) {
+		nml = pnml;
+		if (pd < 0.0) nml = -nml;
+		return dist;
+	}
+	return closestHit;
+}
+
+float rayIntersectsDisk(vec3 ro, vec3 rd, vec3 p, vec3 pnml, float r1, float r2, float a, inout vec3 nml, float closestHit)
+{
+	vec3 tmp;
+	float dist = rayIntersectsPlane(ro, rd, p, pnml, tmp, closestHit);
+	vec3 ip = ro + dist*rd - p;
+	float len = length(ip);
+	float angle = dot(normalize(ip), normalize(cross(pnml, vec3(rotate(vec2(1.0,0.0),a), 1.0))));
+	if (dist != closestHit && len >= r1 && len <= r2 && angle > -0.5) {
+		nml = tmp;
+		return dist;
+	}
+	return closestHit;
 }
 
 float intersect(float time, inout vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sphere, inout float doAA, inout float pick)
@@ -114,97 +136,54 @@ float intersect(float time, inout vec3 ray, vec3 dir, inout vec3 nml, inout tSph
 	nml = -dir;
 	pick = -1.0;
 
-	float b,k,d;
+	float b,d;
 	float aaBorder = 1.15;
+	float dt = (time-iGlobalTime);
 
-	float l=0.0,m=0.0,n=0.0;
-	float tl = l+time;
-	vec3 mContrib = vec3(0.0, 0.0, 0.0);
-	
-	for (int ni=0; ni<N_COUNT; ni++) {
-		float n = float(ni);
-		float r = min(n, 1.0)*10.0;
-		float tn = time + (n*6.28/9.0);
-		vec3 nContrib = mContrib + (vec3(sin(tn), -cos(tn), -cos(tn))*r);
-		if (rayBV(ray, dir, nContrib, 14.0, dist)) {
-			continue;
+	for (int i=0; i<9; i++) {
+		vec4 pr = texture2D(iChannel1, vec2(float(i)/16.0, 0.0));
+		pr += dt*texture2D(iChannel1, vec2(float(i)/16.0, 0.5));
+		vec3 cen = pr.xyz;
+		float r = pr.w;
+
+#ifdef SAILS
+		float a = 8.0*time*(1.0+mod(float(i), 2.5));
+		float t = rayIntersectsDisk(ray, dir, cen, vec3(0.0, 0.0, 1.0), r*1.25, r*2.5, a, nml, dist);
+		if (t < dist) {
+			doAA = max(doAA, 0.0);
+			dist = t;
+			sphere.radius = 100.0;
+			sphere.center = cen;
+			sphere.spec = 8.0;
+			sphere.color = vec3(0.5, 0.1, 0.05);
+			pick = float(i);
 		}
-		
-		doAA = max(doAA, -0.5);
+#endif
 
-		for (int ii=0; ii<I_COUNT; ii++) {
-			float i = float(ii);
-			float ikOff = sin(time+i)*5.0;
-			float sikOff = cos(time+i)*5.0;
-			vec3 iContrib = nContrib + vec3(ikOff, sikOff, ikOff);
-			if (rayBV(ray, dir, iContrib, 7.0, dist)) {
-				continue;
-			}
-	
-			doAA = max(doAA, -0.3);
-			for (int ji=0; ji<J_COUNT; ji++) {
-				float j = float(ji);
-				float kOff = + cos(time*5.0+j)*2.5;
-				float skOff = - sin(time*5.0+j)*2.5;
-				k = l*float(M_COUNT*N_COUNT*I_COUNT*J_COUNT) + m*float(N_COUNT*I_COUNT*J_COUNT) + n*float(I_COUNT*J_COUNT) + i*float(J_COUNT) + j;
-				r = 0.8+0.5*cos(k);
-				vec3 cen = iContrib + vec3(kOff, skOff, kOff);
-	
-	#ifdef SAILS
-				// Do sails first since they're occluded by the sphere.				
-				// BV intersect, let's switch on 4x sampling and check for sail intersect
-				if (!rayBV(ray, dir, cen, r*2.5, dist) && rayBV(ray, dir, cen, r*1.25, dist)) {
-					float a = 8.0*time*(1.0+i+j)+k+j*i;
-					vec3 px = vec3(sin(a), cos(a), 0.0);
-					vec3 py = vec3(cos(a), -sin(a), 0.0);
-					vec3 pz = vec3(0.0, 0.0, 1.0);
-					
-					vec3 p1 = cen - py*5.25*r - px*3.2*r;
-					vec3 p2 = cen + py*5.25*r - px*3.2*r;
-					vec3 p3 = cen + py*0.0*r + px*0.7*r;
-					vec2 uv;
-					float t = rayIntersectsTriangle(ray, dir, p2, p3, p1, uv);
-					if (t > 0.0 && t < dist) {
-						dist = t;
-						sphere.radius = 100.0;
-						nml = pz;
-						if(dot(nml, dir) < 0.0) {
-							nml = -nml;
-						}
-						sphere.center = p1;
-						sphere.color = vec3(0.5, 0.1, 0.05);
-						sphere.spec = 8.0;
-						pick = k;
-					}
-				}
-	#endif
-	
-				d = raySphereDet(ray, dir, cen, r*aaBorder, dist, b);
-				// BV intersect, let's switch on 4x sampling and check for sphere intersect
-				if (d > 0.0 && -b - sqrt(d) > -r*aaBorder) {
-					doAA = max(doAA, 0.0);
-					// d = b*b - dot(rc,rc) + (r*r)*(aaBorder*aaBorder)
-					// eliminate aaBorder^2 by
-					// d_r = b^2 - rc^2 + r^2 * aaBorder^2 - r^2 * aaBorder^2 + r^2
-					//     = b^2 - rc^2 + r^2
-					// rewrite -r^2 * aaBorder^2 + r^2 = -r^2 * (aaBorder^2 - 1)
-					d = d - (r*r)*(aaBorder*aaBorder - 1.0);
-					if (d > 0.0) {
-						float t = -b - sqrt(d);
-						if (t > 0.0 && t < dist) {
-							dist = t;
-							sphere.radius = r;
-							sphere.center = cen;
-							nml = normalize(sphere.center - ray - dist*dir);
-							float odd = mod(n+j, 2.0);
-							float ay = abs(nml.y);
-							float fy = float(ay < 0.05 || (ay > 0.75 && ay < 0.78));
-							sphere.color = mix(vec3(0.1), mix(vec3(0.95, 0.8, 0.7), vec3(0.2), fy), odd);
-							// Switch off AA for points inside the sphere
-							sphere.spec = mix(64.0, 8.0, odd);
-							pick = k;
-						}
-					}
+		d = raySphereDet(ray, dir, cen, r*aaBorder, dist, b);
+		// BV intersect, let's switch on 4x sampling and check for sphere intersect
+		if (d > 0.0 && -b - sqrt(d) > -r*aaBorder) {
+			doAA = max(doAA, 0.0);
+			// d = b*b - dot(rc,rc) + (r*r)*(aaBorder*aaBorder)
+			// eliminate aaBorder^2 by
+			// d_r = b^2 - rc^2 + r^2 * aaBorder^2 - r^2 * aaBorder^2 + r^2
+			//     = b^2 - rc^2 + r^2
+			// rewrite -r^2 * aaBorder^2 + r^2 = -r^2 * (aaBorder^2 - 1)
+			d = d - (r*r)*(aaBorder*aaBorder - 1.0);
+			if (d > 0.0) {
+				float t = -b - sqrt(d);
+				if (t > 0.0 && t < dist) {
+					dist = t;
+					sphere.radius = r;
+					sphere.center = cen;
+					nml = normalize(sphere.center - ray - dist*dir);
+					float odd = mod(float(i), 2.0);
+					float ay = abs(nml.y);
+					float fy = float(ay < 0.05 || (ay > 0.75 && ay < 0.78));
+					sphere.color = mix(vec3(0.1), mix(vec3(0.95, 0.8, 0.7), vec3(0.2), fy), odd);
+					// Switch off AA for points inside the sphere
+					sphere.spec = mix(64.0, 8.0, odd);
+					pick = float(i); //k;
 				}
 			}
 		}
@@ -292,7 +271,7 @@ vec2 hmdWarp(vec2 texIn) {
 }
 #endif
 
-vec3 getDir(vec2 fragCoord)
+vec3 getDir(float time, vec2 fragCoord)
 {
 	vec2 pixelAspect = vec2(iResolution.x / iResolution.y, 1.0);
 	vec2 pixelRatio = vec2(2.0) / iResolution.xy;
@@ -303,11 +282,17 @@ vec3 getDir(vec2 fragCoord)
 	uv = tc;
 	uv.x *= iResolution.x / iResolution.y;
 #endif
+	float dt = (time-iGlobalTime);
 	
-	vec3 dir = vec3(uv, 1.0);
-	dir.xy = rotate(dir.xy, cos(iGlobalTime*0.1));
-	dir.xz = rotate(dir.xz, sin(iGlobalTime*0.15));
-	return normalize(dir);
+	vec3 up = vec3(0.0, 1.0, 0.0);
+	vec3 zaxis = normalize((iCameraTarget.xyz+dt*iCameraTargetV.xyz) - (iCamera.xyz+dt*iCameraV.xyz));
+	vec3 xaxis = normalize(cross(up, zaxis));
+	vec3 yaxis = cross(zaxis, xaxis);
+	mat3 m;
+	m[0] = xaxis;
+	m[1] = yaxis;
+	m[2] = zaxis;
+	return m*normalize(vec3(uv, 1.0));
 }
 
 vec3 doReflections(float time, vec3 oray, vec3 dir, vec3 onml, tSphere oSphere, float odist, float picked)
@@ -328,13 +313,14 @@ vec3 doReflections(float time, vec3 oray, vec3 dir, vec3 onml, tSphere oSphere, 
 		vec3 diff = oSphere.color;
 		float dist = odist;
 		tSphere sphere = oSphere;
-		vec3 v = normalize(pow(tex.rgb, vec3(2.0)));
-		vec3 ref = reflect(dir, normalize(nml + v*(2.0/sphere.spec)) );
+		vec3 v = pow(tex.rgb, vec3(2.0));
+		vec3 ref = reflect(dir, normalize(nml + v*(1.0/sphere.spec)) );
 
 		// reflection
 #ifdef REFLECTION
 		float fog = clamp(dist / FOG_D, 0.0, 1.0);
 		fog *= fog;
+		ray += +ref*0.01;
 		dist = intersect(time, ray, ref, nml, sphere, doAA_, target);
 		sphere.spec *= min(1.0, mix(-1.0, 1.0, abs(picked-target)));
 		ncol += (1.0-fog)*diff * shade(ray, ref, nml, dist, sphere, doAA_);
@@ -349,6 +335,7 @@ vec3 doReflections(float time, vec3 oray, vec3 dir, vec3 onml, tSphere oSphere, 
 		if (sphere.radius > 0.0) {
 			diff *= sphere.color;
 			ref = reflect(ref, nml);
+			ray += +ref*0.01;
 			dist = intersect(time, ray, ref, nml, sphere, doAA_, target);
 			sphere.spec *= min(1.0, mix(-1.0, 1.0, abs(picked-target)));
 			ncol += (1.0-fog)*diff * shade(ray, ref, nml, dist, sphere, doAA_);
@@ -366,10 +353,10 @@ void main(void)
 	if (gl_FragCoord.x < iResolution.x*0.5) xOff = -1.0;
 #endif
 
-	vec3 eye = vec3(-xOff*0.5, -0.0, -30.0);
+	vec3 eye = vec3(-xOff*0.5, 0.0, 0.0) + iCamera.xyz;
 
 	vec3 mdir;
-	mdir = getDir(iMouse.zw);
+	mdir = getDir(iGlobalTime, iMouse.zw);
 	
 	vec3 nml = vec3(0.0);		
 	vec3 col = vec3(0.0);
@@ -394,13 +381,13 @@ void main(void)
 		float tx = floor(dt/box_size);
 		float ty = dt - tx*box_size;
 		vec4 tex = texture2D(iChannel0, mod(gl_FragCoord.xy*box_size+vec2(tx,ty), 256.0)/256.0);
-		float time = (iGlobalTime + (tex.r*2.0-dt/mblur_sample_count)*shutterSpeed) + 450.0 ;
+		float time = (iGlobalTime - (tex.r*2.0-dt/mblur_sample_count)*shutterSpeed);
 
 		float i = 0.0;
 		vec3 ray = eye;
 		float x = floor(0.5*i);
 		float y = 1.0-x;
-		vec3 dir = getDir(gl_FragCoord.xy+(vec2(x,y)*0.5));
+		vec3 dir = getDir(time, gl_FragCoord.xy+(vec2(x,y)*0.5));
 
 		float target = -1.0;
 		float dist = intersect(time, ray, dir, nml, sphere, doAA, target);

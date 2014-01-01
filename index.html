@@ -1,10 +1,10 @@
 <!doctype html>
-<html manifest="fhtr.appcache">
+<html>
 	<head>
 		<meta charset="utf-8">
 		<title>fhtr + building a brighter future</title>
 		<script>
-			window.DEBUG = false;
+			window.DEBUG = true;
 			window.startScript = Date.now();
 			window.legacy = /windows/i.test(navigator.userAgent);
 			window.shaderURLs = [
@@ -254,6 +254,8 @@
 				var t0 = Date.now();
 				var canvas = document.createElement('canvas');
 				var id = new Uint8Array(256*256*4);
+				id.width=256;
+				id.height=256;
 				for (var y=0; y<256; y++) {
 					for (var x=0; x<256; x++) {
 						var off = (y*256 + x) | 0;
@@ -279,6 +281,7 @@
 				window.gl = gl;
 				window.glc = glc;
 				gl.clearColor(1,1,1,1);
+				var ext = gl.getExtension('OES_texture_float');
 				if (DEBUG) console.log('WebGL context creation: '+(Date.now()-t0)+' ms'); t0 = Date.now();
 			})();
 		</script>

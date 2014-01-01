@@ -33,17 +33,35 @@ var init = function() {
 		}
 	);
 
-	var createTexture = function(gl, buf) {
-		gl.activeTexture( gl.TEXTURE0 );
+	var createTexture = function(gl, buf, unit) {
+		gl.activeTexture( gl.TEXTURE0+(unit||0) );
 		var tex = gl.createTexture();
 		gl.bindTexture(gl.TEXTURE_2D, tex);
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256,256,0, gl.RGBA, gl.UNSIGNED_BYTE, buf);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-		gl.generateMipmap(gl.TEXTURE_2D);
+		if (buf instanceof Float32Array) {
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, buf.width, buf.height, 0, gl.RGBA, gl.FLOAT, buf);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+		} else {
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, buf.width, buf.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+			gl.generateMipmap(gl.TEXTURE_2D);
+		}
+		return tex;
+	};
+	var updateTexture = function(gl, tex, buf, unit) {
+		gl.activeTexture( gl.TEXTURE0+(unit||0) );
+		gl.bindTexture(gl.TEXTURE_2D, tex);
+		if (buf instanceof Float32Array) {
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, buf.width, buf.height, 0, gl.RGBA, gl.FLOAT, buf);
+		} else {
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, buf.width, buf.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+		}
 	};
 	var createBuffer = function(gl) {
 		var buf = gl.createBuffer();
@@ -102,7 +120,17 @@ var init = function() {
 		var t1 = Date.now();
 		var t0 = Date.now();
 		var buf = createBuffer(gl);
-		var tex = createTexture(gl, randomTex);
+		var rTex = createTexture(gl, randomTex, 0);
+		var posTex = new Float32Array(4*16*2);
+		posTex.width = 16;
+		posTex.height = 2;
+		for (var i=0; i<posTex.length; i+=4) {
+			posTex[i] = (i/4-8)*2;
+			posTex[i+1] = (i/4-8)*2;
+			posTex[i+2] = (i/4-8)*2;
+			posTex[i+3] = Math.max(1, i/4);
+		}
+		var pTex = createTexture(gl, posTex, 1);
 		if (DEBUG) console.log('Set up WebGL: '+(Date.now()-t0)+' ms');
 
 		var resize = function() {
@@ -127,6 +155,7 @@ var init = function() {
 			gl.useProgram(p);
 			u3f(gl, p, 'iResolution', glc.width, glc.height, 1.0);
 			u1i(gl, p, 'iChannel0', 0);
+			u1i(gl, p, 'iChannel1', 1);
 			var pos = gl.getAttribLocation(p, 'position');
 			gl.enableVertexAttribArray(pos);
 			gl.vertexAttribPointer(pos, 3, gl.FLOAT, false, 0, 0);
@@ -176,6 +205,13 @@ var init = function() {
 		};
 		if (DEBUG) console.log('WebGL setup total: '+(Date.now()-t1)+' ms'); 
 
+		var cameraPos = new Float32Array(4); // xyz, roll angle
+		var cameraPosV = new Float32Array(4); // xyz, roll angle
+		var cameraTarget = new Float32Array(4); // xyz, zoom
+		var cameraTargetV = new Float32Array(4); // xyz, zoom
+		var cx0, cy0, cz0;
+		var x0,y0,z0,i,j;
+		var dt = 16/1000;
 		var tick = function() {
 			if (!blurred) {
 				if (window.startScript) {
@@ -185,6 +221,7 @@ var init = function() {
 					console.log('script start to first frame: '+(Date.now()-window.startScript)+' ms');
 					window.startScript = 0;
 				}
+				t += 16;
 				iRot += (targetRot - iRot) * 0.1;
 				if (Math.abs(targetRot-iRot) < 0.01) {
 					iRot = targetRot;
@@ -193,11 +230,42 @@ var init = function() {
 						iOpen = targetOpen;
 					}
 				}
-				t += 16;
+				for (j=0; j<9; j++) {
+					i = j*4;
+					x0 = posTex[i];
+					y0 = posTex[i+1];
+					z0 = posTex[i+2];
+					r0 = posTex[i+3];
+					posTex[i] = Math.sin(i/3+t/2000)*16;
+					posTex[i+1] = (16-i)*1.2;
+					posTex[i+2] = Math.cos(i/3+t/2000)*16;
+					//posTex[i+3] = 1.9+1.7*Math.sin(i/4+t/100);
+					posTex[i+16*4] = (posTex[i]-x0)/dt;
+					posTex[i+16*4+1] = (posTex[i+1]-y0)/dt;
+					posTex[i+16*4+2] = (posTex[i+2]-z0)/dt;
+					posTex[i+16*4+3] = (posTex[i+3]-r0)/dt;
+				}
+				cx0 = cameraPos[0];
+				cy0 = cameraPos[1];
+				cz0 = cameraPos[2];
+				cameraPos[0] = 30; //Math.sin(t/1500)*30;
+				cameraPos[1] = 0; //Math.sin(t/2500)*10;
+				cameraPos[2] = 30; //Math.cos(t/1500)*30;
+				cameraPosV[0] = (cameraPos[0]-cx0)/dt;
+				cameraPosV[1] = (cameraPos[1]-cy0)/dt;
+				cameraPosV[2] = (cameraPos[2]-cz0)/dt;
+				cameraTarget[1] = 0;
+				cameraTarget[3] = 1;
+
 				u1f(gl, p, 'iGlobalTime', t/1000);
 				u1f(gl, p, 'iRot', iRot);
 				u1f(gl, p, 'iOpen', iOpen);
 				u4fv(gl, p, 'iMouse', mouse);
+				u4fv(gl, p, 'iCamera', cameraPos);
+				u4fv(gl, p, 'iCameraTarget', cameraTarget);
+				u4fv(gl, p, 'iCameraV', cameraPosV);
+				u4fv(gl, p, 'iCameraTargetV', cameraTargetV);
+				updateTexture(gl, pTex, posTex, 1);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 				gl.drawArrays(gl.TRIANGLES, 0, 6);
 			}	

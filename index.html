@@ -8,8 +8,8 @@
 			window.startScript = Date.now();
 			window.legacy = /windows/i.test(navigator.userAgent);
 			window.shaderURLs = [
-				'mblur.frag',
-				(legacy ? 'zardoz_1999.frag' : 'zardoz_2001.frag')
+				'zardoz_2001.frag',
+				'mblur.frag'
 			];
 			window.Loader = {
 				cache: {},

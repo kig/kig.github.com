@@ -184,11 +184,13 @@ var init = function() {
 			mouse[2] = ev.layerX;
 			mouse[3] = this.offsetHeight-ev.layerY;
 			targetRot -= 0.25*Math.PI;
+			ev.preventDefault();
 		};
 		glc.onmouseup = function(ev) {
 			mouse[2] = -1;
 			mouse[3] = -1;
 			targetOpen = targetOpen ? 0 : 1;
+			ev.preventDefault();
 		};
 		glc.onmousemove = function(ev) {
 			mouse[0] = ev.layerX;

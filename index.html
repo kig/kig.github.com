@@ -8,6 +8,7 @@
 			window.startScript = Date.now();
 			window.legacy = /windows/i.test(navigator.userAgent);
 			window.shaderURLs = [
+				'audiophilia.frag',
 				'zardoz_2001.frag',
 				'mblur.frag'
 			];
@@ -56,12 +57,14 @@
 			};
 			Loader.get(shaderURLs);
 		</script>
+		<script type="text/javascript" src="//use.typekit.net/svb7vim.js"></script>
+		<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
 		<style>
 			html,body {
 				margin: 0;
 				padding: 0;
 				overflow: hidden;
-				font-family: 'Helvetica Neue', 'Open Sans';
+				font-family: 'futura-pt', sans-serif;
 				text-align: center;
 				-webkit-perspective: 1200px;
 				width: 100%;
@@ -70,7 +73,7 @@
 			}
 			#about, #contact {
 				opacity: 0;
-				font-family: 'Open Sans', sans-serif;
+				font-family: 'futura-pt', sans-serif;
 				position: absolute;
 				left: 50%;
 				top: 50%;
@@ -94,7 +97,7 @@
 				-webkit-transform: rotateY(0deg);
 			}
 			#footer {
-				font-family: 'Open Sans', 'Helvetica Neue', Helvetica, sans-serif;
+				font-family: 'futura-pt', sans-serif;
 				color: white;
 				position: absolute;
 				right: 16px;
@@ -111,7 +114,7 @@
 				left: 0px;
 				top: 40px;
 				font-size: 80px;
-				font-family: 'Helvetica Neue', 'Open Sans';
+				font-family: 'futura-pt',sans-serif;
 				font-weight: 100;
 				width: 100%;
 				text-align: center;

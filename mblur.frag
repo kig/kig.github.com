@@ -9,6 +9,8 @@ uniform sampler2D iChannel1;
 uniform float iRot;
 uniform float iRot2;
 uniform float iOpen;
+uniform float iPick;
+
 uniform vec4 iCamera;
 uniform vec4 iCameraTarget;
 uniform vec4 iCameraV;
@@ -134,8 +136,8 @@ float intersect(float time, inout vec3 ray, vec3 dir, inout vec3 nml, inout tSph
 	sphere.radius = doAA = -2.0;
 	sphere.center = ray+dist*dir;
 	nml = -dir;
-	pick = -1.0;
 
+	pick = -1.0;
 	float b,d;
 	float aaBorder = 1.15;
 	float dt = (time-iGlobalTime);
@@ -183,7 +185,7 @@ float intersect(float time, inout vec3 ray, vec3 dir, inout vec3 nml, inout tSph
 					sphere.color = mix(vec3(0.1), mix(vec3(0.95, 0.8, 0.7), vec3(0.2), fy), odd);
 					// Switch off AA for points inside the sphere
 					sphere.spec = mix(64.0, 8.0, odd);
-					pick = float(i); //k;
+					pick = float(i);
 				}
 			}
 		}
@@ -196,17 +198,6 @@ float intersect(float time, inout vec3 ray, vec3 dir, inout vec3 nml, inout tSph
 	ray += dist*dir;
 	return dist;
 }
-
-float pickIntersect(float time, vec3 ray, vec3 dir)
-{
-	tSphere sphere;
-	vec3 nml;
-	float doAA, pick;
-	float t = intersect(time, ray, dir, nml, sphere, doAA, pick);
-	return pick;
-}
-
-
 
 
 vec3 lightPos_ = vec3(
@@ -371,7 +362,7 @@ void main(void)
 	// Auto ISO
 	iso = 1.0 / shutterSpeed;
 	
-	float picked = -2.0;
+	float picked = iPick;
 	float k = 0.0;
 	const float mblur_sample_count = float(MBLUR_SAMPLES);
 	float box_size = ceil(sqrt(mblur_sample_count));
@@ -392,10 +383,6 @@ void main(void)
 		float target = -1.0;
 		float dist = intersect(time, ray, dir, nml, sphere, doAA, target);
 
-		if (picked == -2.0 && target >= 0.0 && iMouse.z > 1.0) { 
-			picked = pickIntersect(time, eye, mdir);
-		}
-		
 		sphere.spec *= min(1.0, mix(-1.0, 1.0, abs(picked-target)));
 		col += shade(ray, dir, nml, dist, sphere, doAA_);
 

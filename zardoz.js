@@ -428,7 +428,7 @@ ticker();
 	};
 
 	SCPlayer.prototype.onplay = function() {
-		this.play.innerHTML = '&#10073;&#10073;';
+		this.play.innerHTML = '<span class="music-pause"></span>';
 	};
 
 	SCPlayer.prototype.initializeDOM = function() {

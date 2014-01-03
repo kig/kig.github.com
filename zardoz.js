@@ -302,7 +302,7 @@ var init = function() {
 		var x0,y0,z0,i,j;
 		var dt = 16/1000;
 		var cdir = vec3(0.0);
-		var target = 8;
+		var target = 3;
 		var tick = function() {
 			if (!blurred) {
 				if (window.startScript) {
@@ -344,12 +344,13 @@ var init = function() {
 					posTex[i+16*4+2] = (posTex[i+2]-z0)/dt;
 					posTex[i+16*4+3] = (posTex[i+3]-r0)/dt;
 				}
+				var r = 30 + 100 * (0.5+0.5*Math.cos(Math.PI*Math.min(Math.max(0, t-1000), 1000)/1000));
 				cx0 = cameraPos[0];
 				cy0 = cameraPos[1];
 				cz0 = cameraPos[2];
-				cameraPos[0] = 30; //Math.sin(t/1500)*30;
-				cameraPos[1] = 0; //Math.sin(t/2500)*10;
-				cameraPos[2] = 30; //Math.cos(t/1500)*30;
+				cameraPos[0] = r;
+				cameraPos[1] = 0; // += (posTex[target*4+1]-cameraPos[1])*0.1; //Math.sin(t/2500)*10;
+				cameraPos[2] = r;
 				cameraPosV[0] = (cameraPos[0]-cx0)/dt;
 				cameraPosV[1] = (cameraPos[1]-cy0)/dt;
 				cameraPosV[2] = (cameraPos[2]-cz0)/dt;
@@ -359,7 +360,6 @@ var init = function() {
 				cameraTarget[0] += (posTex[target*4+0]-cameraTarget[0])*0.05;
 				cameraTarget[1] += (posTex[target*4+1]-cameraTarget[1])*0.05;
 				cameraTarget[2] += (posTex[target*4+2]-cameraTarget[2])*0.05;
-				console.log(cameraTarget);
 				cameraTarget[3] = 1;
 				cameraTargetV[0] = (cameraTarget[0]-cx0)/dt;
 				cameraTargetV[1] = (cameraTarget[1]-cy0)/dt;

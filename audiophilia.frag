@@ -44,14 +44,14 @@ float map( in vec3 p )
 
 float scene(vec3 p)
 {
-	return min(length(p-vec3(0.0, 0.9, 0.0))-0.7, max(length(p)-2.8, (map(p)+0.9+p.x+p.y)));
+	return min(length(p-vec3(0.0, 0.9, 0.0))-0.7, max(length(p-vec3(0.0, -0.0, 0.0))-2.8, (map(p)+0.9+p.x+p.y)));
 }
 
 vec3 normal(vec3 p, float d)
 {
 #ifdef OUCH
-	if (length(p)-2.8 == d) {
-		return -normalize(p);
+	if (length(p-vec3(0.0, -0.0, 0.0))-2.8 == d) {
+		return -normalize(p-vec3(0.0, -0.0, 0.0));
 	} else if (length(p-vec3(0.0, 0.9, 0.0))-0.7 == d) {
 		return -normalize(p-vec3(0.0, 0.9, 0.0));
 	} else {

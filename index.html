@@ -8,9 +8,9 @@
 			window.startScript = Date.now();
 			window.legacy = /windows/i.test(navigator.userAgent);
 			window.shaderURLs = [
+				'mblur.frag',
 				'audiophilia.frag',
-				'zardoz_2001.frag',
-				'mblur.frag'
+				'zardoz_2001.frag'
 			];
 			window.Loader = {
 				cache: {},
@@ -266,7 +266,8 @@
 						var off2 = (((y+17) % 256)*256 + ((x+37) % 256)) | 0;
 						var v = (256 * Math.random()) | 0;
 						id[off*4] = id[off2*4+1] = v;
-						id[off*4+3] = 255;
+						id[off*4+2] = (256 * Math.random()) | 0;
+						id[off*4+3] = (256 * Math.random()) | 0;
 					}
 				}
 				window.randomTex = id;

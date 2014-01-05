@@ -16,6 +16,10 @@ uniform vec4 iCameraTarget;
 uniform vec4 iCameraV;
 uniform vec4 iCameraTargetV;
 
+uniform float iShutterSpeed;
+uniform float iISO;
+uniform float iExposureCompensation;
+
 #define SHADOWS
 //#define OCULUS
 #define SAILS
@@ -296,14 +300,9 @@ void main(void)
 	
 	tSphere sphere;
 	
-	float shutterSpeed = 1.0 / 60.0;
-	float iso = 100.0;
-	float exposureCompensation = +1.2;
 	vec4 tex = texture2D(iChannel0, gl_FragCoord.xy/256.0);
 	vec4 tex2 = tex;
 	float k = 0.0;
-	// Auto ISO
-	iso = 1.0 / shutterSpeed;
 	
 	float picked = iPick;
 	const float mblur_sample_count = float(MBLUR_SAMPLES);
@@ -312,7 +311,7 @@ void main(void)
 		float dt = float(dti);
 		float tx = floor(dt/box_size);
 		float ty = dt - tx*box_size;
-		float time = (iGlobalTime - (tex.r*2.0-dt/mblur_sample_count)*shutterSpeed);
+		float time = (iGlobalTime - (tex.r*2.0-dt/mblur_sample_count)*iShutterSpeed);
 		tex = tex.yzwx;
 
 		vec3 ray = eye;
@@ -325,6 +324,6 @@ void main(void)
 			break;
 		}
 	}
-	col = 1.0 - exp(-col/k * iso * shutterSpeed * pow(2.0, exposureCompensation));
+	col = 1.0 - exp(-col/k * iISO * iShutterSpeed * pow(2.0, iExposureCompensation));
 	gl_FragColor = vec4( col, 1.0 ); //mix( vec4(0.0), , 0.5-0.5*cos(3.14159*min(1.0, iGlobalTime/1.0)) );
 }

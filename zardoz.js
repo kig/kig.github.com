@@ -369,6 +369,9 @@ var init = function() {
 				u1f(gl, p, 'iRot', iRot);
 				u1f(gl, p, 'iOpen', iOpen);
 				u1f(gl, p, 'iPick', pick);
+				u1f(gl, p, 'iISO', 100.0);
+				u1f(gl, p, 'iShutterSpeed', 1/60);
+				u1f(gl, p, 'iExposureCompensation', +0);
 				u4fv(gl, p, 'iMouse', mouse);
 				u4fv(gl, p, 'iCamera', cameraPos);
 				u4fv(gl, p, 'iCameraTarget', cameraTarget);

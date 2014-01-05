@@ -1,11 +1,12 @@
 CACHE MANIFEST
-# v48
+# v49
 
 CACHE:
 /zardoz.js
 /mblur.frag
 /audiophilia.frag
 /zardoz_2001.frag
+/atmosphere_distortion.frag
 
 NETWORK:
 *

@@ -50,9 +50,9 @@ float scene(vec3 p)
 vec3 normal(vec3 p, float d)
 {
 #ifdef OUCH
-	if (length(p-vec3(0.0, -0.0, 0.0))-2.8 == d) {
+	if (abs(length(p-vec3(0.0, -0.0, 0.0))-2.8 - d) < 0.00001) {
 		return -normalize(p-vec3(0.0, -0.0, 0.0));
-	} else if (length(p-vec3(0.0, 0.9, 0.0))-0.7 == d) {
+	} else if (abs(length(p-vec3(0.0, 0.9, 0.0))-0.7 - d) < 0.00001) {
 		return -normalize(p-vec3(0.0, 0.9, 0.0));
 	} else {
 		float ed = 14.4 / iResolution.y;

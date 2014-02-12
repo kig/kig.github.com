@@ -1,0 +1,271 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>min wu + fhtr</title>
+		<script>
+			window.DEBUG = true;
+			window.startScript = Date.now();
+			window.legacy = /windows/i.test(navigator.userAgent);
+			window.shaderURLs = [
+				'audiophilia.frag'
+			];
+			window.Loader = {
+				cache: {},
+				get: function(files, callback) {
+					var results = [];
+					var count = 0;
+					var ondone = function(i){ 
+						return function(data) {
+							results[i] = data;
+							count++;
+							if (count === files.length) {
+								if (callback) {
+									callback.apply(null, results);
+								}
+							}
+						}
+					};
+					var self = this;
+					for (var i=0; i<files.length; i++) {
+						var f = this.cache[files[i]];
+						if (f) {
+							if (f.listeners !== undefined) {
+								f.listeners.push(ondone(i));
+							} else {
+								ondone(i)(f);
+							}
+						} else {
+							f = this.cache[files[i]] = {listeners: [ondone(i)]};
+							(function(i){
+								var xhr = new XMLHttpRequest();
+								xhr.open('GET', files[i], true);
+								xhr.onload = function(ev) {
+									var l = self.cache[files[i]].listeners;
+									var f = self.cache[files[i]] = this.responseText;
+									for (var j=0; j<l.length; j++) {
+										l[j](f);
+									}
+								};
+								xhr.send(null);
+							})(i);
+						}
+					}
+				}
+			};
+			Loader.get(shaderURLs);
+		</script>
+		<style>
+			html,body {
+				margin: 0;
+				padding: 0;
+				overflow: hidden;
+				font-family: 'futura-pt', sans-serif;
+				text-align: center;
+				-webkit-perspective: 1200px;
+				width: 100%;
+				height: 100%;
+				background-color: white;
+			}
+			#about, #contact {
+				opacity: 0;
+				font-family: 'futura-pt', sans-serif;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				width: 500px;
+				height: 400px;
+				margin-left: -250px;
+				margin-top: -200px;
+				background: rgba(0,0,0,0.5);
+				box-shadow: 0px 8px 20px rgba(0,0,0,0.5);
+				-webkit-transform: translate3D(0px, -40px, 20px) rotateY(90deg);
+				transition: 0.5s;
+				color: white;
+				box-sizing: border-box;
+				padding: 50px;
+			}
+			#about a, #contact a {
+				color: white;
+			}
+			#about.visible, #contact.visible {
+				opacity: 1;
+				-webkit-transform: rotateY(0deg);
+			}
+			#footer {
+				font-family: 'futura-pt', sans-serif;
+				color: white;
+				position: absolute;
+				right: 16px;
+				bottom: 8px;
+				font-size: 11px;
+				opacity: 0.15;
+			}
+			#footer a {
+				text-decoration: none;
+				color: white;
+			}
+			#title {
+				position: absolute;
+				left: 0px;
+				top: 40px;
+				font-size: 80px;
+				font-family: 'futura-pt',sans-serif;
+				font-weight: 100;
+				width: 100%;
+				text-align: center;
+				color: black;
+				pointer-events:none;
+			}
+			h1 {
+				font-size: 80px;
+				font-weight: 100;
+				margin: 0;
+			}
+			hr {
+				width: 400px;
+				background: black;
+				height: 1px;
+				border: 0px;
+				margin: 15px auto 20px auto;
+				opacity: 0.2;
+			}
+			h3 {
+				font-size: 15px;
+				font-weight: 100;
+				margin: 0;
+				text-transform: uppercase;
+				letter-spacing: 10px;
+				margin-left: 10px;
+			}
+			#shaders {
+				display: none;
+				list-style: none;
+				position: absolute;
+				bottom: 0px;
+				right: 10px;
+				margin: 0;
+				padding: 0;
+				opacity: 0;
+				transition: 1s;
+				vertical-align: top;
+				height: 40px;
+			}
+			#shaders li {
+				vertical-align: top;
+				display: inline-block;
+				margin-left: 4px;
+				padding-top: 6px;
+				margin-bottom: 10px;
+				border-bottom: 4px solid black;
+				color: black;
+				width: 20px;
+				height: 20px;
+				font-size: 11px;
+				font-weight: bold;
+				text-align: center;
+				cursor: pointer;
+				transition: 0.25s;
+			}
+			#shaders li:hover {
+				background: rgba(255,255,255,0.5);
+				border-bottom: 14px solid black;
+				margin-bottom: 0px;
+			}
+			#music {
+				opacity: 0;
+				transition: 1s;
+				position: absolute;
+				left: 10px;
+				bottom: 10px;
+				color: white;
+				height: 46px;
+				width: 300px;
+				text-overflow: ellipsis;
+			}
+			#music:hover {
+				opacity: 1 !important;
+			}
+			#music a {
+				text-decoration:none;
+				color: white;
+			}
+			.music-play {
+				font-size: 39px;
+				position: absolute;
+				left: 74px;
+				top: 0px;
+				white-space: nowrap;
+				cursor: pointer;
+				width: 40px;
+			}
+			.music-author {
+				font-size: 12px;
+				position: absolute;
+				left: 124px;
+				top: 7px;
+				white-space: nowrap;
+			}
+			.music-title {
+				font-size: 12px;
+				position: absolute;
+				left: 124px;
+				top: 25px;
+				white-space: nowrap;
+			}
+			.music-link {
+				position: absolute;
+				left: 0px;
+				top: 0px;
+			}
+			.music-pause {
+				display: inline-block;
+				height: 28px;
+				width: 7px;
+				border-left: 10px solid white;
+				border-right: 10px solid white;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="min_audiophilia.js" async="true"></script>
+		<script>
+			(function() {
+				// Overlap random texture creation with loading network assets.
+				var t0 = Date.now();
+				var canvas = document.createElement('canvas');
+				var id = new Uint8Array(256*256*4);
+				id.width=256;
+				id.height=256;
+				for (var y=0; y<256; y++) {
+					for (var x=0; x<256; x++) {
+						var off = (y*256 + x) | 0;
+						var off2 = (((y+17) % 256)*256 + ((x+37) % 256)) | 0;
+						var v = (256 * Math.random()) | 0;
+						id[off*4] = id[off2*4+1] = v;
+						id[off*4+2] = (256 * Math.random()) | 0;
+						id[off*4+3] = (256 * Math.random()) | 0;
+					}
+				}
+				window.randomTex = id;
+				if (DEBUG) console.log('Create random texture: '+(Date.now()-t0)+' ms'); t0 = Date.now();
+				var glc = document.createElement('canvas');
+				var gl;
+				try {
+					gl = glc.getContext('webgl');
+					if (!gl) { gl = glc.getContext('experimental-webgl'); }
+				} catch (e) {
+					gl = glc.getContext('experimental-webgl');
+				}
+				if (!gl) {
+					return; // no WebGL.
+				}
+				window.gl = gl;
+				window.glc = glc;
+				gl.clearColor(1,1,1,1);
+				var ext = gl.getExtension('OES_texture_float');
+				if (DEBUG) console.log('WebGL context creation: '+(Date.now()-t0)+' ms'); t0 = Date.now();
+			})();
+		</script>
+	</body>
+</html>

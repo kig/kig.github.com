@@ -302,7 +302,7 @@ var init = function() {
 		var x0,y0,z0,i,j;
 		var dt = 16/1000;
 		var cdir = vec3(0.0);
-		var target = 3;
+		var target = 7;
 		var tick = function() {
 			if (!blurred) {
 				if (window.startScript) {
@@ -348,9 +348,9 @@ var init = function() {
 				cx0 = cameraPos[0];
 				cy0 = cameraPos[1];
 				cz0 = cameraPos[2];
-				cameraPos[0] = r;
-				cameraPos[1] = 0; // += (posTex[target*4+1]-cameraPos[1])*0.1; //Math.sin(t/2500)*10;
-				cameraPos[2] = r;
+				cameraPos[0] = 5.0;
+				cameraPos[1] = posTex[target*4+1]+1.0; // += (posTex[target*4+1]-cameraPos[1])*0.1; //Math.sin(t/2500)*10;
+				cameraPos[2] = 5.0;
 				cameraPosV[0] = (cameraPos[0]-cx0)/dt;
 				cameraPosV[1] = (cameraPos[1]-cy0)/dt;
 				cameraPosV[2] = (cameraPos[2]-cz0)/dt;
@@ -500,7 +500,7 @@ ticker();
 			SC.initialize({
 			    client_id: "7edc86ef9d085d9b071f1c1b7199a205"
 			});
-			window.scplayer = new SCPlayer("/tracks/5667639", document.getElementById('music'));			
+			window.scplayer = new SCPlayer("/tracks/99386315", document.getElementById('music'));			
 		} else if (ticks < 100) {
 			ticks++;
 			setTimeout(sctick, 100);

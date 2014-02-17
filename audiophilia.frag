@@ -8,7 +8,7 @@ uniform sampler2D iChannel0;
 uniform float iRot;
 uniform float iOpen;
 
-#define THRESHOLD 0.02
+#define THRESHOLD 0.015
 #define MAX_DISTANCE 2.0
 
 #define RAY_STEPS 30
@@ -38,7 +38,7 @@ float map( in vec3 p )
     f += 0.0625*noise( q ); q = q*2.0;
     f += 0.03125*noise( q ); q = q*2.0;
     f += 0.015625*noise( q );
-	return mix( pow(f*0.89, 6.0)*-2.0+0.2 , pow(f, 0.7)*0.1+0.2, iRot );
+	return mix( pow(f*0.89, 6.0)*-2.0+0.2 , pow(f, 0.7)*0.1+0.2, -20.0+iRot );
 }
 
 
@@ -75,9 +75,9 @@ vec3 shadeBg(vec3 nml)
 	vec2 aspect = vec2(iResolution.x/iResolution.y, 1.0);
 	vec2 uv = (2.0 * gl_FragCoord.xy / iResolution.xy - 1.0) * aspect;
 	vec3 bgLight = normalize(vec3(
-		cos(iGlobalTime*0.2)*4.0, 
-		sin(iGlobalTime)*3.0 - 4.0, 
-		sin(iGlobalTime*0.2)*8.0
+		cos(iGlobalTime*0.2/0.954929658551372)*4.0, 
+		sin(iGlobalTime/1.1936620731892151)*3.0 - 4.0, 
+		sin(iGlobalTime*0.2/0.954929658551372)*8.0
 	));
 	vec3 sun = vec3(2.0, 1.0, 0.5);
 	float bgDiff = dot(nml, vec3(0.0, -1.0, 0.0));

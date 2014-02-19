@@ -315,7 +315,7 @@ var init = function() {
 				}
 				t = Date.now() - startT;
 				iRot += (targetRot - iRot) * 0.1;
-				if (Math.abs(targetRot-iRot) < 0.01) {
+				if (Math.abs(targetRot-iRot) < 0.001) {
 					iRot = targetRot;
 					iOpen += (targetOpen - iOpen) * 0.15;
 					if (Math.abs(targetOpen - iOpen) < 0.01) {

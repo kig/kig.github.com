@@ -38,7 +38,7 @@ float map( in vec3 p )
     f += 0.0625*noise( q ); q = q*2.0;
     f += 0.03125*noise( q ); q = q*2.0;
     f += 0.015625*noise( q );
-	return mix( pow(f*0.89, 6.0)*-2.0+0.2 , pow(f, 0.7)*0.1+0.2, -20.0+iRot );
+	return mix( pow(f*0.89, 6.0)*-2.0+0.2 , pow(f, 0.7)*0.1+0.2, mod(iRot-20.0, -3.14159*15.0) );
 }
 
 

@@ -303,6 +303,7 @@ var init = function() {
 		var dt = 16/1000;
 		var cdir = vec3(0.0);
 		var target = 3;
+		var startT = Date.now();
 		var tick = function() {
 			if (!blurred) {
 				if (window.startScript) {
@@ -312,7 +313,7 @@ var init = function() {
 					console.log('script start to first frame: '+(Date.now()-window.startScript)+' ms');
 					window.startScript = 0;
 				}
-				t += 16;
+				t = Date.now() - startT;
 				iRot += (targetRot - iRot) * 0.1;
 				if (Math.abs(targetRot-iRot) < 0.01) {
 					iRot = targetRot;
@@ -500,7 +501,7 @@ ticker();
 			SC.initialize({
 			    client_id: "7edc86ef9d085d9b071f1c1b7199a205"
 			});
-			window.scplayer = new SCPlayer("/tracks/99386315", document.getElementById('music'));			
+			window.scplayer = new SCPlayer("/tracks/38627338", document.getElementById('music'));			
 		} else if (ticks < 100) {
 			ticks++;
 			setTimeout(sctick, 100);

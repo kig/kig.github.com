@@ -118,8 +118,8 @@ var init = function() {
 		var iResolution = vec3(glc.width, glc.height, 1.0);
 
 		var resize = function() {
-			glc.width = window.innerWidth;
-			glc.height = window.innerHeight;
+			glc.width = 1024*2;
+			glc.height = 768*2;
 			iResolution[0] = glc.width;
 			iResolution[1] = glc.height;
 			gl.viewport(0,0, glc.width, glc.height);
@@ -178,7 +178,6 @@ var init = function() {
 			mouse[0] = ev.layerX;
 			mouse[1] = this.offsetHeight-ev.layerY;
 		};
-		window.onresize = resize;
 
 		var blurred = false;
 		window.onblur = function() {
@@ -189,6 +188,17 @@ var init = function() {
 		};
 		if (DEBUG) console.log('WebGL setup total: '+(Date.now()-t1)+' ms'); 
 
+		function dataURItoBlob(dataURI) {
+			var mimetype = dataURI.split(",")[0].split(':')[1].split(';')[0];
+		    var byteString = atob(dataURI.split(',')[1]);
+		    var ab = new ArrayBuffer(byteString.length);
+		    var ia = new Uint8Array(ab);
+		    for (var i = 0; i < byteString.length; i++) {
+		        ia[i] = byteString.charCodeAt(i);
+		    }
+		    return new Blob([ab], { type: mimetype });
+		};
+
 		var cameraPos = new Float32Array(4); // xyz, roll angle
 		var cameraPosV = new Float32Array(4); // xyz, roll angle
 		var cameraTarget = new Float32Array(4); // xyz, zoom
@@ -198,25 +208,27 @@ var init = function() {
 		var dt = 16/1000;
 		var cdir = vec3(0.0);
 		var target = 7;
+		var captureFrame = 0;
 		var tick = function() {
-			if (window.startScript) {
-				if (window.performance && performance.timing && performance.timing.navigationStart) {
-					console.log('navigationStart to first frame: '+(Date.now()-performance.timing.navigationStart)+' ms');
-				}
-				console.log('script start to first frame: '+(Date.now()-window.startScript)+' ms');
-				window.startScript = 0;
+			var fps = 25;
+			var duration = 1;
+			for (var captureFrame = 0; captureFrame < fps*duration; captureFrame++) {
+				t += 1000 / fps;
+				var rot = 0.5+0.5*Math.cos(2*Math.PI*captureFrame/(fps*duration));
+				u1f(gl, p, 'iGlobalTime', t/1000);
+				u1f(gl, p, 'iRot', -20-100*rot*rot*rot);
+				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+				gl.drawArrays(gl.TRIANGLES, 0, 6);
+				var r = new XMLHttpRequest();
+		        r.open('POST', 'http://localhost:1337/' + captureFrame, false);
+		        var blob = dataURItoBlob(glc.toDataURL());
+		        r.send(blob);
 			}
-			t += 16;
-			iRot += (targetRot - iRot) * 0.1;
-			u1f(gl, p, 'iGlobalTime', t/1000);
-			u1f(gl, p, 'iRot', iRot);
-			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-			gl.drawArrays(gl.TRIANGLES, 0, 6);
-			requestAnimationFrame(tick, glc);
 		};
 		resize();
 		tick();
 		document.body.appendChild(glc);
+		document.body.appendChild(c);
 	});
 };
 var ticker = function() {

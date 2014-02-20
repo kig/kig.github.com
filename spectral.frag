@@ -124,7 +124,15 @@ float scene(inout ray r, inout vec3 nml) {
 	float dist;
 	sphere s;
 
-	mat3 rot = rotationXY( vec2( iRot, iRot ) );
+	float angleStep = 3.14159/2.0;
+	float angleO = (iGlobalTime / 1.0);
+	float angleF = fract(angleO);
+	float angleG = floor(angleO);
+	angleF = 0.5 - 0.5*cos(angleF*3.14159);
+	angleF = angleF*angleF*angleF;
+	float angle = angleG * angleStep + angleF * angleStep;
+
+	mat3 rot = rotationXY( vec2( angle, angle ) );
 
 	// Test a bunch of spheres for ray-sphere intersection.
 	dist = 10000.0;
@@ -153,7 +161,7 @@ void main(void)
 	vec2 aspect = vec2(iResolution.x / iResolution.y, 1.0);
 	vec2 uv = (1.0 - 2.0 * (gl_FragCoord.xy / iResolution.xy)) * aspect;
 
-	float time = 616.89;
+	float time = 616.89 + iRot;
 	mat3 rot = rotationXY( vec2( time, time*0.32 ) );
 
 	ray r;

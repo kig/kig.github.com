@@ -7,14 +7,20 @@
 			window.DEBUG = true;
 			window.startScript = Date.now();
 			window.legacy = /windows/i.test(navigator.userAgent);
-			window.shaderURLs = [
-				'spectral.frag',
-				'audiophilia.frag',
-				'zardoz_2001.frag',
-				'mblur.frag',
-				'atmosphere_distortion.frag',
-				'seaglitch.frag'
-			];
+			if (/mobile/i.test(navigator.userAgent)) {
+				// Use the simplest shader on mobiles
+				window.shaderURLs = ['atmosphere_distortion.frag'];
+			} else {
+				window.shaderURLs = [
+					legacy ? 'zardoz_1999.frag' : 'bling.frag',
+					'spectral.frag',
+					'audiophilia.frag',
+					'zardoz_2001.frag',
+					'mblur.frag',
+					'atmosphere_distortion.frag',
+					'seaglitch.frag'
+				];
+			}
 			window.Loader = {
 				cache: {},
 				get: function(files, callback) {
@@ -237,7 +243,7 @@
 		<div id="title">
 			<h1>fhtr</h1>
 			<hr>
-			<h3>fusion heats the reactor</h3>
+			<h3>opus</h3>
 		</div>
 		<div id="contact">
 			<h3>FHTR Ltd</h3>

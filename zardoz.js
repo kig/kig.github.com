@@ -2,12 +2,6 @@
 var init = function() {
 	if (DEBUG) console.log('script start to execute: '+(Date.now()-window.startScript)+' ms');
 
-	var mobile = /mobile/i.test(navigator.userAgent);
-	if (mobile) {
-		// This is a bit heavy on mobes.
-		return;
-	}
-
 	/*
 	var contact = document.getElementById('contact');
 
@@ -101,7 +95,9 @@ var init = function() {
 		return p;
 	};
 	var getUniform = function(gl, p, name) {
-		return gl.getUniformLocation(p, name);
+		if (!p.uniforms) p.uniforms = {};
+		if (!p.uniforms[name]) p.uniforms[name] = gl.getUniformLocation(p, name);
+		return p.uniforms[name];
 	};
 	var u4fv = function(gl, p, name, v) {
 		gl.uniform4fv(getUniform(gl, p, name), v);
@@ -233,6 +229,8 @@ var init = function() {
 				p = shaders[currentShader] = createProgram(gl, rtShader, p);
 			}
 			gl.useProgram(p);
+			startT = Date.now();
+			targetRot = targetOpen = iRot = iOpen = 0;
 			u3fv(gl, p, 'iResolution', iResolution);
 			u1i(gl, p, 'iChannel0', 0);
 			u1i(gl, p, 'iChannel1', 1);
@@ -322,49 +320,56 @@ var init = function() {
 						iOpen = targetOpen;
 					}
 				}
-				var pick = -2.0;
-				if (down) {
-					getDir(iResolution, cameraPos, cameraTarget, mouse, cdir);
-					pick = trace(cameraPos, cdir, posTex).pick;
-					if (pick >= 0) {
-						target = pick;
+				if ('mblur.frag' === shaderURLs[currentShader]) {
+					var pick = -2.0;
+					if (down) {
+						getDir(iResolution, cameraPos, cameraTarget, mouse, cdir);
+						pick = trace(cameraPos, cdir, posTex).pick;
+						if (pick >= 0) {
+							target = pick;
+						}
 					}
+					for (j=0; j<9; j++) {
+						i = j*4;
+						x0 = posTex[i];
+						y0 = posTex[i+1];
+						z0 = posTex[i+2];
+						r0 = posTex[i+3];
+						posTex[i] = Math.sin(i/3+t/2000)*16;
+						posTex[i+1] = (16-i)*1.2;
+						posTex[i+2] = Math.cos(i/3+t/2000)*16;
+						//posTex[i+3] = 1.9+1.7*Math.sin(i/4+t/100);
+						posTex[i+16*4] = (posTex[i]-x0)/dt;
+						posTex[i+16*4+1] = (posTex[i+1]-y0)/dt;
+						posTex[i+16*4+2] = (posTex[i+2]-z0)/dt;
+						posTex[i+16*4+3] = (posTex[i+3]-r0)/dt;
+					}
+					var r = 30 + 100 * (0.5+0.5*Math.cos(Math.PI*Math.min(Math.max(0, t-1000), 1000)/1000));
+					cx0 = cameraPos[0];
+					cy0 = cameraPos[1];
+					cz0 = cameraPos[2];
+					cameraPos[0] = r;
+					cameraPos[1] = 0; // += (posTex[target*4+1]-cameraPos[1])*0.1; //Math.sin(t/2500)*10;
+					cameraPos[2] = r;
+					cameraPosV[0] = (cameraPos[0]-cx0)/dt;
+					cameraPosV[1] = (cameraPos[1]-cy0)/dt;
+					cameraPosV[2] = (cameraPos[2]-cz0)/dt;
+					cx0 = cameraTarget[0];
+					cy0 = cameraTarget[1];
+					cz0 = cameraTarget[2];
+					cameraTarget[0] += (posTex[target*4+0]-cameraTarget[0])*0.05;
+					cameraTarget[1] += (posTex[target*4+1]-cameraTarget[1])*0.05;
+					cameraTarget[2] += (posTex[target*4+2]-cameraTarget[2])*0.05;
+					cameraTarget[3] = 1;
+					cameraTargetV[0] = (cameraTarget[0]-cx0)/dt;
+					cameraTargetV[1] = (cameraTarget[1]-cy0)/dt;
+					cameraTargetV[2] = (cameraTarget[2]-cz0)/dt;
+					u4fv(gl, p, 'iCamera', cameraPos);
+					u4fv(gl, p, 'iCameraTarget', cameraTarget);
+					u4fv(gl, p, 'iCameraV', cameraPosV);
+					u4fv(gl, p, 'iCameraTargetV', cameraTargetV);
+					updateTexture(gl, pTex, posTex, 1);
 				}
-				for (j=0; j<9; j++) {
-					i = j*4;
-					x0 = posTex[i];
-					y0 = posTex[i+1];
-					z0 = posTex[i+2];
-					r0 = posTex[i+3];
-					posTex[i] = Math.sin(i/3+t/2000)*16;
-					posTex[i+1] = (16-i)*1.2;
-					posTex[i+2] = Math.cos(i/3+t/2000)*16;
-					//posTex[i+3] = 1.9+1.7*Math.sin(i/4+t/100);
-					posTex[i+16*4] = (posTex[i]-x0)/dt;
-					posTex[i+16*4+1] = (posTex[i+1]-y0)/dt;
-					posTex[i+16*4+2] = (posTex[i+2]-z0)/dt;
-					posTex[i+16*4+3] = (posTex[i+3]-r0)/dt;
-				}
-				var r = 30 + 100 * (0.5+0.5*Math.cos(Math.PI*Math.min(Math.max(0, t-1000), 1000)/1000));
-				cx0 = cameraPos[0];
-				cy0 = cameraPos[1];
-				cz0 = cameraPos[2];
-				cameraPos[0] = r;
-				cameraPos[1] = 0; // += (posTex[target*4+1]-cameraPos[1])*0.1; //Math.sin(t/2500)*10;
-				cameraPos[2] = r;
-				cameraPosV[0] = (cameraPos[0]-cx0)/dt;
-				cameraPosV[1] = (cameraPos[1]-cy0)/dt;
-				cameraPosV[2] = (cameraPos[2]-cz0)/dt;
-				cx0 = cameraTarget[0];
-				cy0 = cameraTarget[1];
-				cz0 = cameraTarget[2];
-				cameraTarget[0] += (posTex[target*4+0]-cameraTarget[0])*0.05;
-				cameraTarget[1] += (posTex[target*4+1]-cameraTarget[1])*0.05;
-				cameraTarget[2] += (posTex[target*4+2]-cameraTarget[2])*0.05;
-				cameraTarget[3] = 1;
-				cameraTargetV[0] = (cameraTarget[0]-cx0)/dt;
-				cameraTargetV[1] = (cameraTarget[1]-cy0)/dt;
-				cameraTargetV[2] = (cameraTarget[2]-cz0)/dt;
 
 				u1f(gl, p, 'iGlobalTime', t/1000);
 				u1f(gl, p, 'iRot', iRot);
@@ -374,11 +379,6 @@ var init = function() {
 				u1f(gl, p, 'iShutterSpeed', 1/60);
 				u1f(gl, p, 'iExposureCompensation', +0);
 				u4fv(gl, p, 'iMouse', mouse);
-				u4fv(gl, p, 'iCamera', cameraPos);
-				u4fv(gl, p, 'iCameraTarget', cameraTarget);
-				u4fv(gl, p, 'iCameraV', cameraPosV);
-				u4fv(gl, p, 'iCameraTargetV', cameraTargetV);
-				updateTexture(gl, pTex, posTex, 1);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 				gl.drawArrays(gl.TRIANGLES, 0, 6);
 			}	
@@ -501,7 +501,7 @@ ticker();
 			SC.initialize({
 			    client_id: "7edc86ef9d085d9b071f1c1b7199a205"
 			});
-			window.scplayer = new SCPlayer("/tracks/38627338", document.getElementById('music'));			
+			window.scplayer = new SCPlayer("/tracks/95272723", document.getElementById('music'));			
 		} else if (ticks < 100) {
 			ticks++;
 			setTimeout(sctick, 100);

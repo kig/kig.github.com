@@ -254,7 +254,11 @@ void main(void)
 			
 			// If the ray didn't hit anything or
 			// if we've done enough rays, quit.
-			if ((rayBounceCount == 0.0 && rayCount == 3.0) || rayCount == maxRays) {
+			if ((rayBounceCount == 0.0 && rayCount == 1.0) || rayCount == maxRays) {
+				if (rayCount == 1.0) {
+					rayCount = 3.0;
+					rgb.gb += r.light.gb;
+				}
 				break;
 			}
 			

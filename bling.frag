@@ -1,4 +1,4 @@
-precision mediump float;
+precision highp float;
 precision mediump int;
 
 uniform vec3      iResolution;

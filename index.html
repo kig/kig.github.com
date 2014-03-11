@@ -8,8 +8,8 @@
 			window.startScript = Date.now();
 			window.legacy = /windows/i.test(navigator.userAgent);
 			if (/mobile/i.test(navigator.userAgent)) {
-				// Use the simplest shader on mobiles
-				window.shaderURLs = ['atmosphere_distortion.frag'];
+				// Use the simple shaders on mobiles
+				window.shaderURLs = ['atmosphere_distortion.frag', 'audiophilia.frag', 'bling_dx9.frag'];
 			} else {
 				window.shaderURLs = [
 					legacy ? 'zardoz_1999.frag' : 'bling.frag',

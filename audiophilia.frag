@@ -94,6 +94,9 @@ vec3 shadeBg(vec3 nml)
 void main(void)
 {
 	vec2 aspect = vec2(iResolution.x/iResolution.y, 1.0);
+	if (iResolution.x < iResolution.y) {
+		aspect = vec2(1.0, iResolution.y / iResolution.x);
+	}
 	vec2 uv = (2.0 * gl_FragCoord.xy / iResolution.xy - 1.0) * aspect;
 	vec3 d = normalize(vec3(uv, 1.0));
 	vec3 p = vec3(uv*-2.0, -6.5) + d*3.6;

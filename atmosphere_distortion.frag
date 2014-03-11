@@ -1,26 +1,9 @@
-precision highp float;
+precision mediump float;
 precision mediump int;
 
-uniform vec3      iResolution;
-uniform float     iGlobalTime;
-uniform vec4      iMouse;
-uniform sampler2D iChannel0;
-uniform sampler2D iChannel1;
+uniform vec3 iResolution;
+uniform float iGlobalTime;
 uniform float iRot;
-uniform float iRot2;
-uniform float iOpen;
-uniform float iPick;
-
-uniform vec4 iCamera;
-uniform vec4 iCameraTarget;
-uniform vec4 iCameraV;
-uniform vec4 iCameraTargetV;
-
-uniform float iShutterSpeed;
-uniform float iISO;
-uniform float iExposureCompensation;
-
-#define FOG_D 80.0
 
 struct material {
 	vec3 transmit;
@@ -120,5 +103,5 @@ void main(void)
 	}
 	r.m.light += r.m.transmit * shadeBg(r.d);
 
-	gl_FragColor = vec4( 1.0 - exp(-r.m.light * iISO * iShutterSpeed * pow(2.0, iExposureCompensation)), 1.0 );
+	gl_FragColor = vec4( 1.0 - exp(-r.m.light * 2.0), 1.0 );
 }

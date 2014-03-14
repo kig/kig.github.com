@@ -432,7 +432,17 @@ ticker();
 	};
 
 	SCPlayer.prototype.onplay = function() {
+		if (this.firstPlay) {
+			return;
+		}
 		this.play.innerHTML = '<span class="music-pause"></span>';
+	};
+
+	SCPlayer.prototype.whileplaying = function() {
+		if (this.firstPlay && this.sound.position > 0) {
+			this.play.innerHTML = '<span class="music-pause"></span>';
+			this.firstPlay = false;
+		}
 	};
 
 	SCPlayer.prototype.initializeDOM = function() {
@@ -447,6 +457,8 @@ ticker();
 		this.play.onclick = function() {
 			if (!self.streaming) {
 				self.streaming = true;
+				self.firstPlay = true;
+				self.sound.play();
 				self.play.innerHTML = '';
 				var c = document.createElement('canvas');
 				c.width = 40;
@@ -475,15 +487,6 @@ ticker();
 				};
 				self.play.appendChild(c);
 				requestAnimationFrame(tick, c);
-				SC.stream(self.trackURL, {
-					autoPlay: true,
-					onpause: self.onpause.bind(self),
-					onplay: self.onplay.bind(self),
-					onfinish: self.onstop.bind(self),
-					onstop: self.onstop.bind(self)
-				}, function(sound){
-					self.sound = sound;
-				});
 			} else {
 				self.sound.togglePause();
 			}
@@ -493,6 +496,16 @@ ticker();
 		self.titleEl.textContent = self.title;
 		self.titleEl.href = self.url;
 		self.linkEl.href = self.url;
+		SC.stream(self.trackURL, {
+			autoPlay: false,
+			onpause: self.onpause.bind(self),
+			onplay: self.onplay.bind(self),
+			onfinish: self.onstop.bind(self),
+			onstop: self.onstop.bind(self),
+			whileplaying: self.whileplaying.bind(self)
+		}, function(sound){
+			self.sound = sound;
+		});
 	};
 
 	var ticks = 0;

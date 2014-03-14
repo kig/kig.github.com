@@ -2,17 +2,19 @@
 <html>
 	<head>
 		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 		<title>fhtr + building a brighter future</title>
 		<script>
 			window.DEBUG = true;
 			window.startScript = Date.now();
 			window.legacy = /windows/i.test(navigator.userAgent);
-			if (/mobile/i.test(navigator.userAgent)) {
+			window.mobile = /mobile/i.test(navigator.userAgent);
+			if (mobile) {
 				// Use the simple shaders on mobiles
-				window.shaderURLs = ['atmosphere_distortion.frag', 'audiophilia.frag', 'bling_dx9.frag'];
+				window.shaderURLs = ['bling_dx9.frag', 'audiophilia.frag', 'atmosphere_distortion.frag'];
 			} else {
 				window.shaderURLs = [
-					legacy ? 'zardoz_1999.frag' : 'bling.frag',
+					legacy ? 'zardoz_1999.frag' : 'bling_dx9.frag',
 					'spectral.frag',
 					'audiophilia.frag',
 					'zardoz_2001.frag',
@@ -81,7 +83,15 @@
 				height: 100%;
 				background-color: white;
 			}
+			#glcanvas {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				width: 100%;
+				height: 100%;
+			}
 			#about, #contact {
+				z-index: 2;
 				opacity: 0;
 				font-family: 'futura-pt', sans-serif;
 				position: absolute;
@@ -107,6 +117,7 @@
 				-webkit-transform: rotateY(0deg);
 			}
 			#footer {
+				z-index: 1;
 				font-family: 'futura-pt', sans-serif;
 				color: white;
 				position: absolute;
@@ -120,6 +131,7 @@
 				color: white;
 			}
 			#title {
+				z-index: 1;
 				position: absolute;
 				left: 0px;
 				top: 40px;
@@ -153,6 +165,7 @@
 				margin-left: 10px;
 			}
 			#shaders {
+				z-index: 2;
 				list-style: none;
 				position: absolute;
 				bottom: 0px;
@@ -185,6 +198,7 @@
 				margin-bottom: 0px;
 			}
 			#music {
+				z-index: 1;
 				opacity: 0;
 				transition: 1s;
 				position: absolute;
@@ -237,6 +251,41 @@
 				border-left: 10px solid white;
 				border-right: 10px solid white;
 			}
+			@media (max-height: 600px) {
+				h1 {
+					font-size:  40px;
+				}
+				hr {
+					width: 200px;
+				}
+				h3 {
+					font-size: 10px;
+				}
+			}
+			@media (max-height: 400px) {
+				h1,h3,hr {
+					display: inline-block;
+					margin: 0;
+					padding: 0;
+				}
+				#title {
+					top: 0px;
+				}
+				h1 {
+					position: relative;
+					top: -10px;
+				}
+				h3 {
+					position: relative;
+					top: -16px;
+				}
+				hr {
+					width: 1px;
+					height: 40px;
+					margin-left: 10px;
+					margin-right: 10px;
+				}
+			}
 		</style>
 	</head>
 	<body>
@@ -288,6 +337,7 @@
 				window.randomTex = id;
 				if (DEBUG) console.log('Create random texture: '+(Date.now()-t0)+' ms'); t0 = Date.now();
 				var glc = document.createElement('canvas');
+				glc.id = 'glcanvas';
 				var gl;
 				try {
 					gl = glc.getContext('webgl');

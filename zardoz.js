@@ -208,8 +208,8 @@ var init = function() {
 		var iResolution = vec3(glc.width, glc.height, 1.0);
 
 		var resize = function() {
-			glc.width = window.innerWidth;
-			glc.height = window.innerHeight;
+			glc.width = window.innerWidth * (window.mobile ? 1 : (window.devicePixelRatio || 1));
+			glc.height = window.innerHeight * (window.mobile ? 1 : (window.devicePixelRatio || 1));
 			iResolution[0] = glc.width;
 			iResolution[1] = glc.height;
 			gl.viewport(0,0, glc.width, glc.height);

@@ -380,6 +380,10 @@ void main(void)
 		}
 	}
 	
-	// Gamma curve the average ray light.
-	gl_FragColor = vec4(1.0 - exp(-rgb*3.0/rayCount * 2.8), 1.0);
+	// Gamma curve and dither the average ray light.
+	vec4 c = vec4( clamp(vec3(0.0), vec3(1.0), (1.0 - exp(-((rgb*(3.0*2.8))/rayCount)))), 1.0 );
+
+	c *= 255.0;
+	c = floor(c + vec4(greaterThan(fract(c), vec4(fract(sin(dot(gl_FragCoord.xy+(iGlobalTime*1000.0), vec2(12.9898,78.233))) * 43758.5453))))) / 255.0;
+	gl_FragColor = c;
 }

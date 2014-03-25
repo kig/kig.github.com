@@ -129,8 +129,8 @@ mat material(vec3 p)
 	m.emit = vec3(0.0);
 	m.transmit = vec3(1.0);
 	m.diffuse = 0.0;
-	m.transmit = vec3(0.95, 0.7, 0.5);
-	m.diffuse = 0.1; //0.45-0.45*sin(iGlobalTime*5.2)+0.1;
+	m.transmit = vec3(0.9, 0.7, 0.5);
+	m.diffuse = 0.0; //0.45-0.45*sin(iGlobalTime*5.2)+0.1;
 	return m;
 }
 

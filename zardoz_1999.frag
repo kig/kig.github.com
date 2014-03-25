@@ -112,12 +112,11 @@ mat3 transpose(in mat3 inMatrix)
 	return outMatrix;
 }
 
-mat3 mp = rotationXY(vec2(0.0, iRot));
-mat3 mr = rotationXY(vec2(0.0, iGlobalTime*0.4));
-
 float scene(vec3 p)
 {
-	float cube = length(max(abs(mr*mp*p - vec3(0.0, 2.0, 0.0)) - vec3(0.95), 0.0)) - 0.05;
+	mat3 mr = rotationXY(vec2(0.0, -iGlobalTime*0.4));
+	mat3 mp = rotationXY(vec2(0.0, iGlobalTime*0.4));
+	float cube = length(max(abs(mp*p - vec3(0.0, 2.0, 0.0)) - vec3(0.95), 0.0)) - 0.05;
 	cube = min(cube, length(max(abs(mr*p - vec3(0.0, 0.6-iOpen*0.5, 0.0)) - vec3(0.95, 0.25, 0.95), 0.0)) - 0.05);
 	cube = min(cube, length(max(abs(mr*p - vec3(0.0, 3.4+iOpen*0.5, 0.0)) - vec3(0.95, 0.25, 0.95), 0.0)) - 0.05);
 	return cube;
@@ -131,7 +130,6 @@ mat material(vec3 p)
 	m.transmit = vec3(1.0);
 	m.diffuse = 0.0;
 	m.transmit = vec3(0.95, 0.7, 0.5);
-	m.transmit += pow(iOpen, 2.0) * -vec3(0.75, 0.5, 0.3);
 	m.diffuse = 0.1; //0.45-0.45*sin(iGlobalTime*5.2)+0.1;
 	return m;
 }
@@ -152,7 +150,7 @@ vec3 lightPos_ = vec3(
 );
 vec3 bgLight = normalize(lightPos_);
 vec3 lightPos = bgLight * 9999.0;
-vec3 sun = vec3(2.0)*4.0; //, 3.5, 2.0)*4.0;
+vec3 sun = vec3(4.0, 3.5, 2.0)*4.0;
 
 vec2 aspect = vec2(iResolution.x/iResolution.y, 1.0);
 vec2 uv = (2.0 * gl_FragCoord.xy / iResolution.xy - 1.0) * aspect;
@@ -200,7 +198,7 @@ void offset(inout vec3 nml, float k, float count, float diffuse) {
 
 
 ray setupRay(vec2 uv, float k) {
-	mat3 rot = rotationXY( vec2( -0.603, 3.14159*0.25 )); //iGlobalTime*0.0602 ) );
+	mat3 rot = rotationXY( vec2( -0.603+0.15*(0.5+sin(1.1234*iRot)), 3.14159*0.25+iRot )); //iGlobalTime*0.0602 ) );
 	ray r;
 	r.light = vec3(0.0);
 	r.transmit = vec3(1.0);

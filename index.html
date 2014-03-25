@@ -13,15 +13,21 @@
 				// Use the simple shaders on mobiles
 				window.shaderURLs = ['bling_dx9.frag', 'audiophilia.frag', 'atmosphere_distortion.frag'];
 			} else {
-				window.shaderURLs = [
-					legacy ? 'zardoz_1999.frag' : 'bling_dx9.frag',
-					'spectral.frag',
-					'audiophilia.frag',
-					'zardoz_2001.frag',
-					'mblur.frag',
-					'atmosphere_distortion.frag',
-					'seaglitch.frag'
-				];
+				if (legacy) {
+					window.shaderURLs = ['audiophilia.frag'];
+				} else {
+					window.shaderURLs = [
+						'zardoz_1999.frag',
+						'bling.frag',
+						'bling_dx9.frag',
+						'spectral.frag',
+						'audiophilia.frag',
+						'zardoz_2001.frag',
+						'mblur.frag',
+						'atmosphere_distortion.frag',
+						'seaglitch.frag'
+					];
+				}
 			}
 			window.Loader = {
 				cache: {},

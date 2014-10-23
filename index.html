@@ -7,7 +7,7 @@
 		<script>
 			window.DEBUG = true;
 			window.startScript = Date.now();
-			window.legacy = /windows/i.test(navigator.userAgent);
+			window.legacy = false; // /windows/i.test(navigator.userAgent);
 			window.mobile = /mobile/i.test(navigator.userAgent);
 			if (mobile) {
 				// Use the simple shaders on mobiles

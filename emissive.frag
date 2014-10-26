@@ -8,7 +8,7 @@ uniform sampler2D iChannel0;
 uniform float iRot;
 uniform float iOpen;
 
-#define THRESHOLD 0.03
+#define THRESHOLD 0.001
 #define MAX_DISTANCE 8.0
 
 #define RAY_STEPS 200
@@ -47,29 +47,28 @@ vec3 hash3( float n )
 float scene(vec3 p)
 {
 	float cube = length(max(abs(p) - vec3(0.95), 0.0)) - 0.05;
-	float s1 = length(p+vec3(-1.0, -0.5, -1.0)) - 1.3;
-	float s2 = length(p+vec3(1.15, 1.15, 1.15)) - 0.75;
+	float s1 = length(p+vec3(-1.15, -1.15, -1.15)) - 1.1;
+	float s2 = length(p+vec3(1.15, 1.15, 1.15)) - 1.1;
 	return min( min(cube, s1), s2 );
 }
 
 mat material(vec3 p)
 {
 	float cube = length(max(abs(p) - vec3(1.15), 0.0)) - 0.05;
-	float s1 = length(p+vec3(-1.0, -0.5, -1.0)) - 1.3;
-	float s2 = length(p+vec3(1.15, 1.15, 1.15)) - 0.75;
+	float cd = mod( length(max(abs(p) - vec3(1.2), 0.0)) - 0.05, 0.30 );
+	float s1 = length(p+vec3(-1.15, -1.15, -1.15)) - 1.1;
+	float s2 = length(p+vec3(1.15, 1.15, 1.15)) - 1.1;
 	mat m;
 	m.emit = vec3(0.0);
-	m.transmit = vec3(1.0);
-	m.diffuse = 0.0;
+	m.transmit = vec3(0.9, 0.6, 0.3);
+	m.diffuse = 0.5;
 	if (cube < s1 && cube < s2) {
-		m.transmit = vec3(0.9, 0.6, 0.3);
-		m.diffuse = 0.6;
-	} else if (s1 < s2) {
-		m.transmit = vec3(0.1);//9, 0.9, 0.9);
-		m.diffuse = 0.15;
 	} else {
 		m.transmit = vec3(0.1);
-		m.diffuse = 0.15;
+		m.diffuse = 0.1;
+		if (cube < 0.15) {
+			m.emit = vec3(0.0, 1.5, 1.5) * pow(max(0.0, -sin((iGlobalTime-0.5)/3.0)), 6.0);
+		}
 	}
 	return m;
 }
@@ -90,16 +89,16 @@ vec3 lightPos_ = vec3(
 );
 vec3 bgLight = normalize(lightPos_);
 vec3 lightPos = bgLight * 9999.0;
-vec3 sun = vec3(5.0, 3.5, 2.0)*4.0;
+vec3 sun = vec3(5.0, 3.5, 2.0)*2.0*(0.5+sin(iGlobalTime/3.0)*0.5);
 
 vec3 shadeBg(vec3 nml)
 {
-	vec3 bgCol = vec3(0.2, 0.15, 0.1);
+	vec3 bgCol = sun*0.2*vec3(0.2, 0.15, 0.1);
 	float bgDiff = dot(nml, vec3(0.0, 1.0, 0.0));
 	float sunPow = dot(nml, bgLight);
 	bgCol += 0.1*sun*pow( max(sunPow, 0.0), 2.0);
 	bgCol += 2.0*bgCol*pow( max(-sunPow, 0.0), 2.0);
-	bgCol += bgDiff*vec3(0.25, 0.5, 0.5);
+	bgCol += sun*0.2*bgDiff*vec3(0.25, 0.5, 0.5);
 	bgCol += sun*pow( max(sunPow, 0.0), abs(bgLight.y)*256.0);
 	bgCol += bgCol*pow( max(sunPow, 0.0), abs(bgLight.y)*128.0);
 	return max(vec3(0.0), bgCol);
@@ -183,7 +182,7 @@ vec3 trace(vec2 uv, vec2 uvD)
 			r.p += 4.0*THRESHOLD * r.d;
 			count++;
 			
-			if (dot(r.transmit, sun) < 1.0) {
+			if (dot(r.transmit, vec3(5.0, 3.5, 2.0)*2.0) < 1.0) {
 				// if even the brightest light in the scene can't
 				// make the ray brighter, let's bail.
 				accum += r.light;

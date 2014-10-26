@@ -11,14 +11,14 @@
 			window.mobile = /mobile/i.test(navigator.userAgent);
 			if (mobile) {
 				// Use the simple shaders on mobiles
-				window.shaderURLs = ['bling_dx9.frag', 'audiophilia.frag', 'atmosphere_distortion.frag'];
+				window.shaderURLs = ['atmosphere_distortion.frag', 'audiophilia.frag', 'bling_dx9.frag'];
 			} else {
 				if (legacy) {
 					window.shaderURLs = ['audiophilia.frag'];
 				} else {
 					window.shaderURLs = [
+						'emissive.frag',
 						'zardoz_1999.frag',
-						'bling.frag',
 						'bling_dx9.frag',
 						'spectral.frag',
 						'audiophilia.frag',

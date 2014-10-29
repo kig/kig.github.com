@@ -1,0 +1,244 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+		<title>rmdf | modeller</title>
+		<script>
+			window.DEBUG = true;
+			window.startScript = Date.now();
+			window.legacy = false; // /windows/i.test(navigator.userAgent);
+			window.mobile = /mobile/i.test(navigator.userAgent);
+			window.shaderURLs = [
+				'rmdf.frag'
+			];
+			window.Loader = {
+				cache: {},
+				get: function(files, callback) {
+					var results = [];
+					var count = 0;
+					var ondone = function(i){
+						return function(data) {
+							results[i] = data;
+							count++;
+							if (count === files.length) {
+								if (callback) {
+									callback.apply(null, results);
+								}
+							}
+						}
+					};
+					var self = this;
+					for (var i=0; i<files.length; i++) {
+						var f = this.cache[files[i]];
+						if (f) {
+							if (f.listeners !== undefined) {
+								f.listeners.push(ondone(i));
+							} else {
+								ondone(i)(f);
+							}
+						} else {
+							f = this.cache[files[i]] = {listeners: [ondone(i)]};
+							(function(i){
+								var xhr = new XMLHttpRequest();
+								xhr.open('GET', files[i], true);
+								xhr.onload = function(ev) {
+									var l = self.cache[files[i]].listeners;
+									var f = self.cache[files[i]] = this.responseText;
+									for (var j=0; j<l.length; j++) {
+										l[j](f);
+									}
+								};
+								xhr.send(null);
+							})(i);
+						}
+					}
+				}
+			};
+			Loader.get(shaderURLs);
+		</script>
+		<style>
+			html,body {
+				margin: 0;
+				padding: 0;
+				overflow: hidden;
+				font-family: 'futura-pt', sans-serif;
+				font-weight: 100;
+				text-align: center;
+				-webkit-perspective: 1200px;
+				width: 100%;
+				height: 100%;
+				background-color: white;
+			}
+			#glcanvas {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				width: 100%;
+				height: 100%;
+			}
+			#title {
+				z-index: 1;
+				position: absolute;
+				left: 0px;
+				top: 40px;
+				font-size: 80px;
+				font-family: 'futura-pt',sans-serif;
+				font-weight: 100;
+				width: 100%;
+				text-align: center;
+				color: black;
+				pointer-events:none;
+			}
+			h1 {
+				font-size: 80px;
+				font-weight: 100;
+				margin: 0;
+			}
+			hr {
+				width: 400px;
+				background: black;
+				height: 1px;
+				border: 0px;
+				margin: 15px auto 20px auto;
+				opacity: 0.2;
+			}
+			h3 {
+				font-size: 15px;
+				font-weight: 100;
+				margin: 0;
+				text-transform: uppercase;
+				letter-spacing: 10px;
+				margin-left: 10px;
+			}
+			#shaders {
+				z-index: 2;
+				list-style: none;
+				position: absolute;
+				bottom: 0px;
+				right: 10px;
+				margin: 0;
+				padding: 0;
+				opacity: 0;
+				transition: 1s;
+				vertical-align: top;
+				height: 40px;
+			}
+			#shaders li {
+				vertical-align: top;
+				display: inline-block;
+				margin-left: 4px;
+				padding-top: 6px;
+				margin-bottom: 10px;
+				border-bottom: 4px solid black;
+				color: black;
+				width: 20px;
+				height: 20px;
+				font-size: 11px;
+				text-align: center;
+				cursor: pointer;
+				transition: 0.25s;
+			}
+			#shaders li:hover {
+				background: rgba(255,255,255,0.5);
+				border-bottom: 14px solid black;
+				margin-bottom: 0px;
+			}
+			h1 {
+				font-size:  40px;
+			}
+			hr {
+				width: 200px;
+			}
+			h3 {
+				font-size: 10px;
+			}
+			h1,h3,hr {
+				display: inline-block;
+				margin: 0;
+				padding: 0;
+			}
+			#title {
+				top: 0px;
+			}
+			h1 {
+				position: relative;
+				top: -10px;
+			}
+			h3 {
+				position: relative;
+				top: -16px;
+			}
+			hr {
+				width: 1px;
+				height: 40px;
+				margin-left: 10px;
+				margin-right: 10px;
+			}
+			a {
+				text-decoration: none;
+				color: #000;
+				pointer-events: normal;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="title">
+			<h1>rmdf</h1>
+			<hr>
+			<h3>modeller</h3>
+		</div>
+		<script src="rmdf.js" async="true"></script>
+		<script>
+			(function() {
+				// Overlap random texture creation with loading network assets.
+				var t0 = Date.now();
+				var canvas = document.createElement('canvas');
+				var id = new Uint8Array(256*256*4);
+				id.width=256;
+				id.height=256;
+				for (var y=0; y<256; y++) {
+					for (var x=0; x<256; x++) {
+						var off = (y*256 + x) | 0;
+						var off2 = (((y+17) % 256)*256 + ((x+37) % 256)) | 0;
+						var v = (256 * Math.random()) | 0;
+						id[off*4] = id[off2*4+1] = v;
+						id[off*4+2] = (256 * Math.random()) | 0;
+						id[off*4+3] = (256 * Math.random()) | 0;
+					}
+				}
+				window.randomTex = id;
+				if (DEBUG) console.log('Create random texture: '+(Date.now()-t0)+' ms'); t0 = Date.now();
+				var glc = document.createElement('canvas');
+				glc.id = 'glcanvas';
+				var gl;
+				try {
+					gl = glc.getContext('webgl');
+					if (!gl) { gl = glc.getContext('experimental-webgl'); }
+				} catch (e) {
+					gl = glc.getContext('experimental-webgl');
+				}
+				if (!gl) {
+					return; // no WebGL.
+				}
+				window.gl = gl;
+				window.glc = glc;
+				gl.clearColor(1,1,1,1);
+				var ext = gl.getExtension('OES_texture_float');
+				if (DEBUG) console.log('WebGL context creation: '+(Date.now()-t0)+' ms'); t0 = Date.now();
+			})();
+		</script>
+		<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-40828118-1']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+		<script type="text/javascript" src="//use.typekit.net/svb7vim.js"></script>
+		<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+	</body>
+</html>

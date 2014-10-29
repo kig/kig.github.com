@@ -117,6 +117,17 @@ var init = function() {
 		d[0] = u[0]-v[0]; d[1] = u[1]-v[1]; d[2] = u[2]-v[2];
 		return d;
 	};
+	var add = function(u,v,d) {
+		d[0] = u[0]+v[0]; d[1] = u[1]+v[1]; d[2] = u[2]+v[2];
+		return d;
+	};
+	var scale = function(u,s,d) {
+		d[0] = u[0]*s; d[1] = u[1]*s; d[2] = u[2]*s;
+		return d;
+	};
+	var length = function(v) {
+		return Math.sqrt(dot(v,v));
+	};
 	var normalize = function(v) {
 		var ilen = 1 / Math.sqrt(dot(v,v));
 		v[0] *= ilen; v[1] *= ilen; v[2] *= ilen;
@@ -149,11 +160,11 @@ var init = function() {
 			pick: -2
 		};
 		for (var i=0; i<9; i++) {
-			var off = i*4;
+			var off = i*8;
 			traceTmp[0] = posTex[off];
 			traceTmp[1] = posTex[off+1];
 			traceTmp[2] = posTex[off+2];
-			var r = posTex[off+3];
+			var r = posTex[off+4];
 			raySphere(ro, rd, traceTmp, r, i, hit);
 		}
 		return hit;
@@ -277,18 +288,17 @@ var init = function() {
 
 		var currentObject = 0;
 		var keyHandlers = {};
-		var right = 39, up = 38, left = 37, down = 40;
-		keyHandlers[right] = function() {
+		keyHandlers[39] = function() {
 			objects[currentObject].targetPosition[0] += 0.3;			
 		};
-		keyHandlers[left] = function() {
+		keyHandlers[37] = function() {
 			objects[currentObject].targetPosition[0] -= 0.3;
 		};
-		keyHandlers[up] = function() {
-			objects[currentObject].targetPosition[1] += 0.3;
+		keyHandlers[38] = function(ev) {
+			objects[currentObject].targetPosition[ev.shiftKey ? 2 : 1] += 0.3;
 		};
-		keyHandlers[down] = function() {
-			objects[currentObject].targetPosition[1] -= 0.3;
+		keyHandlers[40] = function(ev) {
+			objects[currentObject].targetPosition[ev.shiftKey ? 2 : 1] -= 0.3;
 		};
 		window.onkeydown = function(ev) {
 			var h = keyHandlers[ev.which];
@@ -297,6 +307,62 @@ var init = function() {
 
 
 		DF = {};
+		DF._tmpVec = vec3(0.0);
+		DF.mergeBoundingSpheres = function(s1, s2) {
+			var a = s1, b = s2;
+			if (b.radius > a.radius) {
+				a = s2, b = s1;
+			}
+			var s = {center: vec3(0.0), radius: 0};
+			var v = this._tmpVec;
+			sub(a, b, v);
+			var distance = length(v);
+			if (distance + b.radius <= a.radius) {
+				return a;
+			}
+			var f = b.radius / a.radius;
+			scale(v, 0.5 * f, v);
+			s.radius = a.radius + b.radius * f;
+			s.center.set(v);
+			return s;
+		};
+
+		testMerge = function() {
+			var s1 = {center: [0,0,0], radius: 1};
+			var s2 = {center: [1,0,0], radius: 0.5};
+			var m = DF.mergeBoundingSpheres(s1, s2);
+			if (Math.abs(m.center[0] - 0.25) > 1e-5 && Math.abs(m.radius - 1.25) > 1e-5) {
+				console.log("Error with partial overlap merge");
+			}
+			s2.center[0] = 0.25;
+			var m = DF.mergeBoundingSpheres(s1, s2);
+			if (Math.abs(m.center[0] - 0.0) > 1e-5 && Math.abs(m.radius - 1.0) > 1e-5) {
+				console.log("Error with full overlap a>b merge");
+			}
+			var m = DF.mergeBoundingSpheres(s2, s1);
+			if (Math.abs(m.center[0] - 0.0) > 1e-5 && Math.abs(m.radius - 1.0) > 1e-5) {
+				console.log("Error with full overlap b>a merge");
+			}
+			s2.center[0] = 2;
+			s2.radius = 1;
+			var m = DF.mergeBoundingSpheres(s1, s2);
+			if (Math.abs(m.center[0] - 1.0) > 1e-5 && Math.abs(m.radius - 2.0) > 1e-5) {
+				console.log("Error with no overlap merge");
+			}
+			s2.center[0] = 3;
+			s2.radius = 1;
+			var m = DF.mergeBoundingSpheres(s1, s2);
+			if (Math.abs(m.center[0] - 1.5) > 1e-5 && Math.abs(m.radius - 2.5) > 1e-5) {
+				console.log("Error with separated no overlap merge");
+			}
+			s2.center[0] = 3;
+			s2.radius = 1e-7;
+			var m = DF.mergeBoundingSpheres(s1, s2);
+			if (Math.abs(m.center[0] - 2.0) > 1e-5 && Math.abs(m.radius - 2.0) > 1e-5) {
+				console.log("Error with separated no overlap merge, point");
+			}
+		};
+		testMerge();
 
 		DF.Types = {
 			sphere: 1,
@@ -313,6 +379,7 @@ var init = function() {
 			this.material = 0;
 			this.type = DF.Types.empty;
 			this.bufferArray = new Float32Array(this.buffer);
+			this.boundingSphere = {center: this.position, radius: 0};
 			if (options) {
 				for (var i in options) {
 					if (this[i] && this[i].byteLength) { // Typed Array
@@ -335,16 +402,24 @@ var init = function() {
 			this.bufferArray[3] = (this.type << 8) | this.material;
 			array.set(this.bufferArray, offset);
 		};
+		DF.Object.prototype.computeBoundingSphere = function() {
+			return this.boundingSphere;
+		};
 
 		DF.Sphere = function(radius, options) {
 			DF.Object.call(this, options);
 			this.radius = radius;
 			this.type = DF.Types.sphere;
+			this.computeBoundingSphere();
 		};
 		DF.Sphere.prototype = Object.create(DF.Object.prototype);
 		DF.Sphere.prototype.write = function(array, offset) {
 			this.bufferArray[4] = this.radius;
 			DF.Object.prototype.write.call(this, array, offset);
+		};
+		DF.Sphere.prototype.computeBoundingSphere = function() {
+			this.boundingSphere.radius = this.radius;
+			return this.boundingSphere;
 		};
 
 		DF.Box = function(width, height, depth, cornerRadius, options) {
@@ -355,29 +430,36 @@ var init = function() {
 			this.dimensions[1] = height;
 			this.dimensions[2] = depth;
 			this.cornerRadius = cornerRadius || 0;
+			this.computeBoundingSphere();
 		};
 		DF.Box.prototype = Object.create(DF.Object.prototype);
 		DF.Box.prototype.write = function(array, offset) {
 			this.bufferArray[7] = this.cornerRadius;
 			DF.Object.prototype.write.call(this, array, offset);
 		};
+		DF.Box.prototype.computeBoundingSphere = function() {
+			var r = Math.max.apply(null, this.dimensions);
+			this.boundingSphere.radius = r;
+			return this.boundingSphere;
+		};
 
 		var materials = [
 			{transmit: [0.9, 0.6, 0.2], diffuse: 0.1, emit: [0,0,0]},
 			{transmit: [0.1, 0.1, 0.1], diffuse: 0.5, emit: [0,0,0]},
-			{transmit: [0.9, 0.9, 0.9], diffuse: 0, emit: [0,0,0]}
+			{transmit: [0.9, 0.9, 0.9], diffuse: 0, emit: [0,0,0]},
+			{transmit: [0.9, 0.9, 0.9], diffuse: 0.2, emit: [0.4, 0.2, 0.1]}
 		];
 		var objects = [
 			new DF.Sphere(0.75, {position: [-1.15, -1.15, -1.15], material: 2}),
 			new DF.Sphere(0.75, {position: [1.15, 1.15, 1.15], material: 1}),
-			/*
+			
 			new DF.Sphere(0.75, {position: [1.15, -1.15, -1.15], material: 2}),
 			new DF.Sphere(0.75, {position: [-1.15, 1.15, -1.15], material: 1}),
 			new DF.Sphere(0.75, {position: [-1.15, -1.15, 1.15], material: 0}),
 			new DF.Sphere(0.75, {position: [-1.15, 1.15, 1.15], material: 2}),
 			new DF.Sphere(0.75, {position: [1.15, -1.15, 1.15], material: 1}),
 			new DF.Sphere(0.75, {position: [1.15, 1.15, -1.15], material: 0}),
-			*/
+			
 			new DF.Box(1,1,1, 0.05)
 		];
 
@@ -392,6 +474,8 @@ var init = function() {
 		var target = 3;
 		var startT = Date.now();
 
+		var sceneBoundingSphere = new Float32Array(4);
+
 		var tick = function() {
 			if (!blurred) {
 				if (window.startScript) {
@@ -402,56 +486,68 @@ var init = function() {
 					window.startScript = 0;
 				}
 				t = Date.now() - startT;
-				iRot += (targetRot - iRot) * 0.1;
-				if (Math.abs(targetRot-iRot) < 0.001) {
-					iRot = targetRot;
-					iOpen += (targetOpen - iOpen) * 0.15;
-					if (Math.abs(targetOpen - iOpen) < 0.01) {
-						iOpen = targetOpen;
+
+				var pick = -2.0;
+				if (down) {
+					getDir(iResolution, cameraPos, cameraTarget, mouse, cdir);
+					pick = trace(cameraPos, cdir, posTex).pick;
+					if (pick >= 0) {
+						currentObject = target = pick;
+					} else {
+						currentObject = target = -1;
 					}
 				}
+				for (var i=0; i<materials.length; i++) {
+					var material = materials[i];
+					posTex.set(material.transmit, 16*8 + i*8);
+					posTex[2*16*4 + i*4 + 3] = material.diffuse;
+					posTex.set(material.emit, 16*8 + i*8 + 4);
+				}
 
-				if ('rmdf.frag' === shaderURLs[currentShader]) {
-					var pick = -2.0;
-					/*
-					if (down) {
-						getDir(iResolution, cameraPos, cameraTarget, mouse, cdir);
-						pick = trace(cameraPos, cdir, posTex).pick;
-						if (pick >= 0) {
-							target = pick;
+				for (var j=0; j<objects.length; j++) {
+					if (j === target) {
+						if (objects[j].material !== 3) {
+							objects[j].originalMaterial = objects[j].material;
+							objects[j].material = 3;
 						}
+					} else if (objects[j].originalMaterial !== undefined) {
+						objects[j].material = objects[j].originalMaterial;
 					}
-					*/
-					for (var i=0; i<materials.length; i++) {
-						var material = materials[i];
-						posTex.set(material.transmit, 16*8 + i*8);
-						posTex[2*16*4 + i*4 + 3] = material.diffuse;
-						posTex.set(material.emit, 16*8 + i*8 + 4);
-					}
-
-					for (var j=0; j<objects.length; j++) {
-						objects[j].tick();
-					}
-					for (var j=0; j<objects.length; j++) {
-						objects[j].write(posTex, j*8);
-					}
-					var tx,ty,tz;
-					tx = ty = tz = 0;
-					var r = 30 + 100 * (0.5+0.5*Math.cos(Math.PI*Math.min(Math.max(0, t-1000), 1000)/1000));
-					cameraPos[0] = -5;
-					cameraPos[1] = 3;
-					cameraPos[2] = 5;
-					cameraTarget[0] = 0; //(tx-cameraTarget[0])*0.05;
-					cameraTarget[1] = 0; //(ty-cameraTarget[1])*0.05;
-					cameraTarget[2] = 0; //(tz-cameraTarget[2])*0.05;
-					cameraTarget[3] = 1;
-					u4fv(gl, p, 'iCamera', cameraPos);
-					u4fv(gl, p, 'iCameraTarget', cameraTarget);
-					updateTexture(gl, pTex, posTex, 1);
+					objects[j].tick();
 				}
+				for (var j=0; j<objects.length; j++) {
+					objects[j].write(posTex, j*8);
+				}
+				var tx,ty,tz;
+				tx = ty = tz = 0;
+				var r = 30 + 100 * (0.5+0.5*Math.cos(Math.PI*Math.min(Math.max(0, t-1000), 1000)/1000));
+				cameraPos[0] = -5;
+				cameraPos[1] = 3;
+				cameraPos[2] = -5;
+				cameraTarget[0] = 0; //(tx-cameraTarget[0])*0.05;
+				cameraTarget[1] = 0; //(ty-cameraTarget[1])*0.05;
+				cameraTarget[2] = 0; //(tz-cameraTarget[2])*0.05;
+				cameraTarget[3] = 1;
+				u4fv(gl, p, 'iCamera', cameraPos);
+				u4fv(gl, p, 'iCameraTarget', cameraTarget);
+
+				var s = objects[0].computeBoundingSphere();
+				for (var i=1; i<objects.length; i++) {
+					s = DF.mergeBoundingSpheres(s, objects[i].computeBoundingSphere());
+				}
+				sceneBoundingSphere.set(s.center);
+				sceneBoundingSphere[3] = s.radius;
+				u4fv(gl, p, 'iBoundingSphere', sceneBoundingSphere);
+
+				updateTexture(gl, pTex, posTex, 1);
+
+				var lightPos = vec3(
+					-Math.cos(t/1000)*-8.5, 
+					Math.sin(t/1000)*3.0 - 4.0, 
+					-(Math.sin(t/1000)*4.0)
+				);
+				u3fv(gl, p, 'iLightPos', lightPos);
 				u1f(gl, p, 'iGlobalTime', t/1000);
-				u1f(gl, p, 'iRot', iRot);
-				u1f(gl, p, 'iOpen', iOpen);
 				u1f(gl, p, 'iPick', pick);
 				u1f(gl, p, 'iISO', 100.0);
 				u1f(gl, p, 'iShutterSpeed', 1/60);

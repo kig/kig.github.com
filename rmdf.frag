@@ -6,13 +6,14 @@ uniform float     iGlobalTime;
 uniform vec4      iMouse;
 uniform sampler2D iChannel0;
 uniform sampler2D iChannel1;
-uniform float iRot;
-uniform float iRot2;
-uniform float iOpen;
 uniform float iPick;
 
 uniform vec4 iCamera;
 uniform vec4 iCameraTarget;
+
+uniform vec4 iBoundingSphere;
+
+uniform vec3 iLightPos;
 
 uniform float iShutterSpeed;
 uniform float iISO;
@@ -105,12 +106,7 @@ vec3 normal(ray r, float d)
 
 vec3 shadeBg(float time, vec3 nml)
 {
-	vec3 lightPos_ = vec3(
-		-cos(time)*-8.5, 
-		sin(time)*3.0 - 4.0, 
-		-(sin(time)*4.0)
-	);
-	vec3 bgLight = normalize(lightPos_);
+	vec3 bgLight = normalize(iLightPos);
 	vec3 lightPos = bgLight * 9999.0;
 	vec3 sun = vec3(5.0, 3.5, 2.0)*2.0; //*(0.5+sin(time/3.0)*0.5);
 
@@ -189,6 +185,13 @@ vec3 trace(float time)
 	vec3 accum = vec3(0.0);
 
 	ray r = setupRay(time, uv, 1.0);
+	vec3 rc = r.p-iBoundingSphere.xyz;
+	float c = dot(rc, rc) - (iBoundingSphere.w*iBoundingSphere.w);
+	float b = dot(r.d, rc);
+	float d = b*b - c;
+	if (d < 0.0) {
+		return shadeBg(time, -r.d);
+	}
 	float k = 1.0;
 	
 	for (int i=0; i<RAY_STEPS; i++) {

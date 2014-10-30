@@ -20,7 +20,7 @@ uniform float iISO;
 uniform float iExposureCompensation;
 
 #define THRESHOLD 0.001
-#define MAX_DISTANCE 8.0
+#define MAX_DISTANCE 16.0
 
 #define RAY_STEPS 200
 #define MAX_SAMPLES (max(4.0, 8.0*maxDiffuseSum))
@@ -62,18 +62,24 @@ vec3 scene(vec3 p)
 	float hitIndex = 0.0;
 	float nd = 0.0;
 	for (int i=0; i<16; i++) {
-		vec4 pr = texture2D(iChannel1, vec2(float(i*2)/32.0, 0.0));
-		float tm = pr.w;
+		vec4 posT = texture2D(iChannel1, vec2(float(i*5+4)/128.0, 0.0));
+		float tm = posT.w;
+		posT.w = 0.0;
 		float t = floor(tm / 256.0);
 		if (t == 0.0) break;
 
 		float m = floor(tm - t*256.0);
-		vec4 pr1 = texture2D(iChannel1, vec2(float(i*2+1)/32.0, 0.0));
+		vec4 params = texture2D(iChannel1, vec2(float(i*5)/128.0, 0.0));
+		mat4 mx;
+		mx[0] = texture2D(iChannel1, vec2(float(i*5+1)/128.0, 0.0));
+		mx[1] = texture2D(iChannel1, vec2(float(i*5+2)/128.0, 0.0));
+		mx[2] = texture2D(iChannel1, vec2(float(i*5+3)/128.0, 0.0));
+		mx[3] = posT;
 
 		if (t == 1.0) {
-			nd = length(p-pr.xyz)-pr1.x;
+			nd = length(vec3(posT+vec4(p,0.0)))-params.x;
 		} else if (t == 2.0) {
-			nd = length(max(abs(p-pr.xyz)-pr1.xyz, 0.0))-pr1.w;
+			nd = length(max(vec3(abs(posT+vec4(p,0.0)))-params.xyz, 0.0))-params.w;
 		}
 		if (nd < dist) {
 			dist = nd;
@@ -87,10 +93,10 @@ vec3 scene(vec3 p)
 mat material(vec3 p, float materialIndex)
 {
 	mat m;
-	vec4 md0 = texture2D(iChannel1, vec2((materialIndex*2.0)/32.0, 0.5));
-	vec4 md1 = texture2D(iChannel1, vec2((materialIndex*2.0+1.0)/32.0, 0.5));
+	vec4 md0 = texture2D(iChannel1, vec2((materialIndex*2.0)/128.0, 0.5));
+	vec4 md1 = texture2D(iChannel1, vec2((materialIndex*2.0+1.0)/128.0, 0.5));
 	m.transmit = md0.xyz;
-	m.diffuse = md0.w;
+	m.diffuse = md1.w;
 	m.emit = md1.xyz;
 	return m;
 }
@@ -218,7 +224,7 @@ vec3 trace(float time)
 				r = setupRay(time, uv+(uvD*mod(xy(k, 4.0), 4.0)/4.0), k);
 				maxDiffuseSum = max(diffuseSum, maxDiffuseSum);
 				diffuseSum = 0.0;
-			}			
+			}
 		} else if (dist > MAX_DISTANCE) {
 			vec3 bg = shadeBg(time, -r.d);
 			if (minDist > THRESHOLD*1.5) {

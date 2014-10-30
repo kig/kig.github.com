@@ -14,6 +14,8 @@ var init = function() {
 		}
 	);
 
+
+
 	var createTexture = function(gl, buf, unit) {
 		gl.activeTexture( gl.TEXTURE0+(unit||0) );
 		var tex = gl.createTexture();
@@ -102,7 +104,7 @@ var init = function() {
 		gl.uniform1i(getUniform(gl, p, name), x);
 	};
 
-	var vec3 = function(x,y,z) {
+	var Vec3 = function(x,y,z) {
 		var v = new Float32Array(3);
 		x = x || 0;
 		v[0] = x;
@@ -140,7 +142,7 @@ var init = function() {
 		return d;
 	};
 
-	var rc = vec3(0.0);
+	var rc = Vec3(0.0);
 	var raySphere = function(ro, rd, cen, r, idx, hit) {
 		sub(ro,cen, rc);
 		var c = dot(rc,rc);
@@ -153,26 +155,29 @@ var init = function() {
 			hit.pick = idx;
 		}
 	};
-	var traceTmp = vec3(0.0);
+	var traceTmp = Vec3(0.0);
 	var trace = function(ro, rd, posTex) {
 		var hit = {
 			dist: 1e7,
 			pick: -2
 		};
-		for (var i=0; i<9; i++) {
-			var off = i*8;
-			traceTmp[0] = posTex[off];
-			traceTmp[1] = posTex[off+1];
-			traceTmp[2] = posTex[off+2];
-			var r = posTex[off+4];
+		for (var i=0; i<16; i++) {
+			var off = i*20;
+			if (posTex[off+19] === 0) {
+				continue;
+			}
+			traceTmp[0] = -posTex[off+16];
+			traceTmp[1] = -posTex[off+17];
+			traceTmp[2] = -posTex[off+18];
+			var r = posTex[off];
 			raySphere(ro, rd, traceTmp, r, i, hit);
 		}
 		return hit;
 	};
 
-	var up = vec3(0.0, 1.0, 0.0);
-	var uvd = vec3(0.0);
-	var xaxis = vec3(0.0), yaxis = vec3(0.0), zaxis = vec3(0.0);
+	var up = Vec3(0.0, 1.0, 0.0);
+	var uvd = Vec3(0.0);
+	var xaxis = Vec3(0.0), yaxis = Vec3(0.0), zaxis = Vec3(0.0);
 	var getDir = function(iResolution, cameraPos, cameraTarget, fragCoord, dir) {
 		uvd[0] = (-1.0 + 2.0*fragCoord[0]/iResolution[0]) * (iResolution[0]/iResolution[1]);
 		uvd[1] = -1.0 + 2.0*fragCoord[1]/iResolution[1];
@@ -187,17 +192,302 @@ var init = function() {
 		return dir;
 	};
 
+
+
+
+	// Distance field renderer objects
+	DF = {};
+	DF._tmpVec = Vec3(0.0);
+	DF._tmpMatrix = mat4.create();
+	DF.mergeBoundingSpheres = function(s1, s2) {
+		var a = s1, b = s2;
+		if (b.radius > a.radius) {
+			a = s2, b = s1;
+		}
+		var s = {center: Vec3(0.0), radius: 0};
+		var v = this._tmpVec;
+		sub(a, b, v);
+		var distance = length(v);
+		if (distance + b.radius <= a.radius) {
+			return a;
+		}
+		var f = b.radius / a.radius;
+		scale(v, 0.5 * f, v);
+		s.radius = a.radius + b.radius * f;
+		s.center.set(v);
+		return s;
+	};
+
+	testMerge = function() {
+		var s1 = {center: [0,0,0], radius: 1};
+		var s2 = {center: [1,0,0], radius: 0.5};
+		var m = DF.mergeBoundingSpheres(s1, s2);
+		if (Math.abs(m.center[0] - 0.25) > 1e-5 && Math.abs(m.radius - 1.25) > 1e-5) {
+			console.log("Error with partial overlap merge");
+		}
+		s2.center[0] = 0.25;
+		var m = DF.mergeBoundingSpheres(s1, s2);
+		if (Math.abs(m.center[0] - 0.0) > 1e-5 && Math.abs(m.radius - 1.0) > 1e-5) {
+			console.log("Error with full overlap a>b merge");
+		}
+		var m = DF.mergeBoundingSpheres(s2, s1);
+		if (Math.abs(m.center[0] - 0.0) > 1e-5 && Math.abs(m.radius - 1.0) > 1e-5) {
+			console.log("Error with full overlap b>a merge");
+		}
+		s2.center[0] = 2;
+		s2.radius = 1;
+		var m = DF.mergeBoundingSpheres(s1, s2);
+		if (Math.abs(m.center[0] - 1.0) > 1e-5 && Math.abs(m.radius - 2.0) > 1e-5) {
+			console.log("Error with no overlap merge");
+		}
+		s2.center[0] = 3;
+		s2.radius = 1;
+		var m = DF.mergeBoundingSpheres(s1, s2);
+		if (Math.abs(m.center[0] - 1.5) > 1e-5 && Math.abs(m.radius - 2.5) > 1e-5) {
+			console.log("Error with separated no overlap merge");
+		}
+		s2.center[0] = 3;
+		s2.radius = 1e-7;
+		var m = DF.mergeBoundingSpheres(s1, s2);
+		if (Math.abs(m.center[0] - 2.0) > 1e-5 && Math.abs(m.radius - 2.0) > 1e-5) {
+			console.log("Error with separated no overlap merge, point");
+		}
+	};
+	//testMerge();
+
+	DF.Types = {
+		Sphere: 1,
+		Box: 2,
+		Torus: 3,
+		Plane: 4,
+
+		empty: 0
+	};
+	DF.typeNames = {};
+	(function() {
+		for (var i in DF.Types) {
+			DF.typeNames[DF.Types[i]] = i;
+		}
+	})();
+
+	DF.Material = function(options) {
+		this.bufferArray = new Float32Array(8);
+		this.transmit = new Float32Array(this.bufferArray.buffer, 0, 3);
+		this.emit = new Float32Array(this.bufferArray.buffer, 4*4, 3);
+		this.diffuse = 0.0;
+		if (options) {
+			for (var i in options) {
+				if (this[i] && this[i].byteLength) { // Typed Array
+					this[i].set(options[i]);
+				} else {
+					this[i] = options[i];
+				}
+			}
+		}
+	};
+	DF.Material.prototype.write = function(array, offset) {
+		this.bufferArray[7] = this.diffuse;
+		array.set(this.bufferArray, offset);
+	};
+
+	DF.Object = function(options) {
+		this.bufferArray = new Float32Array(4 /* Object info */ + 16 /* Transform matrix */);
+		this.buffer = this.bufferArray.buffer;
+		this.matrix = new Float32Array(this.buffer, 4*4, 16);
+		mat4.identity(this.matrix);
+		this.position = new Float32Array(this.buffer, 4 * ( 4+12 ), 3); // Last row of transform matrix.
+		this.material = new DF.Material();
+		this.materialIndex = 0;
+		this.type = DF.Types.empty;
+		this.boundingSphere = {center: this.position, radius: 0};
+		if (options) {
+			for (var i in options) {
+				if (this[i] && this[i].byteLength) { // Typed Array
+					this[i].set(options[i]);
+				} else {
+					this[i] = options[i];
+				}
+			}
+		}
+	};
+	DF.Object.prototype.tick = function() {};
+	DF.Object.prototype.write = function(array, offset) {
+		mat4.copy(DF._tmpMatrix, this.matrix);
+		mat4.invert(this.matrix, DF._tmpMatrix);
+		this.bufferArray[19] = (this.type << 8) | this.materialIndex;
+		array.set(this.bufferArray, offset);
+		mat4.copy(this.matrix, DF._tmpMatrix);
+	};
+	DF.Object.prototype.computeBoundingSphere = function() {
+		return this.boundingSphere;
+	};
+
+	DF.Sphere = function(options) {
+		this.radius = 1;
+		DF.Object.call(this, options);
+		this.type = DF.Types.Sphere;
+		this.computeBoundingSphere();
+	};
+	DF.Sphere.prototype = Object.create(DF.Object.prototype);
+	DF.Sphere.prototype.write = function(array, offset) {
+		this.bufferArray[0] = this.radius;
+		DF.Object.prototype.write.call(this, array, offset);
+	};
+	DF.Sphere.prototype.computeBoundingSphere = function() {
+		this.boundingSphere.radius = this.radius;
+		return this.boundingSphere;
+	};
+
+	DF.Box = function(options) {
+		this.width = this.height = this.depth = 1;
+		DF.Object.call(this, options);
+		this.type = DF.Types.Box;
+		this.dimensions = new Float32Array(this.buffer, 0, 3);
+		this.dimensions[0] = this.width;
+		this.dimensions[1] = this.height;
+		this.dimensions[2] = this.depth;
+		if (this.cornerRadius === undefined) {
+			this.cornerRadius = 0.05;
+		}
+		this.computeBoundingSphere();
+	};
+	DF.Box.prototype = Object.create(DF.Object.prototype);
+	DF.Box.prototype.write = function(array, offset) {
+		this.bufferArray[3] = this.cornerRadius;
+		DF.Object.prototype.write.call(this, array, offset);
+	};
+	DF.Box.prototype.computeBoundingSphere = function() {
+		var r = Math.max.apply(null, this.dimensions);
+		this.boundingSphere.radius = r;
+		return this.boundingSphere;
+	};
+
+
+
+
+
+
 	Loader.get(shaderURLs, function() {
 		var t1 = Date.now();
 		var t0 = Date.now();
 		var buf = createBuffer(gl);
 		var rTex = createTexture(gl, randomTex, 0);
-		var posTex = new Float32Array(32*2 * 4);
-		posTex.width = 32;
+		var posTex = new Float32Array(16*8 * 2 * 4);
+		posTex.width = 16 * 8;
 		posTex.height = 2;
 		var pTex = createTexture(gl, posTex, 1);
 		if (DEBUG) console.log('Set up WebGL: '+(Date.now()-t0)+' ms');
-		var iResolution = vec3(glc.width, glc.height, 1.0);
+		var iResolution = Vec3(glc.width, glc.height, 1.0);
+
+	 	var gui = new dat.GUI();
+
+		var controller = new DF.Box({position: [0.1, 0.1, 0.1], dimensions: [0.1, 0.1, 0.1]});
+		controller.cornerRadius = 0.05;
+		controller.material.diffuse = 0.1;
+		controller.objects = [];
+		controller.objectCount = 0;
+		controller.gui = gui;
+		controller.color = 0xFFFFFF;
+		controller.createNew = function() {
+			var cube = new DF[this.typeName]();
+			cube.material.transmit.set([Math.random(), Math.random(), Math.random()])
+			cube.material.diffuse = Math.random();
+			this.objects[this.objectCount++] = cube;
+			this.setCurrent(cube);
+		};
+		controller.setCurrent = function(current) {
+			if (this.current && this.current.originalEmit != null) {
+				//this.current.material.emit.set(this.current.originalEmit);
+				//this.current.originalEmit = null;
+			}
+			this.current = current;
+			if (this.current) {
+				if (this.current.material.emit[0] !== 0.2) {
+					//this.current.originalEmit = vec3.clone(this.current.material.emit);
+					//this.current.material.emit.set(Vec3(0.2));
+				}
+				this.x.setValue(current.position[0]);
+				this.y.setValue(current.position[1]);
+				this.z.setValue(current.position[2]);
+				this.diffuse.setValue(current.material.diffuse);
+				this.transmit.setValue([].map.call(current.material.transmit, function(v) { return v*255; }))
+				this.emit.setValue([].map.call(current.material.emit, function(v) { return v*255; }))
+				this.type.setValue(DF.typeNames[current.type]);
+				if (current.dimensions) {
+					this.sX.setValue(current.dimensions[0]);
+					this.sY.setValue(current.dimensions[1]);
+					this.sZ.setValue(current.dimensions[2]);
+				}
+			} else {
+				this.x.setValue(0);
+				this.y.setValue(0);
+				this.z.setValue(0);
+				this.type.setValue('Box');				
+			}
+		};
+		controller.proxy = function(propertyChain, min, max, step, name) {
+			var controller = this;
+			var tgt = controller;
+			for (var i=0; i<propertyChain.length-1; i++) {
+				tgt = tgt[propertyChain[i]];
+			}
+			var last = propertyChain[propertyChain.length-1];
+			return this.gui.add(tgt, last, min, max, step).name(name).onChange(function(v) {
+				var t = controller.current;
+				if (t) {
+					for (var i=0; i<propertyChain.length-1; i++) {
+						t = t[propertyChain[i]];
+					}
+					t[last] = v;
+				}
+			});
+		};
+		controller.proxyColor = function(propertyChain, name) {
+			var controller = this;
+			var tgt = controller;
+			for (var i=0; i<propertyChain.length-1; i++) {
+				tgt = tgt[propertyChain[i]];
+			}
+			var last = propertyChain[propertyChain.length-1];
+			tgt[last] = [].slice.call(tgt[last]);
+			return this.gui.addColor(tgt, last).name(name).onChange(function(v) {
+				var t = controller.current;
+				if (t) {
+					for (var i=0; i<propertyChain.length-1; i++) {
+						t = t[propertyChain[i]];
+					}
+					t[last][0] = v[0]/255;
+					t[last][1] = v[1]/255;
+					t[last][2] = v[2]/255;
+				}
+			});
+		};
+
+		controller.typeName = 'Box';
+		controller.type = gui.add(controller, 'typeName', ['Box', 'Sphere']).name("Type").onChange(function(type) {
+			var idx = controller.objects.indexOf(controller.current);
+			if (idx !== -1 && !(controller.current instanceof DF[type])) {
+				controller.objects[idx] = new DF[type]({position: controller.current.position, material: controller.current.material});
+				controller.setCurrent(controller.objects[idx]);
+			}
+		});
+
+
+		controller.x = controller.proxy(['position', 0], -10.1, 10.1, 0.1, "X");
+		controller.y = controller.proxy(['position', 1], -10.1, 10.1, 0.1, "Y");
+		controller.z = controller.proxy(['position', 2], -10.1, 10.1, 0.1, "Z");
+
+		controller.sX = controller.proxy(['dimensions', 0], 0.1, 6, 0.1, 'Width');
+		controller.sY = controller.proxy(['dimensions', 1], 0.1, 6, 0.1, 'Height');
+		controller.sZ = controller.proxy(['dimensions', 2], 0.1, 6, 0.1, 'Depth');
+
+		controller.transmit = controller.proxyColor(['material', 'transmit'], 'Transmit');
+		controller.emit = controller.proxyColor(['material', 'emit'], 'Emit');
+		controller.diffuse = controller.proxy(['material', 'diffuse'], 0.0, 1.0, 0.01, 'Diffuse');
+
+		gui.add(controller, 'createNew');
+
+		controller.createNew();
 
 		var resize = function() {
 			glc.width = window.innerWidth * (window.mobile ? 1 : (window.devicePixelRatio || 1));
@@ -246,23 +536,33 @@ var init = function() {
 
 
 		var t = 0;
-		var targetRot = 0;
-		var targetOpen = 0;
 		var mouse = new Float32Array(4);
-		var iRot = 0;
-		var iOpen = 0;
+		var alpha = 0;
+		var theta = 0;
 
 		var tDown = 0;
 
 		var down = false;
+		var clickEvent = false;
+		var startX, startY;
+		var cancelClick = false;
 
 		glc.onmousedown = function(ev) {
-			mouse[2] = ev.layerX;
-			mouse[3] = this.offsetHeight-ev.layerY;
+			cancelClick = false;
+			startX = mouse[2] = ev.layerX;
+			startY = mouse[3] = this.offsetHeight-ev.layerY;
 			targetRot -= 0.25*Math.PI;
 			down = true;
 			tDown = t;
 			ev.preventDefault();
+		};
+		glc.onclick = function(ev) {
+			if (!cancelClick) {
+				clickEvent = ev;
+			} else {
+				clickEvent = false;
+			}
+			cancelClick = false;
 		};
 		glc.onmouseup = function(ev) {
 			mouse[2] = -1;
@@ -274,6 +574,24 @@ var init = function() {
 		glc.onmousemove = function(ev) {
 			mouse[0] = ev.layerX;
 			mouse[1] = this.offsetHeight-ev.layerY;
+			var dx = mouse[0]-startX;
+			var dy = mouse[1]-startY;
+			if ((dx*dx + dy*dy) > 5*5) {
+				cancelClick = true;
+			}
+			if (down) {
+				var dx = mouse[2] - mouse[0];
+				var dy = mouse[3] - mouse[1];
+				alpha += 0.01 * dy;
+				if (alpha > Math.PI*0.5) alpha = Math.PI*0.5;
+				if (alpha < -Math.PI*0.5) alpha = -Math.PI*0.5;
+				theta -= 0.01 * dx;
+				cameraPos[0] = Math.sin(theta)*8 * Math.cos(alpha);
+				cameraPos[1] = Math.sin(alpha)*8;
+				cameraPos[2] = Math.cos(theta)*8 * Math.cos(alpha);
+				mouse[2] = mouse[0];
+				mouse[3] = mouse[1];
+			}
 		};
 		window.onresize = resize;
 
@@ -286,191 +604,63 @@ var init = function() {
 		};
 		if (DEBUG) console.log('WebGL setup total: '+(Date.now()-t1)+' ms'); 
 
-		var currentObject = 0;
 		var keyHandlers = {};
 		keyHandlers[39] = function() {
-			objects[currentObject].targetPosition[0] += 0.3;			
+			controller.current.position[0] += 0.3;			
 		};
 		keyHandlers[37] = function() {
-			objects[currentObject].targetPosition[0] -= 0.3;
+			controller.current.position[0] -= 0.3;
 		};
 		keyHandlers[38] = function(ev) {
-			objects[currentObject].targetPosition[ev.shiftKey ? 2 : 1] += 0.3;
+			controller.current.position[ev.shiftKey ? 2 : 1] += 0.3;
 		};
 		keyHandlers[40] = function(ev) {
-			objects[currentObject].targetPosition[ev.shiftKey ? 2 : 1] -= 0.3;
+			controller.current.position[ev.shiftKey ? 2 : 1] -= 0.3;
+		};
+		keyHandlers[8] = function(ev) {
+			if (currentObject !== null) {
+				objects.splice(currentObject, 1);
+				currentObject = target = null;
+			}
 		};
 		window.onkeydown = function(ev) {
 			var h = keyHandlers[ev.which];
-			if (h) h(ev);
-		};
-
-
-		DF = {};
-		DF._tmpVec = vec3(0.0);
-		DF.mergeBoundingSpheres = function(s1, s2) {
-			var a = s1, b = s2;
-			if (b.radius > a.radius) {
-				a = s2, b = s1;
-			}
-			var s = {center: vec3(0.0), radius: 0};
-			var v = this._tmpVec;
-			sub(a, b, v);
-			var distance = length(v);
-			if (distance + b.radius <= a.radius) {
-				return a;
-			}
-			var f = b.radius / a.radius;
-			scale(v, 0.5 * f, v);
-			s.radius = a.radius + b.radius * f;
-			s.center.set(v);
-			return s;
-		};
-
-		testMerge = function() {
-			var s1 = {center: [0,0,0], radius: 1};
-			var s2 = {center: [1,0,0], radius: 0.5};
-			var m = DF.mergeBoundingSpheres(s1, s2);
-			if (Math.abs(m.center[0] - 0.25) > 1e-5 && Math.abs(m.radius - 1.25) > 1e-5) {
-				console.log("Error with partial overlap merge");
-			}
-			s2.center[0] = 0.25;
-			var m = DF.mergeBoundingSpheres(s1, s2);
-			if (Math.abs(m.center[0] - 0.0) > 1e-5 && Math.abs(m.radius - 1.0) > 1e-5) {
-				console.log("Error with full overlap a>b merge");
-			}
-			var m = DF.mergeBoundingSpheres(s2, s1);
-			if (Math.abs(m.center[0] - 0.0) > 1e-5 && Math.abs(m.radius - 1.0) > 1e-5) {
-				console.log("Error with full overlap b>a merge");
-			}
-			s2.center[0] = 2;
-			s2.radius = 1;
-			var m = DF.mergeBoundingSpheres(s1, s2);
-			if (Math.abs(m.center[0] - 1.0) > 1e-5 && Math.abs(m.radius - 2.0) > 1e-5) {
-				console.log("Error with no overlap merge");
-			}
-			s2.center[0] = 3;
-			s2.radius = 1;
-			var m = DF.mergeBoundingSpheres(s1, s2);
-			if (Math.abs(m.center[0] - 1.5) > 1e-5 && Math.abs(m.radius - 2.5) > 1e-5) {
-				console.log("Error with separated no overlap merge");
-			}
-			s2.center[0] = 3;
-			s2.radius = 1e-7;
-			var m = DF.mergeBoundingSpheres(s1, s2);
-			if (Math.abs(m.center[0] - 2.0) > 1e-5 && Math.abs(m.radius - 2.0) > 1e-5) {
-				console.log("Error with separated no overlap merge, point");
+			if (h) {
+				//ev.preventDefault();
+				//h(ev);
 			}
 		};
-		testMerge();
 
-		DF.Types = {
-			sphere: 1,
-			roundedBox: 2,
-			torus: 3,
-			plane: 4,
-
-			empty: 0
-		};
-
-		DF.Object = function(options) {
-			this.buffer = new ArrayBuffer(4*8);
-			this.position = new Float32Array(this.buffer, 0, 3);
-			this.material = 0;
-			this.type = DF.Types.empty;
-			this.bufferArray = new Float32Array(this.buffer);
-			this.boundingSphere = {center: this.position, radius: 0};
-			if (options) {
-				for (var i in options) {
-					if (this[i] && this[i].byteLength) { // Typed Array
-						this[i].set(options[i]);
-					} else {
-						this[i] = options[i];
-					}
+		var bounce = function(ev) {
+			ev.preventDefault();
+			var self = this;
+			var p = this.position[1];
+			var t = 0;
+			var ival = setInterval(function() {
+				if (t > 1000) {
+					t = 1000;
+					clearInterval(ival);
 				}
-			}
-			this.targetPosition = new Float32Array(this.position);
+				self.position[1] = p + Math.abs(Math.sin((t/1000)*2*Math.PI));
+				t += 16;
+			}, 16);
 		};
-		DF.Object.prototype.tick = function() {
-			if (this.targetPosition) {
-				this.position[0] += (this.targetPosition[0] - this.position[0]) * 0.1;
-				this.position[1] += (this.targetPosition[1] - this.position[1]) * 0.1;
-				this.position[2] += (this.targetPosition[2] - this.position[2]) * 0.1;
-			}
-		};
-		DF.Object.prototype.write = function(array, offset) {
-			this.bufferArray[3] = (this.type << 8) | this.material;
-			array.set(this.bufferArray, offset);
-		};
-		DF.Object.prototype.computeBoundingSphere = function() {
-			return this.boundingSphere;
-		};
-
-		DF.Sphere = function(radius, options) {
-			DF.Object.call(this, options);
-			this.radius = radius;
-			this.type = DF.Types.sphere;
-			this.computeBoundingSphere();
-		};
-		DF.Sphere.prototype = Object.create(DF.Object.prototype);
-		DF.Sphere.prototype.write = function(array, offset) {
-			this.bufferArray[4] = this.radius;
-			DF.Object.prototype.write.call(this, array, offset);
-		};
-		DF.Sphere.prototype.computeBoundingSphere = function() {
-			this.boundingSphere.radius = this.radius;
-			return this.boundingSphere;
-		};
-
-		DF.Box = function(width, height, depth, cornerRadius, options) {
-			DF.Object.call(this, options);
-			this.type = DF.Types.roundedBox;
-			this.dimensions = new Float32Array(this.buffer, 4*4, 3);
-			this.dimensions[0] = width;
-			this.dimensions[1] = height;
-			this.dimensions[2] = depth;
-			this.cornerRadius = cornerRadius || 0;
-			this.computeBoundingSphere();
-		};
-		DF.Box.prototype = Object.create(DF.Object.prototype);
-		DF.Box.prototype.write = function(array, offset) {
-			this.bufferArray[7] = this.cornerRadius;
-			DF.Object.prototype.write.call(this, array, offset);
-		};
-		DF.Box.prototype.computeBoundingSphere = function() {
-			var r = Math.max.apply(null, this.dimensions);
-			this.boundingSphere.radius = r;
-			return this.boundingSphere;
-		};
-
-		var materials = [
-			{transmit: [0.9, 0.6, 0.2], diffuse: 0.1, emit: [0,0,0]},
-			{transmit: [0.1, 0.1, 0.1], diffuse: 0.5, emit: [0,0,0]},
-			{transmit: [0.9, 0.9, 0.9], diffuse: 0, emit: [0,0,0]},
-			{transmit: [0.9, 0.9, 0.9], diffuse: 0.2, emit: [0.4, 0.2, 0.1]}
-		];
-		var objects = [
-			new DF.Sphere(0.75, {position: [-1.15, -1.15, -1.15], material: 2}),
-			new DF.Sphere(0.75, {position: [1.15, 1.15, 1.15], material: 1}),
-			
-			new DF.Sphere(0.75, {position: [1.15, -1.15, -1.15], material: 2}),
-			new DF.Sphere(0.75, {position: [-1.15, 1.15, -1.15], material: 1}),
-			new DF.Sphere(0.75, {position: [-1.15, -1.15, 1.15], material: 0}),
-			new DF.Sphere(0.75, {position: [-1.15, 1.15, 1.15], material: 2}),
-			new DF.Sphere(0.75, {position: [1.15, -1.15, 1.15], material: 1}),
-			new DF.Sphere(0.75, {position: [1.15, 1.15, -1.15], material: 0}),
-			
-			new DF.Box(1,1,1, 0.05)
-		];
 
 		var cameraPos = new Float32Array(4); // xyz, roll angle
 		var cameraPosV = new Float32Array(4); // xyz, roll angle
 		var cameraTarget = new Float32Array(4); // xyz, zoom
 		var cameraTargetV = new Float32Array(4); // xyz, zoom
+		cameraPos[0] = Math.sin(theta)*8 * Math.cos(alpha);
+		cameraPos[1] = Math.sin(alpha)*8;
+		cameraPos[2] = Math.cos(theta)*8 * Math.cos(alpha);
+		cameraTarget[0] = 0; //(tx-cameraTarget[0])*0.05;
+		cameraTarget[1] = 0; //(ty-cameraTarget[1])*0.05;
+		cameraTarget[2] = 0; //(tz-cameraTarget[2])*0.05;
+		cameraTarget[3] = 1;
 		var cx0, cy0, cz0;
 		var x0,y0,z0,i,j;
 		var dt = 16/1000;
-		var cdir = vec3(0.0);
+		var cdir = Vec3(0.0);
 		var target = 3;
 		var startT = Date.now();
 
@@ -487,47 +677,40 @@ var init = function() {
 				}
 				t = Date.now() - startT;
 
+				var objects = controller.objects;
+				while (objects.length < 16) {
+					objects.push(new DF.Object());
+				}
 				var pick = -2.0;
 				if (down) {
 					getDir(iResolution, cameraPos, cameraTarget, mouse, cdir);
 					pick = trace(cameraPos, cdir, posTex).pick;
 					if (pick >= 0) {
-						currentObject = target = pick;
+						controller.setCurrent(controller.objects[pick]);
 					} else {
-						currentObject = target = -1;
+						controller.setCurrent(null);
 					}
 				}
-				for (var i=0; i<materials.length; i++) {
-					var material = materials[i];
-					posTex.set(material.transmit, 16*8 + i*8);
-					posTex[2*16*4 + i*4 + 3] = material.diffuse;
-					posTex.set(material.emit, 16*8 + i*8 + 4);
-				}
-
-				for (var j=0; j<objects.length; j++) {
-					if (j === target) {
-						if (objects[j].material !== 3) {
-							objects[j].originalMaterial = objects[j].material;
-							objects[j].material = 3;
+				if (clickEvent) {
+					if (pick >= 0) {
+						var o = objects[pick];
+						if (o.onclick) {
+							o.onclick(clickEvent);
 						}
-					} else if (objects[j].originalMaterial !== undefined) {
-						objects[j].material = objects[j].originalMaterial;
 					}
+					clickEvent = false;
+				}
+				for (var j=0; j<objects.length; j++) {
 					objects[j].tick();
 				}
 				for (var j=0; j<objects.length; j++) {
-					objects[j].write(posTex, j*8);
+					objects[j].materialIndex = j;
+					objects[j].write(posTex, j*20);
+					objects[j].material.write(posTex, posTex.width*4 + j*8);
 				}
 				var tx,ty,tz;
 				tx = ty = tz = 0;
 				var r = 30 + 100 * (0.5+0.5*Math.cos(Math.PI*Math.min(Math.max(0, t-1000), 1000)/1000));
-				cameraPos[0] = -5;
-				cameraPos[1] = 3;
-				cameraPos[2] = -5;
-				cameraTarget[0] = 0; //(tx-cameraTarget[0])*0.05;
-				cameraTarget[1] = 0; //(ty-cameraTarget[1])*0.05;
-				cameraTarget[2] = 0; //(tz-cameraTarget[2])*0.05;
-				cameraTarget[3] = 1;
 				u4fv(gl, p, 'iCamera', cameraPos);
 				u4fv(gl, p, 'iCameraTarget', cameraTarget);
 
@@ -541,7 +724,7 @@ var init = function() {
 
 				updateTexture(gl, pTex, posTex, 1);
 
-				var lightPos = vec3(
+				var lightPos = Vec3(
 					-Math.cos(t/1000)*-8.5, 
 					Math.sin(t/1000)*3.0 - 4.0, 
 					-(Math.sin(t/1000)*4.0)

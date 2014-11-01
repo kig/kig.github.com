@@ -714,7 +714,7 @@ var init = function() {
 };
 var ticker = function() {
 	if (window.gl && window.mat4) init();
-	else setTimeout(ticker, 0);
+	else setTimeout(ticker, 5);
 };
 ticker();
 })();

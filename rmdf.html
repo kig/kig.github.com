@@ -309,11 +309,7 @@ this.ival = setInterval(function() {
 	t += 16;
 }, 16);</onclick></rmdf-box></rmdf-scene>
 
-		<script type="text/javascript" src="dat.gui.js" async="true"></script>
-		<script src="ace/ace.js" type="text/javascript" charset="utf-8" async="true"></script>
-		<script src="rmdf_editor.js" async="true"></script>
-
-		<script type="text/javascript" src="gl-matrix.js" async="true"></script>
+		<script src="gl-matrix.js" async="true"></script>
 		<script src="rmdf.js" async="true"></script>
 
 		<script>
@@ -352,9 +348,16 @@ this.ival = setInterval(function() {
 				window.glc = glc;
 				gl.clearColor(1,1,1,1);
 				var ext = gl.getExtension('OES_texture_float');
+				var vext = gl.getExtension('OES_vertex_texture_fetch');
 				if (DEBUG) console.log('WebGL context creation: '+(Date.now()-t0)+' ms'); t0 = Date.now();
 			})();
 		</script>
+		<script src="dat.gui.js" async="true"></script>
+		<script src="ace/ace.js" charset="utf-8" async="true"></script>
+		<script src="rmdf_editor.js" async="true"></script>
+
+		<script src="//use.typekit.net/svb7vim.js" async="true"></script>
+		<script type="text/javascript">(function(){var t=function(){try{Typekit.load()}catch(e){setTimeout(t,100)}};t()})()</script>
 		<script type="text/javascript">
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-40828118-1']);
@@ -365,7 +368,6 @@ this.ival = setInterval(function() {
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
 </script>
-		<script type="text/javascript" src="//use.typekit.net/svb7vim.js"></script>
-		<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+
 	</body>
 </html>

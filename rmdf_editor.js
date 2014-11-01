@@ -286,7 +286,7 @@
 
 	var ticker = function() {
 		if (window.ace && window.dat && window.rmdfController) initEditor(window.rmdfController);
-		else setTimeout(ticker, 0);
+		else setTimeout(ticker, 100);
 	};
 	ticker();
 })();

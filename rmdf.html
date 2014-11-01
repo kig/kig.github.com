@@ -108,6 +108,15 @@
 			{
 				display: none !important;
 			}
+			#edit {
+				transition: 0.5s;
+				opacity: 0;
+				pointer-events: none;				
+			}
+			#edit.visible {
+				opacity: 1;
+				pointer-events: all;
+			}
 			#popup {
 				position: absolute;
 				z-index: 2;
@@ -284,6 +293,7 @@ this.ival = setInterval(function() {
 	self.dimensions[0] = p * (1-0.5*(1-t/1000)*Math.sin(t/500*Math.PI*2));
 	t += 16;
 }, 16);</onclick></rmdf-box></rmdf-scene>
+		<script src="rmdf_editor.js" async="true"></script>
 		<script src="rmdf.js" async="true"></script>
 		<script>
 			(function() {

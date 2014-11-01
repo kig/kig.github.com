@@ -2,6 +2,13 @@
 var init = function() {
 	if (DEBUG) console.log('script start to execute: '+(Date.now()-window.startScript)+' ms');
 
+	if (/Windows/.test(navigator.userAgent)) {
+		var ok = confirm("This page doesn't really work on DirectX-based WebGL. Try anyway?");
+		if (!ok) {
+			return;
+		}
+	}
+
 	window.requestAnimationFrame || (window.requestAnimationFrame = 
 		window.webkitRequestAnimationFrame || 
 		window.mozRequestAnimationFrame    || 

@@ -385,6 +385,8 @@ var init = function() {
 		controller.objectCount = 0;
 		controller.setCurrent = function() {};
 
+		window.rmdfController = controller;
+
 		controller.skybox = {
 			lightPos: Vec3(-5.1),
 			sunColor: [1, 0.8, 0.5].map(function(v){ return v*255; }),
@@ -394,15 +396,12 @@ var init = function() {
 		};
 
 		controller.camera = {
-			iso: 100,
+			ISO: 100,
 			exposureCompensation: 0,
-			shutterSpeed: 1/60
+			shutterSpeed: 1/60,
+			position: Vec3(0.0),
+			target: Vec3(0.0)
 		};
-
-		// Camera
-		controller.fixedCamera = false;
-		controller.cameraPosition = Vec3(0.0);
-		controller.cameraTarget = Vec3(0.0);
 
 		var phi = 0;
 		var theta = 0;
@@ -430,8 +429,11 @@ var init = function() {
 			if (rmdfScene.hasAttribute('ground-color')) { controller.skybox.groundColor = parseColor(rmdfScene.getAttribute('ground-color')); }
 			if (rmdfScene.hasAttribute('horizon-color')) { controller.skybox.horizonColor = parseColor(rmdfScene.getAttribute('horizon-color')); }
 			if (rmdfScene.hasAttribute('sun-position')) { controller.skybox.lightPos.set(JSON.parse('['+rmdfScene.getAttribute('sun-position')+']')); }
-			if (rmdfScene.hasAttribute('camera-position')) { controller.cameraPosition.set(JSON.parse('['+rmdfScene.getAttribute('camera-position')+']')); }
-			if (rmdfScene.hasAttribute('camera-target')) { controller.cameraTarget.set(JSON.parse('['+rmdfScene.getAttribute('camera-target')+']')); }
+			if (rmdfScene.hasAttribute('camera-position')) { controller.camera.position.set(JSON.parse('['+rmdfScene.getAttribute('camera-position')+']')); }
+			if (rmdfScene.hasAttribute('camera-target')) { controller.camera.target.set(JSON.parse('['+rmdfScene.getAttribute('camera-target')+']')); }
+			if (rmdfScene.hasAttribute('camera-iso')) { controller.camera.ISO = parseFloat(rmdfScene.getAttribute('camera-iso')); }
+			if (rmdfScene.hasAttribute('camera-exposure-compensation')) { controller.camera.exposureCompensation = parseFloat(rmdfScene.getAttribute('camera-exposure-compensation')); }
+			if (rmdfScene.hasAttribute('camera-shutter-speed')) { controller.camera.shutterSpeed = parseFloat(rmdfScene.getAttribute('camera-shutter-speed')); }
 			var cc = rmdfScene.childNodes;
 			for (var i=0; i<cc.length; i++) {
 				var c = cc[i];
@@ -467,12 +469,10 @@ var init = function() {
 			}
 		}
 
-		var cv = vec3.sub(Vec3(0.0), controller.cameraPosition, controller.cameraTarget);
+		var cv = vec3.sub(Vec3(0.0), controller.camera.position, controller.camera.target);
 		controller.cameraDistance = vec3.length(cv);
 		phi = Math.atan2(cv[2], cv[0]);
 		theta = Math.acos(cv[1]/controller.cameraDistance);
-
-		initEditor(controller);
 
 		var resize = function() {
 			glc.width = window.innerWidth * (window.mobile ? 1 : (window.devicePixelRatio || 1));
@@ -574,9 +574,9 @@ var init = function() {
 				if (theta > Math.PI) theta = Math.PI;
 				if (theta < 0.001) theta = 0.001; // Avoid camera singularity at 0. Probably screwy upvector.
 				phi += 0.01 * dx;
-				cameraPos[0] = controller.cameraDistance * Math.sin(theta) * Math.cos(phi);
-				cameraPos[1] = controller.cameraDistance * Math.cos(theta);
-				cameraPos[2] = controller.cameraDistance * Math.sin(theta) * Math.sin(phi);
+				controller.camera.position[0] = controller.cameraDistance * Math.sin(theta) * Math.cos(phi);
+				controller.camera.position[1] = controller.cameraDistance * Math.cos(theta);
+				controller.camera.position[2] = controller.cameraDistance * Math.sin(theta) * Math.sin(phi);
 				mouse[2] = mouse[0];
 				mouse[3] = mouse[1];
 			}
@@ -585,9 +585,9 @@ var init = function() {
 			controller.cameraDistance *= Math.pow(1.002, -ev.wheelDeltaY);
 			if (controller.cameraDistance < 4) { controller.cameraDistance = 4 };
 			if (controller.cameraDistance > 10) { controller.cameraDistance = 10 };
-			cameraPos[0] = controller.cameraDistance * Math.sin(theta) * Math.cos(phi);
-			cameraPos[1] = controller.cameraDistance * Math.cos(theta);
-			cameraPos[2] = controller.cameraDistance * Math.sin(theta) * Math.sin(phi);
+			controller.camera.position[0] = controller.cameraDistance * Math.sin(theta) * Math.cos(phi);
+			controller.camera.position[1] = controller.cameraDistance * Math.cos(theta);
+			controller.camera.position[2] = controller.cameraDistance * Math.sin(theta) * Math.sin(phi);
 		}, false);
 		window.onresize = resize;
 
@@ -615,13 +615,9 @@ var init = function() {
 			}, 16);
 		};
 
-		var cameraPos = new Float32Array(4); // xyz, roll angle
-		var cameraTarget = new Float32Array(4); // xyz, zoom
-		cameraPos[0] = controller.cameraDistance * Math.sin(theta) * Math.cos(phi);
-		cameraPos[1] = controller.cameraDistance * Math.cos(theta);
-		cameraPos[2] = controller.cameraDistance * Math.sin(theta) * Math.sin(phi);
-		cameraTarget[3] = 1;
-		cameraTarget.set(controller.cameraTarget);
+		controller.camera.position[0] = controller.cameraDistance * Math.sin(theta) * Math.cos(phi);
+		controller.camera.position[1] = controller.cameraDistance * Math.cos(theta);
+		controller.camera.position[2] = controller.cameraDistance * Math.sin(theta) * Math.sin(phi);
 		var cx0, cy0, cz0;
 		var x0,y0,z0,i,j;
 		var dt = 16/1000;
@@ -648,8 +644,8 @@ var init = function() {
 				}
 				var pick = -2.0;
 				if (clickEvent) {
-					getDir(iResolution, cameraPos, cameraTarget, mouse, cdir);
-					pick = trace(cameraPos, cdir, posTex).pick;
+					getDir(iResolution, controller.camera.position, controller.camera.target, mouse, cdir);
+					pick = trace(controller.camera.position, cdir, posTex).pick;
 					if (pick >= 0) {
 						controller.setCurrent(controller.objects[pick]);
 						var o = objects[pick];
@@ -677,8 +673,8 @@ var init = function() {
 				var tx,ty,tz;
 				tx = ty = tz = 0;
 				var r = 30 + 100 * (0.5+0.5*Math.cos(Math.PI*Math.min(Math.max(0, t-1000), 1000)/1000));
-				u4fv(gl, p, 'iCamera', cameraPos);
-				u4fv(gl, p, 'iCameraTarget', cameraTarget);
+				u3fv(gl, p, 'iCamera', controller.camera.position);
+				u3fv(gl, p, 'iCameraTarget', controller.camera.target);
 
 				var s = objects[0].computeBoundingSphere();
 				for (var i=1; i<objects.length; i++) {
@@ -697,7 +693,7 @@ var init = function() {
 				u3fv(gl, p, 'iHorizonColor', vec3.scale(DF._tmpVec, controller.skybox.horizonColor, 1/255));
 				u1f(gl, p, 'iGlobalTime', t/1000);
 				u1f(gl, p, 'iPick', pick);
-				u1f(gl, p, 'iISO', controller.camera.iso);
+				u1f(gl, p, 'iISO', controller.camera.ISO);
 				u1f(gl, p, 'iShutterSpeed', controller.camera.shutterSpeed);
 				u1f(gl, p, 'iExposureCompensation', controller.camera.exposureCompensation);
 				u4fv(gl, p, 'iMouse', mouse);
@@ -717,7 +713,7 @@ var init = function() {
 	});
 };
 var ticker = function() {
-	if (window.gl && window.initEditor) init();
+	if (window.gl && window.mat4) init();
 	else setTimeout(ticker, 0);
 };
 ticker();

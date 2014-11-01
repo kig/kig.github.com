@@ -8,8 +8,8 @@ uniform sampler2D iChannel0;
 uniform sampler2D iChannel1;
 uniform float iPick;
 
-uniform vec4 iCamera;
-uniform vec4 iCameraTarget;
+uniform vec3 iCamera;
+uniform vec3 iCameraTarget;
 
 uniform vec4 iBoundingSphere;
 

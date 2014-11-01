@@ -21,6 +21,24 @@ var init = function() {
 		}
 	);
 
+	window.showPopup = function(title, content, x, y) {
+		var popup = document.getElementById('popup');
+		var cx = window.innerWidth / 2;
+		var cy = window.innerHeight / 2;
+		var dx = x - cx;
+		var dy = y - cy;
+		popup.style.left = x + 'px';
+		popup.style.top = y + 'px';
+		popup.classList.add('visible');
+		popup.querySelector('.close').onclick = hidePopup;
+		popup.querySelector('h2').textContent = title;
+		popup.querySelector('.content').innerHTML = content;
+	};
+
+	window.hidePopup = function() {
+		var popup = document.getElementById('popup');
+		popup.classList.remove('visible');		
+	};
 
 
 	var createTexture = function(gl, buf, unit) {
@@ -101,8 +119,17 @@ var init = function() {
 	var u3fv = function(gl, p, name, v) {
 		gl.uniform3fv(getUniform(gl, p, name), v);
 	};
+	var u2fv = function(gl, p, name, v) {
+		gl.uniform2fv(getUniform(gl, p, name), v);
+	};
+	var u4f = function(gl, p, name, x,y,z,w) {
+		gl.uniform3f(getUniform(gl, p, name), x,y,z,w);
+	};
 	var u3f = function(gl, p, name, x,y,z) {
 		gl.uniform3f(getUniform(gl, p, name), x,y,z);
+	};
+	var u2f = function(gl, p, name, x,y) {
+		gl.uniform2f(getUniform(gl, p, name), x,y);
 	};
 	var u1f = function(gl, p, name, x) {
 		gl.uniform1f(getUniform(gl, p, name), x);
@@ -119,42 +146,13 @@ var init = function() {
 		v[2] = z || x;
 		return v;
 	};
-	var dot = function(u,v) {
-		return u[0]*v[0] + u[1]*v[1] + u[2]*v[2];
-	};
-	var sub = function(u,v,d) {
-		d[0] = u[0]-v[0]; d[1] = u[1]-v[1]; d[2] = u[2]-v[2];
-		return d;
-	};
-	var add = function(u,v,d) {
-		d[0] = u[0]+v[0]; d[1] = u[1]+v[1]; d[2] = u[2]+v[2];
-		return d;
-	};
-	var scale = function(u,s,d) {
-		d[0] = u[0]*s; d[1] = u[1]*s; d[2] = u[2]*s;
-		return d;
-	};
-	var length = function(v) {
-		return Math.sqrt(dot(v,v));
-	};
-	var normalize = function(v) {
-		var ilen = 1 / Math.sqrt(dot(v,v));
-		v[0] *= ilen; v[1] *= ilen; v[2] *= ilen;
-		return v;
-	};
-	var cross = function(u,v,d) {
-		d[0] = u[1]*v[2] - u[2]*v[1];
-		d[1] = u[2]*v[0] - u[0]*v[2];
-		d[2] = u[0]*v[1] - u[1]*v[0];
-		return d;
-	};
 
 	var rc = Vec3(0.0);
 	var raySphere = function(ro, rd, cen, r, idx, hit) {
-		sub(ro,cen, rc);
-		var c = dot(rc,rc);
+		vec3.sub(rc, ro,cen);
+		var c = vec3.dot(rc,rc);
 		c -= r*r;
-		var b = dot(rd, rc);
+		var b = vec3.dot(rd, rc);
 		var d = b*b - c;
 		var t = -b - Math.sqrt(Math.abs(d));
 		if (t > 0 && d > 0 && t < hit.dist) {
@@ -184,18 +182,19 @@ var init = function() {
 
 	var up = Vec3(0.0, 1.0, 0.0);
 	var uvd = Vec3(0.0);
-	var xaxis = Vec3(0.0), yaxis = Vec3(0.0), zaxis = Vec3(0.0);
+	var cameraMat = mat3.create();
+	var xaxis = new Float32Array(cameraMat.buffer, 0, 3);
+	var yaxis = new Float32Array(cameraMat.buffer, 3*4, 3);
+	var zaxis = new Float32Array(cameraMat.buffer, 2*3*4, 3);
 	var getDir = function(iResolution, cameraPos, cameraTarget, fragCoord, dir) {
 		uvd[0] = (-1.0 + 2.0*fragCoord[0]/iResolution[0]) * (iResolution[0]/iResolution[1]);
 		uvd[1] = -1.0 + 2.0*fragCoord[1]/iResolution[1];
 		uvd[2] = 1.0;
-		normalize(uvd);
-		normalize(sub(cameraTarget, cameraPos, zaxis));
-		normalize(cross(up, zaxis, xaxis));
-		normalize(cross(zaxis, xaxis, yaxis));
-		dir[0] = dot([xaxis[0], yaxis[0], zaxis[0]], uvd);
-		dir[1] = dot([xaxis[1], yaxis[1], zaxis[1]], uvd);
-		dir[2] = dot([xaxis[2], yaxis[2], zaxis[2]], uvd);
+		vec3.normalize(uvd, uvd);
+		vec3.normalize(zaxis, vec3.sub(zaxis, cameraTarget, cameraPos));
+		vec3.normalize(xaxis, vec3.cross(xaxis, up, zaxis));
+		vec3.normalize(yaxis, vec3.cross(yaxis, zaxis, xaxis));
+		vec3.transformMat3(dir, uvd, cameraMat);
 		return dir;
 	};
 
@@ -213,19 +212,19 @@ var init = function() {
 		}
 		var s = {center: Vec3(0.0), radius: 0};
 		var v = this._tmpVec;
-		sub(a, b, v);
-		var distance = length(v);
+		vec3.sub(v, a, b);
+		var distance = vec3.length(v);
 		if (distance + b.radius <= a.radius) {
 			return a;
 		}
 		var f = b.radius / a.radius;
-		scale(v, 0.5 * f, v);
+		vec3.scale(v, v, 0.5 * f);
 		s.radius = a.radius + b.radius * f;
 		s.center.set(v);
 		return s;
 	};
 
-	testMerge = function() {
+	DF.testMerge = function() {
 		var s1 = {center: [0,0,0], radius: 1};
 		var s2 = {center: [1,0,0], radius: 0.5};
 		var m = DF.mergeBoundingSpheres(s1, s2);
@@ -260,7 +259,7 @@ var init = function() {
 			console.log("Error with separated no overlap merge, point");
 		}
 	};
-	//testMerge();
+	DF.testMerge();
 
 	DF.Types = {
 		Sphere: 1,
@@ -368,31 +367,6 @@ var init = function() {
 		return this.boundingSphere;
 	};
 
-
-	window.showPopup = function(title, content, x, y) {
-		var popup = document.getElementById('popup');
-		var cx = window.innerWidth / 2;
-		var cy = window.innerHeight / 2;
-		var dx = x - cx;
-		var dy = y - cy;
-		popup.style.left = x + 'px';
-		popup.style.top = y + 'px';
-		popup.classList.add('visible');
-		popup.querySelector('.close').onclick = hidePopup;
-		popup.querySelector('h2').textContent = title;
-		popup.querySelector('.content').innerHTML = content;
-	};
-
-	window.hidePopup = function() {
-		var popup = document.getElementById('popup');
-		popup.classList.remove('visible');		
-	};
-
-	var close = document.querySelector('#popup .close');
-	var canvas = document.createElement('canvas');
-	canvas.width = canvas.height = 40;
-	var ctx = canvas.getContext('2d');
-	ctx.strokeStyle = 'black';
 
 	Loader.get(shaderURLs, function() {
 		var t1 = Date.now();
@@ -633,6 +607,14 @@ var init = function() {
 					if (c.hasAttribute('material-transmit')) { options.material.transmit.set(parseColorF(c.getAttribute('material-transmit'))); }
 					if (c.hasAttribute('material-diffuse')) { options.material.diffuse = parseFloat(c.getAttribute('material-diffuse')); }
 					if (c.hasAttribute('material-emit')) { options.material.emit.set(parseColorF(c.getAttribute('material-emit'))); }
+					if (c.querySelector('onclick')) { 
+						options.onclickString = c.querySelector('onclick').textContent;
+						options.onclick = new Function('ev', options.onclickString);
+					}
+					if (c.querySelector('ontick')) { 
+						options.ontickString = c.querySelector('ontick').textContent;
+						options.ontick = new Function('ev', options.ontickString);
+					}
 				}
 				switch (c.tagName) {
 					case 'RMDF-BOX':
@@ -648,7 +630,7 @@ var init = function() {
 			}
 		}
 
-		controller.toHTML = function() {
+		controller.toDOM = function() {
 			var sArray = function(arr) {
 				return [].join.call([].slice.call(arr, 0, 3), ',');
 			};
@@ -680,6 +662,16 @@ var init = function() {
 					content.innerHTML = c.content;
 					el.appendChild(content);
 				}
+				if (c.onclickString) {
+					var onclick = document.createElement('onclick');
+					onclick.appendChild(document.createTextNode(c.onclickString));
+					el.appendChild(onclick);
+				}
+				if (c.ontickString) {
+					var ontick = document.createElement('ontick');
+					ontick.appendChild(document.createTextNode(c.ontickString));
+					el.appendChild(ontick);
+				}
 				el.setAttribute('position', sArray(c.position));
 				el.setAttribute('material-transmit', sColorF(c.material.transmit));
 				el.setAttribute('material-diffuse', c.material.diffuse);
@@ -694,9 +686,20 @@ var init = function() {
 						break;
 				}
 			}
+			return scene;
+		};
+		controller.toHTML = function() {
 			var frag = document.createElement('div');
-			frag.appendChild(scene);
+			frag.appendChild(this.toDOM());
 			return frag.innerHTML;
+		};
+		controller.package = function() {
+			var sceneHTML = this.toHTML();
+			var blob = new Blob([sceneHTML], {type: 'text/html'});
+			var a = document.createElement('a');
+			a.href = URL.createObjectURL(blob);
+			a.download = 'scene.rmdf';
+			a.click();
 		};
 
 		window.controller = controller;
@@ -706,8 +709,9 @@ var init = function() {
 		phi = Math.atan2(cv[2], cv[0]);
 		theta = Math.acos(cv[1]/controller.cameraDistance);
 
-		gui.add(controller, 'createNew');
-		gui.add(controller, 'deleteSelected');
+		gui.add(controller, 'createNew').name("Create new object");
+		gui.add(controller, 'deleteSelected').name("Delete selected object");
+		gui.add(controller, 'package').name("Download scene");
 
 		controller.x = controller.proxy(['position', 0], -10.1, 10.1, 0.1, "X");
 		controller.y = controller.proxy(['position', 1], -10.1, 10.1, 0.1, "Y");

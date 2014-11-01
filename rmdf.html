@@ -272,43 +272,18 @@
 		</div>
 		<div id="popup"><h2></h2><div class="content"></div><div class="close"></div></div>
 		<div id="edit"></div>
-<!-- 		<rmdf-scene sun-color="#c0a275" sky-color="#000000" ground-color="#695b5b" sun-position="0.5,-0.5,0.5" camera-position="8,-3,8" camera-target="0,0,0">
-			<rmdf-box dimensions="1,1,1" corner-radius="0.05" material-transmit="0.9,0.8,0.3" material-diffuse="0.15" position="0,0,0">
-				<title>Path tracing</title>
-				<content>
-<p>Path tracing is a computer graphics technique that simulates the way light works. For each pixel, shoot out a ray from the eye and bounce it around the scene to collect light.</p>
-<p>Path tracing is computationally intensive but can simulate a wide variety of lighting effects. The path tracing implementation in rmdf is optimized for speed rather than quality, so you'll see some wonky artefacts at times.</p>
-				</content>
-			</rmdf-box>
-
-			<rmdf-box dimensions="1,1,1" corner-radius="0.05" material-transmit="0.9,0.9,0.9" material-diffuse="0.15" position="3,0,0">
-				<title>rmdf | modeller</title>
-				<content>
-<p>rmdf | modeller is a tool to build path traced websites out of distance field objects. Realistic lighting effects and complex procedural models await!</p>
-<p>The 3D objects are interactive – you can build websites out of them. Add click handlers to change the scene when you click on an object or add HTML content to show on click.</p>
-				</content>
-			</rmdf-box>
-
-			<rmdf-box dimensions="1,1,1" corner-radius="0.05" material-transmit="0.6,0.4,0.2" material-diffuse="0.15" position="-3,0,0">
-			</rmdf-box>
-		</rmdf-scene>
- -->
-		<rmdf-scene sun-position="4.523285388946533,0.8382726311683655,-5.664690971374512" sun-color="1,0.903114186851211,0.5882352941176471" sky-color="0.23788927335640142,0.40530225931202923,0.4411764705882353" ground-color="0.17647058823529416,0.13983309586810508,0.09861591695501733" horizon-color="1,0.8,0.5" camera-position="-10.942276000976562,-1.04267418384552,4.022365093231201" camera-target="0,0,0">
-			<rmdf-box position="0,0,0" material-transmit="0.8999999761581421,0.800000011920929,0.30000001192092896" material-diffuse="0.15" material-emit="0,0,0" dimensions="1,0.10000000149011612,1" corner-radius="0.05"></rmdf-box>
-			<rmdf-box position="0,-1.2999999523162842,0" material-transmit="0.8999999761581421,0.8999999761581421,0.8999999761581421" material-diffuse="0.15" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05">
-				<title>about</title>
-				<content><p>Another toy from FHTR Ltd. Follow me on Twitter <a href="http://twitter.com/ilmarihei">@ilmarihei</a> to hear about updates and more hacks.</p></content>
-			</rmdf-box>
-			<rmdf-box position="0,1.2999999523162842,0" material-transmit="0.13725490868091583,0.13725490868091583,0.13725490868091583" material-diffuse="0.15" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05">
-				<title>Path tracing</title>
-				<content><p>Path tracing is a computer graphics technique that simulates the way light works. For each pixel, shoot out a ray from the eye and bounce it around the scene to collect light.</p><p>Path tracing is computationally intensive but can simulate a wide variety of lighting effects. The path tracing implementation in rmdf is optimized for speed rather than quality, so you'll see some wonky artefacts at times.</p></content>
-			</rmdf-box>
-			<rmdf-box position="0,2.5981202125549316,-2.6562743186950684" material-transmit="0.6960784196853638,0.5788610577583313,0.19790464639663696" material-diffuse="0.1" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05">
-				<title>rmdf | modeller</title>
-				<content><p>rmdf | modeller is a tool to build path traced websites out of ray marched distance field objects. Realistic lighting effects and complex procedural objects are within reach!</p><p>The 3D objects are interactive – you can build websites out of them. Add click handlers to change the scene when you click on an object or add HTML content to show on click.</p>
-				</content>
-			</rmdf-box>
-		</rmdf-scene>
+<rmdf-scene sun-position="4.523285388946533,0.8382726311683655,-5.664690971374512" sun-color="1,0.903114186851211,0.5882352941176471" sky-color="0.23788927335640142,0.40530225931202923,0.4411764705882353" ground-color="0.17647058823529416,0.13983309586810508,0.09861591695501733" horizon-color="1,0.8,0.5" camera-position="-10.942276000976562,-1.04267418384552,4.022365093231201" camera-target="0,0,0"><rmdf-box position="0,0,0" material-transmit="0.8999999761581421,0.800000011920929,0.30000001192092896" material-diffuse="0.15" material-emit="0,0,0" dimensions="1,0.10000000149011612,1" corner-radius="0.05"></rmdf-box><rmdf-box position="0,-1.2999999523162842,0" material-transmit="0.8999999761581421,0.8999999761581421,0.8999999761581421" material-diffuse="0.15" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05"><title>about</title><content><p>Another toy from FHTR Ltd. Follow me on Twitter <a href="http://twitter.com/ilmarihei">@ilmarihei</a> to hear about updates and more hacks.</p></content></rmdf-box><rmdf-box position="0,1.2999999523162842,0" material-transmit="0.13725490868091583,0.13725490868091583,0.13725490868091583" material-diffuse="0.15" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05"><title>Path tracing</title><content><p>Path tracing is a computer graphics technique that simulates the way light works. For each pixel, shoot out a ray from the eye and bounce it around the scene to collect light.</p><p>Path tracing is computationally intensive but can simulate a wide variety of lighting effects. The path tracing implementation in rmdf is optimized for speed rather than quality, so you'll see some wonky artefacts at times.</p></content></rmdf-box><rmdf-box position="0,2.5981202125549316,-2.6562743186950684" material-transmit="0.6960784196853638,0.5788610577583313,0.19790464639663696" material-diffuse="0.1" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05"><title>rmdf | modeller</title><content><p>rmdf | modeller is a tool to build path traced websites out of ray marched distance field objects. Realistic lighting effects and complex procedural objects are within reach!</p><p>The 3D objects are interactive – you can build websites out of them. Add click handlers to change the scene when you click on an object or add HTML content to show on click.</p>
+				</content><onclick>var p = this.dimensions[0];
+var self = this;
+var t = 0;
+this.ival = setInterval(function() {
+	if (t &gt; 1000) {
+		t = 1000;
+		clearInterval(self.ival);
+	}
+	self.dimensions[0] = p * (1-0.5*(1-t/1000)*Math.sin(t/500*Math.PI*2));
+	t += 16;
+}, 16);</onclick></rmdf-box></rmdf-scene>
 		<script src="rmdf.js" async="true"></script>
 		<script>
 			(function() {

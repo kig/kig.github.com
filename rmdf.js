@@ -399,41 +399,47 @@ var init = function() {
 			ISO: 100,
 			exposureCompensation: 0,
 			shutterSpeed: 1/60,
-			position: Vec3(0.0),
+			position: Vec3(5),
 			target: Vec3(0.0)
 		};
 
-		var phi = 0;
-		var theta = 0;
+		var cv = vec3.sub(Vec3(0.0), controller.camera.position, controller.camera.target);
+		controller.cameraDistance = vec3.length(cv);
+		controller.cameraPhi = Math.atan2(cv[2], cv[0]);
+		controller.cameraTheta = Math.acos(cv[1]/controller.cameraDistance);
 
-		var parseColor = function(c){
-			if (/^#......$/.test(c)) {
-				var a = [];
-				a.push(parseInt(c.substr(1,2), 16));
-				a.push(parseInt(c.substr(3,2), 16));
-				a.push(parseInt(c.substr(5,2), 16));
-				return a;
-			} else {
-				return JSON.parse('['+c+']').map(function(v) { return v * 255; });
-			}
+		controller.deleteAllObjects = function() {
+			this.objectCount = 0;
+			this.objects.splice(0);
 		};
+		controller.loadDOM = function(rmdfScene) {
+			this.deleteAllObjects();
+			var parseColor = function(c){
+				if (/^#......$/.test(c)) {
+					var a = [];
+					a.push(parseInt(c.substr(1,2), 16));
+					a.push(parseInt(c.substr(3,2), 16));
+					a.push(parseInt(c.substr(5,2), 16));
+					return a;
+				} else {
+					return JSON.parse('['+c+']').map(function(v) { return v * 255; });
+				}
+			};
 
-		var parseColorF = function(c){
-			return parseColor(c).map(function(v) { return v / 255; });
-		};
+			var parseColorF = function(c){
+				return parseColor(c).map(function(v) { return v / 255; });
+			};
 
-		var rmdfScene = document.querySelector('rmdf-scene');
-		if (rmdfScene) {
-			if (rmdfScene.hasAttribute('sun-color')) { controller.skybox.sunColor = parseColor(rmdfScene.getAttribute('sun-color')); }
-			if (rmdfScene.hasAttribute('sky-color')) { controller.skybox.skyColor = parseColor(rmdfScene.getAttribute('sky-color')); }
-			if (rmdfScene.hasAttribute('ground-color')) { controller.skybox.groundColor = parseColor(rmdfScene.getAttribute('ground-color')); }
-			if (rmdfScene.hasAttribute('horizon-color')) { controller.skybox.horizonColor = parseColor(rmdfScene.getAttribute('horizon-color')); }
-			if (rmdfScene.hasAttribute('sun-position')) { controller.skybox.lightPos.set(JSON.parse('['+rmdfScene.getAttribute('sun-position')+']')); }
-			if (rmdfScene.hasAttribute('camera-position')) { controller.camera.position.set(JSON.parse('['+rmdfScene.getAttribute('camera-position')+']')); }
-			if (rmdfScene.hasAttribute('camera-target')) { controller.camera.target.set(JSON.parse('['+rmdfScene.getAttribute('camera-target')+']')); }
-			if (rmdfScene.hasAttribute('camera-iso')) { controller.camera.ISO = parseFloat(rmdfScene.getAttribute('camera-iso')); }
-			if (rmdfScene.hasAttribute('camera-exposure-compensation')) { controller.camera.exposureCompensation = parseFloat(rmdfScene.getAttribute('camera-exposure-compensation')); }
-			if (rmdfScene.hasAttribute('camera-shutter-speed')) { controller.camera.shutterSpeed = parseFloat(rmdfScene.getAttribute('camera-shutter-speed')); }
+			if (rmdfScene.hasAttribute('sun-color')) { this.skybox.sunColor = parseColor(rmdfScene.getAttribute('sun-color')); }
+			if (rmdfScene.hasAttribute('sky-color')) { this.skybox.skyColor = parseColor(rmdfScene.getAttribute('sky-color')); }
+			if (rmdfScene.hasAttribute('ground-color')) { this.skybox.groundColor = parseColor(rmdfScene.getAttribute('ground-color')); }
+			if (rmdfScene.hasAttribute('horizon-color')) { this.skybox.horizonColor = parseColor(rmdfScene.getAttribute('horizon-color')); }
+			if (rmdfScene.hasAttribute('sun-position')) { this.skybox.lightPos.set(JSON.parse('['+rmdfScene.getAttribute('sun-position')+']')); }
+			if (rmdfScene.hasAttribute('camera-position')) { this.camera.position.set(JSON.parse('['+rmdfScene.getAttribute('camera-position')+']')); }
+			if (rmdfScene.hasAttribute('camera-target')) { this.camera.target.set(JSON.parse('['+rmdfScene.getAttribute('camera-target')+']')); }
+			if (rmdfScene.hasAttribute('camera-iso')) { this.camera.ISO = parseFloat(rmdfScene.getAttribute('camera-iso')); }
+			if (rmdfScene.hasAttribute('camera-exposure-compensation')) { this.camera.exposureCompensation = parseFloat(rmdfScene.getAttribute('camera-exposure-compensation')); }
+			if (rmdfScene.hasAttribute('camera-shutter-speed')) { this.camera.shutterSpeed = parseFloat(rmdfScene.getAttribute('camera-shutter-speed')); }
 			var cc = rmdfScene.childNodes;
 			for (var i=0; i<cc.length; i++) {
 				var c = cc[i];
@@ -459,20 +465,40 @@ var init = function() {
 					case 'RMDF-BOX':
 						if (c.hasAttribute('dimensions')) { options.dimensions = JSON.parse('['+c.getAttribute('dimensions')+']'); }
 						if (c.hasAttribute('corner-radius')) { options.cornerRadius = parseFloat(c.getAttribute('corner-radius')); }
-						controller.objects[controller.objectCount++] = new DF.Box(options);
+						this.objects[this.objectCount++] = new DF.Box(options);
 						break;
 					case 'RMDF-SPHERE':
 						if (c.hasAttribute('radius')) { options.radius = parseFloat(c.getAttribute('radius')); }
-						controller.objects[controller.objectCount++] = new DF.Sphere(options);
+						this.objects[this.objectCount++] = new DF.Sphere(options);
 						break;
 				}
 			}
-		}
 
-		var cv = vec3.sub(Vec3(0.0), controller.camera.position, controller.camera.target);
-		controller.cameraDistance = vec3.length(cv);
-		phi = Math.atan2(cv[2], cv[0]);
-		theta = Math.acos(cv[1]/controller.cameraDistance);
+			var cv = vec3.sub(Vec3(0.0), this.camera.position, this.camera.target);
+			this.cameraDistance = vec3.length(cv);
+			this.cameraPhi = Math.atan2(cv[2], cv[0]);
+			this.cameraTheta = Math.acos(cv[1]/this.cameraDistance);
+		};
+
+		controller.loadHTML = function(html) {
+			var div = document.createElement('div');
+			div.innerHTML = html;
+			var rmdfScene = div.querySelector('rmdf-scene');
+			if (rmdfScene) {
+				try {
+					this.loadDOM(rmdfScene);
+				} catch (e) {
+					alert("Error loading scene: "+e.toString());
+				}
+			} else {
+				alert("Couldn't load scene, no <rmdf-scene> element found.")
+			}
+		};
+
+		var rmdfScene = document.querySelector('rmdf-scene');
+		if (rmdfScene) {
+			controller.loadDOM(rmdfScene);
+		}
 
 		var resize = function() {
 			glc.width = window.innerWidth * (window.mobile ? 1 : (window.devicePixelRatio || 1));
@@ -570,13 +596,13 @@ var init = function() {
 			if (down) {
 				var dx = mouse[2] - mouse[0];
 				var dy = mouse[3] - mouse[1];
-				theta -= 0.01 * dy;
-				if (theta > Math.PI) theta = Math.PI;
-				if (theta < 0.001) theta = 0.001; // Avoid camera singularity at 0. Probably screwy upvector.
-				phi += 0.01 * dx;
-				controller.camera.position[0] = controller.cameraDistance * Math.sin(theta) * Math.cos(phi);
-				controller.camera.position[1] = controller.cameraDistance * Math.cos(theta);
-				controller.camera.position[2] = controller.cameraDistance * Math.sin(theta) * Math.sin(phi);
+				controller.cameraTheta -= 0.01 * dy;
+				if (controller.cameraTheta > Math.PI) controller.cameraTheta = Math.PI;
+				if (controller.cameraTheta < 0.001) controller.cameraTheta = 0.001; // Avoid camera singularity at 0. Probably screwy upvector.
+				controller.cameraPhi += 0.01 * dx;
+				controller.camera.position[0] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.cos(controller.cameraPhi);
+				controller.camera.position[1] = controller.cameraDistance * Math.cos(controller.cameraTheta);
+				controller.camera.position[2] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.sin(controller.cameraPhi);
 				mouse[2] = mouse[0];
 				mouse[3] = mouse[1];
 			}
@@ -585,9 +611,9 @@ var init = function() {
 			controller.cameraDistance *= Math.pow(1.002, -ev.wheelDeltaY);
 			if (controller.cameraDistance < 4) { controller.cameraDistance = 4 };
 			if (controller.cameraDistance > 10) { controller.cameraDistance = 10 };
-			controller.camera.position[0] = controller.cameraDistance * Math.sin(theta) * Math.cos(phi);
-			controller.camera.position[1] = controller.cameraDistance * Math.cos(theta);
-			controller.camera.position[2] = controller.cameraDistance * Math.sin(theta) * Math.sin(phi);
+			controller.camera.position[0] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.cos(controller.cameraPhi);
+			controller.camera.position[1] = controller.cameraDistance * Math.cos(controller.cameraTheta);
+			controller.camera.position[2] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.sin(controller.cameraPhi);
 		}, false);
 		window.onresize = resize;
 
@@ -615,9 +641,9 @@ var init = function() {
 			}, 16);
 		};
 
-		controller.camera.position[0] = controller.cameraDistance * Math.sin(theta) * Math.cos(phi);
-		controller.camera.position[1] = controller.cameraDistance * Math.cos(theta);
-		controller.camera.position[2] = controller.cameraDistance * Math.sin(theta) * Math.sin(phi);
+		controller.camera.position[0] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.cos(controller.cameraPhi);
+		controller.camera.position[1] = controller.cameraDistance * Math.cos(controller.cameraTheta);
+		controller.camera.position[2] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.sin(controller.cameraPhi);
 		var cx0, cy0, cz0;
 		var x0,y0,z0,i,j;
 		var dt = 16/1000;

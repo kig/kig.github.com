@@ -250,10 +250,29 @@
 			a.download = 'scene.rmdf';
 			a.click();
 		};
+		controller.load = function() {
+			//var form = document.createElement('form');
+			var input = document.createElement('input');
+			input.type = 'file';
+			//form.appendChild(input);
+			//form.style.display = 'none';
+			//document.body.appendChild(form);
+			input.onchange = function(ev) {
+				//document.body.removeChild(form);
+				var f = this.files[0];
+				var r = new FileReader();
+				r.onload = function(res) {
+					controller.loadHTML(r.result);
+				};
+				r.readAsText(f);
+			};
+			input.click();
+		};
 
 		gui.add(controller, 'createNew').name("Create new object");
 		gui.add(controller, 'deleteSelected').name("Delete selected object");
 		gui.add(controller, 'package').name("Download scene");
+		gui.add(controller, 'load').name("Load scene");
 
 		controller.x = controller.proxy(['position', 0], -10.1, 10.1, 0.1, "X");
 		controller.y = controller.proxy(['position', 1], -10.1, 10.1, 0.1, "Y");

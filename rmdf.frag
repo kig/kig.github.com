@@ -14,12 +14,16 @@ uniform vec4 iCameraTarget;
 uniform vec4 iBoundingSphere;
 
 uniform vec3 iLightPos;
+uniform vec3 iSunColor;
+uniform vec3 iSkyColor;
+uniform vec3 iGroundColor;
+uniform vec3 iHorizonColor;
 
 uniform float iShutterSpeed;
 uniform float iISO;
 uniform float iExposureCompensation;
 
-#define THRESHOLD 0.001
+#define THRESHOLD 0.01
 #define MAX_DISTANCE 16.0
 
 #define RAY_STEPS 200
@@ -114,14 +118,14 @@ vec3 shadeBg(float time, vec3 nml)
 {
 	vec3 bgLight = normalize(iLightPos);
 	vec3 lightPos = bgLight * 9999.0;
-	vec3 sun = vec3(5.0, 3.5, 2.0)*2.0; //*(0.5+sin(time/3.0)*0.5);
+	vec3 sun = iSunColor*10.0; //*(0.5+sin(time/3.0)*0.5);
 
-	vec3 bgCol = sun*0.2*vec3(0.2, 0.15, 0.1);
+	vec3 bgCol = sun*0.2*iGroundColor;
 	float bgDiff = dot(nml, vec3(0.0, 1.0, 0.0));
 	float sunPow = dot(nml, bgLight);
 	bgCol += 0.1*sun*pow( max(sunPow, 0.0), 2.0);
 	bgCol += 2.0*bgCol*pow( max(-sunPow, 0.0), 2.0);
-	bgCol += sun*0.2*bgDiff*vec3(0.25, 0.5, 0.5);
+	bgCol += sun*0.2*bgDiff*iSkyColor;
 	bgCol += sun*pow( max(sunPow, 0.0), abs(bgLight.y)*256.0);
 	bgCol += bgCol*pow( max(sunPow, 0.0), abs(bgLight.y)*128.0);
 	return max(vec3(0.0), bgCol);

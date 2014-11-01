@@ -6,6 +6,7 @@
 		<title>rmdf | modeller</title>
 		<script type="text/javascript" src="dat.gui.js"></script>
 		<script type="text/javascript" src="gl-matrix.js"></script>
+		<script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
 		<script>
 			window.DEBUG = true;
 			window.startScript = Date.now();
@@ -60,6 +61,10 @@
 			Loader.get(shaderURLs);
 		</script>
 		<style>
+			* {
+				margin: 0;
+				padding: 0;
+			}
 			html,body {
 				margin: 0;
 				padding: 0;
@@ -75,12 +80,60 @@
 			.dg.ac {
 				z-index: 1;
 			}
+			#onclick-editor-container {
+				top: 0px;
+				left: 0px;
+				position: absolute;
+				z-index: 1;
+				margin: 0;
+				text-align: left;
+			}
+			#onclick-editor-container > pre {
+				width: 500px;
+				height: 240px;
+			}
+			button {
+				padding: 6px;
+				outline: 0;
+			}
 			#glcanvas {
 				position: absolute;
 				top: 0px;
 				left: 0px;
 				width: 100%;
 				height: 100%;
+			}
+			body:not(.editmode) #onclick-editor-container,
+			body:not(.editmode) .dg.ac
+			{
+				display: none !important;
+			}
+			#popup {
+				position: absolute;
+				z-index: 2;
+				/*background-color: rgba(255,255,255, 0.8);*/
+				color: black;
+				width: 200px;
+				top: 80px;
+				left: 100px;
+				transition: 0.5s;
+				left: 50%;
+				top: 50%;
+				opacity: 0;
+				pointer-events: none;
+			}
+			#popup.visible {
+				opacity: 1;
+				pointer-events: all;
+			}
+			#popup .close {
+				position: absolute;
+				left: -33px;
+				top: -27px;
+				width: 40px;
+				height: 40px;
+				background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='40' width='40'><line x1='10' y1='10' x2='30' y2='30' style='stroke:black;stroke-width:1;' /><line x1='30' y1='10' x2='10' y2='30' style='stroke:black;stroke-width:1;' /></svg>");
+				cursor: pointer;
 			}
 			#title {
 				z-index: 1;
@@ -99,6 +152,15 @@
 				font-size: 80px;
 				font-weight: 100;
 				margin: 0;
+			}
+			h2 {
+				font-weight: 400;
+				margin-bottom: 0.5em;
+			}
+			p {
+				font-size: 14px;
+				margin-bottom: 1em;
+				text-align: justify;
 			}
 			hr {
 				width: 400px;
@@ -185,6 +247,21 @@
 				color: #000;
 				pointer-events: normal;
 			}
+			#edit {
+				position: absolute;
+				cursor: pointer;
+				-webkit-user-select: none;
+				user-select: none;
+				bottom: 10px;
+				left: 10px;
+				width: 40px;
+				height: 40px;
+				z-index: 3;
+				background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='40' width='40'><circle cx='20' cy='20' r='18' style='stroke:black;stroke-width:1;fill:transparent;' /><line x1='25' y1='15' x2='15' y2='25' style='stroke:black;stroke-width:8;stroke-linecap:round;' /></svg>");
+			}
+			rmdf-scene {
+				display: none;
+			}
 		</style>
 	</head>
 	<body>
@@ -193,6 +270,45 @@
 			<hr>
 			<h3>modeller</h3>
 		</div>
+		<div id="popup"><h2></h2><div class="content"></div><div class="close"></div></div>
+		<div id="edit"></div>
+<!-- 		<rmdf-scene sun-color="#c0a275" sky-color="#000000" ground-color="#695b5b" sun-position="0.5,-0.5,0.5" camera-position="8,-3,8" camera-target="0,0,0">
+			<rmdf-box dimensions="1,1,1" corner-radius="0.05" material-transmit="0.9,0.8,0.3" material-diffuse="0.15" position="0,0,0">
+				<title>Path tracing</title>
+				<content>
+<p>Path tracing is a computer graphics technique that simulates the way light works. For each pixel, shoot out a ray from the eye and bounce it around the scene to collect light.</p>
+<p>Path tracing is computationally intensive but can simulate a wide variety of lighting effects. The path tracing implementation in rmdf is optimized for speed rather than quality, so you'll see some wonky artefacts at times.</p>
+				</content>
+			</rmdf-box>
+
+			<rmdf-box dimensions="1,1,1" corner-radius="0.05" material-transmit="0.9,0.9,0.9" material-diffuse="0.15" position="3,0,0">
+				<title>rmdf | modeller</title>
+				<content>
+<p>rmdf | modeller is a tool to build path traced websites out of distance field objects. Realistic lighting effects and complex procedural models await!</p>
+<p>The 3D objects are interactive – you can build websites out of them. Add click handlers to change the scene when you click on an object or add HTML content to show on click.</p>
+				</content>
+			</rmdf-box>
+
+			<rmdf-box dimensions="1,1,1" corner-radius="0.05" material-transmit="0.6,0.4,0.2" material-diffuse="0.15" position="-3,0,0">
+			</rmdf-box>
+		</rmdf-scene>
+ -->
+		<rmdf-scene sun-position="4.523285388946533,0.8382726311683655,-5.664690971374512" sun-color="1,0.903114186851211,0.5882352941176471" sky-color="0.23788927335640142,0.40530225931202923,0.4411764705882353" ground-color="0.17647058823529416,0.13983309586810508,0.09861591695501733" horizon-color="1,0.8,0.5" camera-position="-10.942276000976562,-1.04267418384552,4.022365093231201" camera-target="0,0,0">
+			<rmdf-box position="0,0,0" material-transmit="0.8999999761581421,0.800000011920929,0.30000001192092896" material-diffuse="0.15" material-emit="0,0,0" dimensions="1,0.10000000149011612,1" corner-radius="0.05"></rmdf-box>
+			<rmdf-box position="0,-1.2999999523162842,0" material-transmit="0.8999999761581421,0.8999999761581421,0.8999999761581421" material-diffuse="0.15" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05">
+				<title>about</title>
+				<content><p>Another toy from FHTR Ltd. Follow me on Twitter <a href="http://twitter.com/ilmarihei">@ilmarihei</a> to hear about updates and more hacks.</p></content>
+			</rmdf-box>
+			<rmdf-box position="0,1.2999999523162842,0" material-transmit="0.13725490868091583,0.13725490868091583,0.13725490868091583" material-diffuse="0.15" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05">
+				<title>Path tracing</title>
+				<content><p>Path tracing is a computer graphics technique that simulates the way light works. For each pixel, shoot out a ray from the eye and bounce it around the scene to collect light.</p><p>Path tracing is computationally intensive but can simulate a wide variety of lighting effects. The path tracing implementation in rmdf is optimized for speed rather than quality, so you'll see some wonky artefacts at times.</p></content>
+			</rmdf-box>
+			<rmdf-box position="0,2.5981202125549316,-2.6562743186950684" material-transmit="0.6960784196853638,0.5788610577583313,0.19790464639663696" material-diffuse="0.1" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05">
+				<title>rmdf | modeller</title>
+				<content><p>rmdf | modeller is a tool to build path traced websites out of ray marched distance field objects. Realistic lighting effects and complex procedural objects are within reach!</p><p>The 3D objects are interactive – you can build websites out of them. Add click handlers to change the scene when you click on an object or add HTML content to show on click.</p>
+				</content>
+			</rmdf-box>
+		</rmdf-scene>
 		<script src="rmdf.js" async="true"></script>
 		<script>
 			(function() {

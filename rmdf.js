@@ -291,6 +291,8 @@ var init = function() {
 	};
 
 	DF.Object = function(options) {
+		this.title = "";
+		this.content = "";
 		this.bufferArray = new Float32Array(4 /* Object info */ + 16 /* Transform matrix */);
 		this.buffer = this.bufferArray.buffer;
 		this.matrix = new Float32Array(this.buffer, 4*4, 16);
@@ -339,13 +341,10 @@ var init = function() {
 	};
 
 	DF.Box = function(options) {
-		this.width = this.height = this.depth = 1;
 		DF.Object.call(this, options);
-		this.type = DF.Types.Box;
 		this.dimensions = new Float32Array(this.buffer, 0, 3);
-		this.dimensions[0] = this.width;
-		this.dimensions[1] = this.height;
-		this.dimensions[2] = this.depth;
+		this.dimensions.set((options && options.dimensions) || [1,1,1]);
+		this.type = DF.Types.Box;
 		if (this.cornerRadius === undefined) {
 			this.cornerRadius = 0.05;
 		}
@@ -363,9 +362,30 @@ var init = function() {
 	};
 
 
+	window.showPopup = function(title, content, x, y) {
+		var popup = document.getElementById('popup');
+		var cx = window.innerWidth / 2;
+		var cy = window.innerHeight / 2;
+		var dx = x - cx;
+		var dy = y - cy;
+		popup.style.left = x + 'px';
+		popup.style.top = y + 'px';
+		popup.classList.add('visible');
+		popup.querySelector('.close').onclick = hidePopup;
+		popup.querySelector('h2').textContent = title;
+		popup.querySelector('.content').innerHTML = content;
+	};
 
+	window.hidePopup = function() {
+		var popup = document.getElementById('popup');
+		popup.classList.remove('visible');		
+	};
 
-
+	var close = document.querySelector('#popup .close');
+	var canvas = document.createElement('canvas');
+	canvas.width = canvas.height = 40;
+	var ctx = canvas.getContext('2d');
+	ctx.strokeStyle = 'black';
 
 	Loader.get(shaderURLs, function() {
 		var t1 = Date.now();
@@ -381,19 +401,84 @@ var init = function() {
 
 	 	var gui = new dat.GUI();
 
+	 	var cont = document.createElement('div');
+	 	var editorContainer = cont;
+	 	cont.id = 'onclick-editor-container';
+	 	document.body.appendChild(cont);
+
+	 	var pre = document.createElement('pre');
+	 	pre.id = 'onclick-editor';
+	 	cont.appendChild(pre);
+	 	var btn = document.createElement('button');
+	 	btn.innerHTML = "Set Onclick";
+	 	btn.onclick = function() {
+	 		if (controller.current) {
+	 			var val = editor.getValue();
+	 			controller.current.onclickString = val;
+		 		controller.current.onclick = new Function('ev', val);
+	 			console.log("click listener set");
+	 		}
+	 	};
+	 	cont.appendChild(btn);
+	 	var editor = ace.edit("onclick-editor");
+	    editor.setTheme("ace/theme/monokai");
+	    editor.getSession().setMode("ace/mode/javascript");
+
+	 	var pre = document.createElement('pre');
+	 	pre.id = 'content-editor';
+	 	cont.appendChild(pre);
+	 	var btn = document.createElement('button');
+	 	btn.innerHTML = "Set Content";
+	 	btn.onclick = function() {
+	 		if (controller.current) {
+	 			var val = contentEditor.getValue();
+	 			controller.current.content = val;
+	 		}
+	 	};
+	 	cont.appendChild(btn);
+	 	var contentEditor = ace.edit("content-editor");
+	    contentEditor.setTheme("ace/theme/monokai");
+	    contentEditor.getSession().setMode("ace/mode/html");
+
+
 		var controller = new DF.Box({position: [0.1, 0.1, 0.1], dimensions: [0.1, 0.1, 0.1]});
+		controller.radius = 0.95;
 		controller.cornerRadius = 0.05;
 		controller.material.diffuse = 0.1;
 		controller.objects = [];
 		controller.objectCount = 0;
+		controller.title = "Title";
+		controller.content = "<p>Content HTML</p>";
+		controller.onclick = ([
+		'// Example click event listener. Press Set Onclick to try it out.',
+		'var p = this.position[1];',
+		'var self = this;',
+		'var t = 0;',
+		'this.ival = setInterval(function() {',
+		'	if (t > 1000) {',
+		'		t = 1000;',
+		'		clearInterval(self.ival);',
+		'	}',
+		'	self.position[1] = p + 1-Math.cos(t/1000*Math.PI*2);',
+		'	t += 16;',
+		'}, 16);'
+		]).join("\n");
+		editor.setValue( controller.onclick.toString() );
 		controller.gui = gui;
 		controller.color = 0xFFFFFF;
 		controller.createNew = function() {
 			var cube = new DF[this.typeName]();
 			cube.material.transmit.set([Math.random(), Math.random(), Math.random()])
-			cube.material.diffuse = Math.random();
+			cube.material.diffuse = 0.1;
 			this.objects[this.objectCount++] = cube;
 			this.setCurrent(cube);
+		};
+		controller.deleteSelected = function() {
+			if (this.current) {
+				this.objects.splice(this.objects.indexOf(this.current), 1);
+				this.objectCount--;
+				this.current = null;
+			}
 		};
 		controller.setCurrent = function(current) {
 			if (this.current && this.current.originalEmit != null) {
@@ -406,6 +491,9 @@ var init = function() {
 					//this.current.originalEmit = vec3.clone(this.current.material.emit);
 					//this.current.material.emit.set(Vec3(0.2));
 				}
+				editor.setValue(this.current.onclickString || this.onclick);
+				contentEditor.setValue(this.current.content);
+				this.titleC.setValue(this.current.title);
 				this.x.setValue(current.position[0]);
 				this.y.setValue(current.position[1]);
 				this.z.setValue(current.position[2]);
@@ -417,8 +505,15 @@ var init = function() {
 					this.sX.setValue(current.dimensions[0]);
 					this.sY.setValue(current.dimensions[1]);
 					this.sZ.setValue(current.dimensions[2]);
+					this.cornerRadiusC.setValue(current.cornerRadius);
 				}
+				if (current.radius != null) {
+					this.radiusC.setValue(current.radius);					
+				}
+				editorContainer.style.display = 'block';
 			} else {
+				editorContainer.style.display = 'none';
+				this.titleC.setValue("");
 				this.x.setValue(0);
 				this.y.setValue(0);
 				this.z.setValue(0);
@@ -449,7 +544,7 @@ var init = function() {
 				tgt = tgt[propertyChain[i]];
 			}
 			var last = propertyChain[propertyChain.length-1];
-			tgt[last] = [].slice.call(tgt[last]);
+			tgt[last] = [].slice.call(tgt[last]).map(function(v) { return v*255; });
 			return this.gui.addColor(tgt, last).name(name).onChange(function(v) {
 				var t = controller.current;
 				if (t) {
@@ -463,6 +558,8 @@ var init = function() {
 			});
 		};
 
+		editorContainer.style.display = 'none';
+
 		controller.typeName = 'Box';
 		controller.type = gui.add(controller, 'typeName', ['Box', 'Sphere']).name("Type").onChange(function(type) {
 			var idx = controller.objects.indexOf(controller.current);
@@ -472,22 +569,166 @@ var init = function() {
 			}
 		});
 
+		controller.skybox = {
+			lightPos: Vec3(-5.1),
+			sunColor: [1, 0.8, 0.5].map(function(v){ return v*255; }),
+			skyColor: [0.25, 0.5, 0.5].map(function(v){ return v*255; }),
+			groundColor: [0.2, 0.1, 0.1].map(function(v){ return v*255; }),
+			horizonColor: [1, 0.8, 0.5].map(function(v){ return v*255; })
+		};
+		controller.camera = {
+			iso: 100,
+			exposureCompensation: 0,
+			shutterSpeed: 1/60
+		};
+
+		// Camera
+		controller.fixedCamera = false;
+		controller.cameraPosition = Vec3(0.0);
+		controller.cameraTarget = Vec3(0.0);
+
+		var phi = 0;
+		var theta = 0;
+
+		var parseColor = function(c){
+			if (/^#......$/.test(c)) {
+				var a = [];
+				a.push(parseInt(c.substr(1,2), 16));
+				a.push(parseInt(c.substr(3,2), 16));
+				a.push(parseInt(c.substr(5,2), 16));
+				return a;
+			} else {
+				return JSON.parse('['+c+']').map(function(v) { return v * 255; });
+			}
+		};
+		var parseColorF = function(c){
+			return parseColor(c).map(function(v) { return v / 255; });
+		};
+
+		var rmdfScene = document.querySelector('rmdf-scene');
+		if (rmdfScene) {
+			if (rmdfScene.hasAttribute('sun-color')) { controller.skybox.sunColor = parseColor(rmdfScene.getAttribute('sun-color')); }
+			if (rmdfScene.hasAttribute('sky-color')) { controller.skybox.skyColor = parseColor(rmdfScene.getAttribute('sky-color')); }
+			if (rmdfScene.hasAttribute('ground-color')) { controller.skybox.groundColor = parseColor(rmdfScene.getAttribute('ground-color')); }
+			if (rmdfScene.hasAttribute('horizon-color')) { controller.skybox.horizonColor = parseColor(rmdfScene.getAttribute('horizon-color')); }
+			if (rmdfScene.hasAttribute('sun-position')) { controller.skybox.lightPos.set(JSON.parse('['+rmdfScene.getAttribute('sun-position')+']')); }
+			if (rmdfScene.hasAttribute('camera-position')) { controller.cameraPosition.set(JSON.parse('['+rmdfScene.getAttribute('camera-position')+']')); }
+			if (rmdfScene.hasAttribute('camera-target')) { controller.cameraTarget.set(JSON.parse('['+rmdfScene.getAttribute('camera-target')+']')); }
+			var cc = rmdfScene.childNodes;
+			for (var i=0; i<cc.length; i++) {
+				var c = cc[i];
+				var options = {};
+				options.material = new DF.Material();
+				if (c.hasAttribute) {
+					if (c.querySelector('title')) { options.title = c.querySelector('title').textContent; }
+					if (c.querySelector('content')) { options.content = c.querySelector('content').innerHTML; }
+					if (c.hasAttribute('position')) { options.position = JSON.parse('['+c.getAttribute('position')+']'); }
+					if (c.hasAttribute('material-transmit')) { options.material.transmit.set(parseColorF(c.getAttribute('material-transmit'))); }
+					if (c.hasAttribute('material-diffuse')) { options.material.diffuse = parseFloat(c.getAttribute('material-diffuse')); }
+					if (c.hasAttribute('material-emit')) { options.material.emit.set(parseColorF(c.getAttribute('material-emit'))); }
+				}
+				switch (c.tagName) {
+					case 'RMDF-BOX':
+						if (c.hasAttribute('dimensions')) { options.dimensions = JSON.parse('['+c.getAttribute('dimensions')+']'); }
+						if (c.hasAttribute('corner-radius')) { options.cornerRadius = parseFloat(c.getAttribute('corner-radius')); }
+						controller.objects[controller.objectCount++] = new DF.Box(options);
+						break;
+					case 'RMDF-SPHERE':
+						if (c.hasAttribute('radius')) { options.radius = parseFloat(c.getAttribute('radius')); }
+						controller.objects[controller.objectCount++] = new DF.Sphere(options);
+						break;
+				}
+			}
+		}
+
+		controller.toHTML = function() {
+			var sArray = function(arr) {
+				return [].join.call([].slice.call(arr, 0, 3), ',');
+			};
+			var sColor = function(arr) {
+				return sArray(arr.map(function(v) { return v / 255; }));
+			};
+			var sColorF = function(arr) {
+				return sArray(arr);
+			};
+			var scene = document.createElement('rmdf-scene');
+			scene.setAttribute('sun-position', sArray(this.skybox.lightPos));
+			scene.setAttribute('sun-color', sColor(this.skybox.sunColor));
+			scene.setAttribute('sky-color', sColor(this.skybox.skyColor));
+			scene.setAttribute('ground-color', sColor(this.skybox.groundColor));
+			scene.setAttribute('horizon-color', sColor(this.skybox.horizonColor));
+			scene.setAttribute('camera-position', sArray(cameraPos));
+			scene.setAttribute('camera-target', sArray(cameraTarget));
+			for (var i=0; i<this.objectCount; i++) {
+				var c = this.objects[i];
+				var el = document.createElement('rmdf-'+DF.typeNames[c.type].toLowerCase());
+				scene.appendChild(el);
+				if (c.title) {
+					var title = document.createElement('title');
+					title.textContent = c.title;
+					el.appendChild(title);
+				}
+				if (c.content) {
+					var content = document.createElement('content');
+					content.innerHTML = c.content;
+					el.appendChild(content);
+				}
+				el.setAttribute('position', sArray(c.position));
+				el.setAttribute('material-transmit', sColorF(c.material.transmit));
+				el.setAttribute('material-diffuse', c.material.diffuse);
+				el.setAttribute('material-emit', sColorF(c.material.emit));
+				switch (c.type) {
+					case DF.Types.Box:
+						el.setAttribute('dimensions', sArray(c.dimensions));
+						el.setAttribute('corner-radius', c.cornerRadius);
+						break;
+					case DF.Types.Sphere:
+						el.setAttribute('radius', c.radius);
+						break;
+				}
+			}
+			var frag = document.createElement('div');
+			frag.appendChild(scene);
+			return frag.innerHTML;
+		};
+
+		window.controller = controller;
+
+		var cv = vec3.sub(Vec3(0.0), controller.cameraPosition, controller.cameraTarget);
+		controller.cameraDistance = vec3.length(cv);
+		phi = Math.atan2(cv[2], cv[0]);
+		theta = Math.acos(cv[1]/controller.cameraDistance);
+
+		gui.add(controller, 'createNew');
+		gui.add(controller, 'deleteSelected');
 
 		controller.x = controller.proxy(['position', 0], -10.1, 10.1, 0.1, "X");
 		controller.y = controller.proxy(['position', 1], -10.1, 10.1, 0.1, "Y");
 		controller.z = controller.proxy(['position', 2], -10.1, 10.1, 0.1, "Z");
 
-		controller.sX = controller.proxy(['dimensions', 0], 0.1, 6, 0.1, 'Width');
-		controller.sY = controller.proxy(['dimensions', 1], 0.1, 6, 0.1, 'Height');
-		controller.sZ = controller.proxy(['dimensions', 2], 0.1, 6, 0.1, 'Depth');
+		controller.titleC = controller.proxy(['title'], undefined, undefined, undefined, "Title");
 
 		controller.transmit = controller.proxyColor(['material', 'transmit'], 'Transmit');
 		controller.emit = controller.proxyColor(['material', 'emit'], 'Emit');
 		controller.diffuse = controller.proxy(['material', 'diffuse'], 0.0, 1.0, 0.01, 'Diffuse');
 
-		gui.add(controller, 'createNew');
+		// Box editors
+		controller.sX = controller.proxy(['dimensions', 0], 0.1, 6, 0.1, 'Width');
+		controller.sY = controller.proxy(['dimensions', 1], 0.1, 6, 0.1, 'Height');
+		controller.sZ = controller.proxy(['dimensions', 2], 0.1, 6, 0.1, 'Depth');
+		controller.cornerRadiusC = controller.proxy(['cornerRadius'], 0.05, 1, 0.05, 'Corner radius');
 
-		controller.createNew();
+		// Sphere editors
+		controller.radiusC = controller.proxy(['radius'], 0.1, 6, 0.1, 'Radius');
+
+		// Skybox editors
+		controller.sunColor = gui.addColor(controller.skybox, 'sunColor');
+		controller.skyColor = gui.addColor(controller.skybox, 'skyColor');
+		controller.groundColor = gui.addColor(controller.skybox, 'groundColor');
+		controller.horizonColor = gui.addColor(controller.skybox, 'horizonColor');
+		controller.lightPosX = gui.add(controller.skybox.lightPos, 0, -10, 10, 0.1).name("Light X");
+		controller.lightPosY = gui.add(controller.skybox.lightPos, 1, -10, 10, 0.1).name("Light Y");
+		controller.lightPosZ = gui.add(controller.skybox.lightPos, 2, -10, 10, 0.1).name("Light Z");
 
 		var resize = function() {
 			glc.width = window.innerWidth * (window.mobile ? 1 : (window.devicePixelRatio || 1));
@@ -537,8 +778,6 @@ var init = function() {
 
 		var t = 0;
 		var mouse = new Float32Array(4);
-		var alpha = 0;
-		var theta = 0;
 
 		var tDown = 0;
 
@@ -546,6 +785,11 @@ var init = function() {
 		var clickEvent = false;
 		var startX, startY;
 		var cancelClick = false;
+
+		document.querySelector('#edit').onclick = function(ev) {
+			ev.preventDefault();
+			document.body.classList.toggle('editmode');
+		};
 
 		glc.onmousedown = function(ev) {
 			cancelClick = false;
@@ -582,17 +826,25 @@ var init = function() {
 			if (down) {
 				var dx = mouse[2] - mouse[0];
 				var dy = mouse[3] - mouse[1];
-				alpha += 0.01 * dy;
-				if (alpha > Math.PI*0.5) alpha = Math.PI*0.5;
-				if (alpha < -Math.PI*0.5) alpha = -Math.PI*0.5;
-				theta -= 0.01 * dx;
-				cameraPos[0] = Math.sin(theta)*8 * Math.cos(alpha);
-				cameraPos[1] = Math.sin(alpha)*8;
-				cameraPos[2] = Math.cos(theta)*8 * Math.cos(alpha);
+				theta -= 0.01 * dy;
+				if (theta > Math.PI) theta = Math.PI;
+				if (theta < 0.001) theta = 0.001; // Avoid camera singularity at 0. Probably screwy upvector.
+				phi += 0.01 * dx;
+				cameraPos[0] = controller.cameraDistance * Math.sin(theta) * Math.cos(phi);
+				cameraPos[1] = controller.cameraDistance * Math.cos(theta);
+				cameraPos[2] = controller.cameraDistance * Math.sin(theta) * Math.sin(phi);
 				mouse[2] = mouse[0];
 				mouse[3] = mouse[1];
 			}
 		};
+		glc.addEventListener('mousewheel', function(ev) {
+			controller.cameraDistance *= Math.pow(1.002, -ev.wheelDeltaY);
+			if (controller.cameraDistance < 4) { controller.cameraDistance = 4 };
+			if (controller.cameraDistance > 10) { controller.cameraDistance = 10 };
+			cameraPos[0] = controller.cameraDistance * Math.sin(theta) * Math.cos(phi);
+			cameraPos[1] = controller.cameraDistance * Math.cos(theta);
+			cameraPos[2] = controller.cameraDistance * Math.sin(theta) * Math.sin(phi);
+		}, false);
 		window.onresize = resize;
 
 		var blurred = false;
@@ -603,33 +855,6 @@ var init = function() {
 			blurred = false;
 		};
 		if (DEBUG) console.log('WebGL setup total: '+(Date.now()-t1)+' ms'); 
-
-		var keyHandlers = {};
-		keyHandlers[39] = function() {
-			controller.current.position[0] += 0.3;			
-		};
-		keyHandlers[37] = function() {
-			controller.current.position[0] -= 0.3;
-		};
-		keyHandlers[38] = function(ev) {
-			controller.current.position[ev.shiftKey ? 2 : 1] += 0.3;
-		};
-		keyHandlers[40] = function(ev) {
-			controller.current.position[ev.shiftKey ? 2 : 1] -= 0.3;
-		};
-		keyHandlers[8] = function(ev) {
-			if (currentObject !== null) {
-				objects.splice(currentObject, 1);
-				currentObject = target = null;
-			}
-		};
-		window.onkeydown = function(ev) {
-			var h = keyHandlers[ev.which];
-			if (h) {
-				//ev.preventDefault();
-				//h(ev);
-			}
-		};
 
 		var bounce = function(ev) {
 			ev.preventDefault();
@@ -647,16 +872,15 @@ var init = function() {
 		};
 
 		var cameraPos = new Float32Array(4); // xyz, roll angle
-		var cameraPosV = new Float32Array(4); // xyz, roll angle
 		var cameraTarget = new Float32Array(4); // xyz, zoom
-		var cameraTargetV = new Float32Array(4); // xyz, zoom
-		cameraPos[0] = Math.sin(theta)*8 * Math.cos(alpha);
-		cameraPos[1] = Math.sin(alpha)*8;
-		cameraPos[2] = Math.cos(theta)*8 * Math.cos(alpha);
+		cameraPos[0] = controller.cameraDistance * Math.sin(theta) * Math.cos(phi);
+		cameraPos[1] = controller.cameraDistance * Math.cos(theta);
+		cameraPos[2] = controller.cameraDistance * Math.sin(theta) * Math.sin(phi);
 		cameraTarget[0] = 0; //(tx-cameraTarget[0])*0.05;
 		cameraTarget[1] = 0; //(ty-cameraTarget[1])*0.05;
 		cameraTarget[2] = 0; //(tz-cameraTarget[2])*0.05;
 		cameraTarget[3] = 1;
+		cameraTarget.set(controller.cameraTarget);
 		var cx0, cy0, cz0;
 		var x0,y0,z0,i,j;
 		var dt = 16/1000;
@@ -682,21 +906,22 @@ var init = function() {
 					objects.push(new DF.Object());
 				}
 				var pick = -2.0;
-				if (down) {
+				if (clickEvent) {
 					getDir(iResolution, cameraPos, cameraTarget, mouse, cdir);
 					pick = trace(cameraPos, cdir, posTex).pick;
 					if (pick >= 0) {
 						controller.setCurrent(controller.objects[pick]);
+						var o = objects[pick];
+						if (o.title && o.content) {
+							showPopup(o.title, o.content, glc.width/2 + (clickEvent.pageX > glc.width/2 ? 150 : -250), clickEvent.pageY);
+						}
+						if (o.onclick) {
+							try {
+								o.onclick(clickEvent);
+							} catch(e){ console.log(e); }
+						}
 					} else {
 						controller.setCurrent(null);
-					}
-				}
-				if (clickEvent) {
-					if (pick >= 0) {
-						var o = objects[pick];
-						if (o.onclick) {
-							o.onclick(clickEvent);
-						}
 					}
 					clickEvent = false;
 				}
@@ -724,17 +949,16 @@ var init = function() {
 
 				updateTexture(gl, pTex, posTex, 1);
 
-				var lightPos = Vec3(
-					-Math.cos(t/1000)*-8.5, 
-					Math.sin(t/1000)*3.0 - 4.0, 
-					-(Math.sin(t/1000)*4.0)
-				);
-				u3fv(gl, p, 'iLightPos', lightPos);
+				u3fv(gl, p, 'iLightPos', vec3.scale(DF._tmpVec, controller.skybox.lightPos, 1/255));
+				u3fv(gl, p, 'iSunColor', vec3.scale(DF._tmpVec, controller.skybox.sunColor, 1/255));
+				u3fv(gl, p, 'iSkyColor', vec3.scale(DF._tmpVec, controller.skybox.skyColor, 1/255));
+				u3fv(gl, p, 'iGroundColor', vec3.scale(DF._tmpVec, controller.skybox.groundColor, 1/255));
+				u3fv(gl, p, 'iHorizonColor', vec3.scale(DF._tmpVec, controller.skybox.horizonColor, 1/255));
 				u1f(gl, p, 'iGlobalTime', t/1000);
 				u1f(gl, p, 'iPick', pick);
-				u1f(gl, p, 'iISO', 100.0);
-				u1f(gl, p, 'iShutterSpeed', 1/60);
-				u1f(gl, p, 'iExposureCompensation', +0);
+				u1f(gl, p, 'iISO', controller.camera.iso);
+				u1f(gl, p, 'iShutterSpeed', controller.camera.shutterSpeed);
+				u1f(gl, p, 'iExposureCompensation', controller.camera.exposureCompensation);
 				u4fv(gl, p, 'iMouse', mouse);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 				gl.drawArrays(gl.TRIANGLES, 0, 6);

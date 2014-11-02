@@ -177,20 +177,41 @@ var init = function() {
 		}
 	};
 	var traceTmp = Vec3(0.0);
+	var traceTmpM3 = mat3.create();
 	var trace = function(ro, rd, posTex) {
 		var hit = {
 			dist: 1e7,
 			pick: -2
 		};
-		for (var i=0; i<16; i++) {
+		// We could just pass in controller and use the object bounding spheres.
+		// But let's do it the hard way. Maybe we'll find bugs!
+		for (var i=0; i<24; i++) {
 			var off = i*20;
 			if (posTex[off+19] === 0) {
-				continue;
+				break;
 			}
-			traceTmp[0] = -posTex[off+16];
-			traceTmp[1] = -posTex[off+17];
-			traceTmp[2] = -posTex[off+18];
+			traceTmpM3[0] = posTex[off+4];
+			traceTmpM3[1] = posTex[off+5];
+			traceTmpM3[2] = posTex[off+6];
+			traceTmpM3[3] = posTex[off+8];
+			traceTmpM3[4] = posTex[off+9];
+			traceTmpM3[5] = posTex[off+10];
+			traceTmpM3[6] = posTex[off+12];
+			traceTmpM3[7] = posTex[off+13];
+			traceTmpM3[8] = posTex[off+14];
+			mat3.transpose(traceTmpM3, traceTmpM3);
+			traceTmp[0] = posTex[off+16];
+			traceTmp[1] = posTex[off+17];
+			traceTmp[2] = posTex[off+18];
+			vec3.transformMat3(traceTmp, traceTmp, traceTmpM3);
+			vec3.scale(traceTmp, traceTmp, -1);
 			var r = posTex[off];
+			if (Math.floor(posTex[off+19] / 256) == DF.Types.Box) {
+				var x = r;
+				var y = posTex[off+1];
+				var z = posTex[off+2];
+				r = Math.sqrt(x*x+y*y+z*z);
+			}
 			raySphere(ro, rd, traceTmp, r, i, hit);
 		}
 		return hit;
@@ -727,7 +748,7 @@ var init = function() {
 					objects[j].tick();
 				}
 				for (var j=0; j<objects.length; j++) {
-					objects[j].materialIndex = j;
+					objects[j].materialIndex = objects[j].type === DF.Types.empty ? 0 : j;
 					objects[j].write(posTex, j*20);
 					objects[j].material.write(posTex, posTex.width*4 + j*8);
 				}

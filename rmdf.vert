@@ -26,6 +26,21 @@ struct sphere
 	float r;
 };
 
+mat4 transpose(mat4 inMatrix) {
+	vec4 i0 = inMatrix[0];
+	vec4 i1 = inMatrix[1];
+	vec4 i2 = inMatrix[2];
+	vec4 i3 = inMatrix[3];
+
+	mat4 outMatrix = mat4(
+		vec4(i0.x, i1.x, i2.x, i3.x),
+		vec4(i0.y, i1.y, i2.y, i3.y),
+		vec4(i0.z, i1.z, i2.z, i3.z),
+		vec4(i0.w, i1.w, i2.w, i3.w)
+	);
+	return outMatrix;
+}
+
 sphere getBoundingSphere(int i) {
 	sphere s;
 	s.r = 0.0;
@@ -42,12 +57,14 @@ sphere getBoundingSphere(int i) {
 	mx[0] = texture2D(iChannel1, vec2(float(i*5+1)/128.0, 0.0));
 	mx[1] = texture2D(iChannel1, vec2(float(i*5+2)/128.0, 0.0));
 	mx[2] = texture2D(iChannel1, vec2(float(i*5+3)/128.0, 0.0));
-	mx[3] = posT;
+	mx = transpose(mx);
+	mx[3] = vec4(0.0, 0.0, 0.0, 1.0);
+	mx[3] = -mx*vec4(posT.xyz, 1.0);
 
 	s.r = params.x;
 	if (t == 2.0) s.r = length(params.xyz);
 
-	s.p = -posT.xyz;
+	s.p = (mx * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 	return s;
 }
 

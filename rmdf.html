@@ -289,6 +289,8 @@ this.ival = setInterval(function() {
 	}
 	self.position[0] = px + (1-t/1000)*Math.sin(Math.PI*2*t/500);
 	self.position[1] = py - (1-t/1000)*(1-Math.cos(Math.PI*2*t/500));
+	self.rotationXYZ[0] = t/1000*Math.PI;
+	self.rotationXYZ[1] = t/1000*Math.PI;
 	t += 16;
 }, 16);</onclick></rmdf-box><rmdf-box position="0,1.2999999523162842,0" material-transmit="0.13725490868091583,0.13725490868091583,0.13725490868091583" material-diffuse="0.15" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05"><title>Path tracing</title><content><p>Path tracing is a computer graphics technique that simulates the way light works. For each pixel, shoot out a ray from the eye and bounce it around the scene to collect light.</p><p>Path tracing is computationally intensive but can simulate a wide variety of lighting effects. The path tracing implementation in rmdf is optimized for speed rather than quality, so you'll see some wonky artefacts at times.</p></content><onclick>if (this.ival) return;
 var p = this.rotationXYZ[1];

@@ -337,7 +337,7 @@ void main(void)
 	vec3 light = trace(iGlobalTime);
 	
 	light = 1.0 - exp(-light * iISO * iShutterSpeed * pow(2.0, iExposureCompensation));
-	//if (vAnyObjectsVisible == 0.0) light -= 0.2;
-	//else light += 0.1*vAnyObjectsVisible;
+	// if (vAnyObjectsVisible == 0.0) light -= 0.2;
+	// else light += 0.1*vAnyObjectsVisible;
 	gl_FragColor = vec4( light, 1.0 );
 }

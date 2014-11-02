@@ -635,8 +635,8 @@ var init = function() {
 		};
 		glc.addEventListener('mousewheel', function(ev) {
 			controller.cameraDistance *= Math.pow(1.002, -ev.wheelDeltaY);
-			if (controller.cameraDistance < 4) { controller.cameraDistance = 4 };
-			if (controller.cameraDistance > 10) { controller.cameraDistance = 10 };
+			if (controller.cameraDistance < 6) { controller.cameraDistance = 6 };
+			if (controller.cameraDistance > 12) { controller.cameraDistance = 12 };
 			controller.camera.position[0] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.cos(controller.cameraPhi);
 			controller.camera.position[1] = controller.cameraDistance * Math.cos(controller.cameraTheta);
 			controller.camera.position[2] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.sin(controller.cameraPhi);

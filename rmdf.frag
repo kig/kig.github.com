@@ -31,7 +31,7 @@ varying float vObjectVisible[8];
 #define MAX_DISTANCE 16.0
 
 #define RAY_STEPS 120
-#define MAX_SAMPLES (max(1.0, 4.0*maxDiffuseSum))
+#define MAX_SAMPLES (max(2.0, 8.0*maxDiffuseSum))
 
 struct ray
 {

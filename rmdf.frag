@@ -31,7 +31,7 @@ varying float vObjectVisible[3];
 #define MAX_DISTANCE 16.0
 
 #define RAY_STEPS 120
-#define MAX_SAMPLES (max(2.0, 8.0*maxDiffuseSum))
+#define MAX_SAMPLES (max(1.0, 8.0*maxDiffuseSum))
 
 #define DF_EMPTY 0.0
 #define DF_SPHERE 1.0

@@ -8,6 +8,10 @@ var init = function() {
 			return;
 		}
 	}
+	if (/mobile/i.test(navigator.userAgent)) {
+		alert("This page may crash your mobile browser. Try on a Mac / Linux box instead.")
+		return;
+	}
 
 	window.requestAnimationFrame || (window.requestAnimationFrame = 
 		window.webkitRequestAnimationFrame || 

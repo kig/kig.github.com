@@ -74,15 +74,31 @@ var init = function() {
 	var createBuffer = function(gl) {
 		var buf = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-		var arr = new Float32Array([
-			-1,-1, 0,
-			 1,-1, 0,
-			 1, 1, 0,
-			-1,-1, 0,
-			 1, 1, 0,
-			-1, 1, 0
-		]);
+		var verts = [];
+		var cols = 32;
+		var rows = 18;
+		for (var y=0; y<rows; y++) {
+			for (var x=0; x<cols; x++) {
+				verts.push(-1+2*x/cols, -1+2*y/rows, 0);
+				verts.push(-1+2*(x+1)/cols, -1+2*(y)/rows, 0);
+				verts.push(-1+2*(x+1)/cols, -1+2*(y+1)/rows, 0);
+
+				verts.push(-1+2*x/cols, -1+2*y/rows, 0);
+				verts.push(-1+2*(x+1)/cols, -1+2*(y+1)/rows, 0);
+				verts.push(-1+2*(x)/cols, -1+2*(y+1)/rows, 0);
+			}
+		}
+		var arr = new Float32Array(verts);
+		// verts = [
+		// 	-1,-1, 0,
+		// 	 1,-1, 0,
+		// 	 1, 1, 0,
+		// 	-1,-1, 0,
+		// 	 1, 1, 0,
+		// 	-1, 1, 0
+		// ]);
 		gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STATIC_DRAW);
+		buf.vertCount = arr.length/3;
 		return buf;
 	};
 	var createShader = function(gl, source, type) {
@@ -212,15 +228,16 @@ var init = function() {
 		}
 		var s = {center: Vec3(0.0), radius: 0};
 		var v = this._tmpVec;
-		vec3.sub(v, a, b);
+		vec3.sub(v, b.center, a.center);
 		var distance = vec3.length(v);
 		if (distance + b.radius <= a.radius) {
 			return a;
 		}
-		var f = b.radius / a.radius;
-		vec3.scale(v, v, 0.5 * f);
-		s.radius = a.radius + b.radius * f;
-		s.center.set(v);
+		s.radius = (distance + a.radius + Math.min(b.radius, Math.max(0, b.radius-(a.radius-distance)))) / 2;
+		vec3.normalize(v,v);
+		s.center.set(a.center);
+		vec3.scale(v, v, -a.radius+s.radius);
+		vec3.add(s.center, s.center, v);
 		return s;
 	};
 
@@ -229,34 +246,42 @@ var init = function() {
 		var s2 = {center: [1,0,0], radius: 0.5};
 		var m = DF.mergeBoundingSpheres(s1, s2);
 		if (Math.abs(m.center[0] - 0.25) > 1e-5 && Math.abs(m.radius - 1.25) > 1e-5) {
-			console.log("Error with partial overlap merge");
+			console.log("Error with partial overlap merge", m.center, m.radius);
 		}
 		s2.center[0] = 0.25;
 		var m = DF.mergeBoundingSpheres(s1, s2);
 		if (Math.abs(m.center[0] - 0.0) > 1e-5 && Math.abs(m.radius - 1.0) > 1e-5) {
-			console.log("Error with full overlap a>b merge");
+			console.log("Error with full overlap a>b merge", m.center, m.radius);
 		}
 		var m = DF.mergeBoundingSpheres(s2, s1);
 		if (Math.abs(m.center[0] - 0.0) > 1e-5 && Math.abs(m.radius - 1.0) > 1e-5) {
-			console.log("Error with full overlap b>a merge");
+			console.log("Error with full overlap b>a merge", m.center, m.radius);
 		}
 		s2.center[0] = 2;
 		s2.radius = 1;
 		var m = DF.mergeBoundingSpheres(s1, s2);
 		if (Math.abs(m.center[0] - 1.0) > 1e-5 && Math.abs(m.radius - 2.0) > 1e-5) {
-			console.log("Error with no overlap merge");
+			console.log("Error with no overlap merge", m.center, m.radius);
 		}
 		s2.center[0] = 3;
 		s2.radius = 1;
 		var m = DF.mergeBoundingSpheres(s1, s2);
 		if (Math.abs(m.center[0] - 1.5) > 1e-5 && Math.abs(m.radius - 2.5) > 1e-5) {
-			console.log("Error with separated no overlap merge");
+			console.log("Error with separated no overlap merge", m.center, m.radius);
 		}
 		s2.center[0] = 3;
 		s2.radius = 1e-7;
 		var m = DF.mergeBoundingSpheres(s1, s2);
-		if (Math.abs(m.center[0] - 2.0) > 1e-5 && Math.abs(m.radius - 2.0) > 1e-5) {
-			console.log("Error with separated no overlap merge, point");
+		if (Math.abs(m.center[0] - 1.0) > 1e-5 && Math.abs(m.radius - 2.0) > 1e-5) {
+			console.log("Error with separated no overlap merge, point", m.center, m.radius);
+		}
+		s2.center[0] = 3;
+		s2.radius = 1;
+		s1.center[0] = -4;
+		s1.radius = 3;
+		var m = DF.mergeBoundingSpheres(s1, s2);
+		if (Math.abs(m.center[0] - (-1.5)) > 1e-5 && Math.abs(m.radius - 5.5) > 1e-5) {
+			console.log("Error with separated no overlap merge -3, 3", m.center, m.radius);
 		}
 	};
 	DF.testMerge();
@@ -362,7 +387,8 @@ var init = function() {
 		DF.Object.prototype.write.call(this, array, offset);
 	};
 	DF.Box.prototype.computeBoundingSphere = function() {
-		var r = Math.max.apply(null, this.dimensions);
+		var x = this.dimensions[0], y = this.dimensions[1], z = this.dimensions[2];
+		var r = Math.sqrt(x*x + y*y + z*z);
 		this.boundingSphere.radius = r;
 		return this.boundingSphere;
 	};
@@ -513,7 +539,7 @@ var init = function() {
 		var sel = document.body.querySelector('#shaders');
 		var shaders = [];
 		var currentShader = 0;
-		var rtVert = 'precision highp float;attribute vec3 position;void main() {gl_Position = vec4(position, 1.0);}';
+		var rtVert = arguments[0];
 		var rtShader = createShader(gl, rtVert, gl.VERTEX_SHADER);
 		var setShader = function(idx) {
 			currentShader = idx;
@@ -531,7 +557,7 @@ var init = function() {
 			gl.enableVertexAttribArray(pos);
 			gl.vertexAttribPointer(pos, 3, gl.FLOAT, false, 0, 0);
 		};
-		for (var i=0; i<arguments.length; i++) {
+		for (var i=1; i<arguments.length; i++) {
 			if (sel) {
 				var el = document.createElement('li');
 				el.innerHTML = i+1;
@@ -688,7 +714,7 @@ var init = function() {
 					}
 					clickEvent = false;
 				}
-				for (var j=0; j<objects.length; j++) {
+				for (var j=0; j<controller.objectCount; j++) {
 					objects[j].tick();
 				}
 				for (var j=0; j<objects.length; j++) {
@@ -703,8 +729,9 @@ var init = function() {
 				u3fv(gl, p, 'iCameraTarget', controller.camera.target);
 
 				var s = objects[0].computeBoundingSphere();
-				for (var i=1; i<objects.length; i++) {
-					s = DF.mergeBoundingSpheres(s, objects[i].computeBoundingSphere());
+				for (var i=1; i<controller.objectCount; i++) {
+					var os = objects[i].computeBoundingSphere();
+					s = DF.mergeBoundingSpheres(s, os);
 				}
 				sceneBoundingSphere.set(s.center);
 				sceneBoundingSphere[3] = s.radius;
@@ -724,7 +751,7 @@ var init = function() {
 				u1f(gl, p, 'iExposureCompensation', controller.camera.exposureCompensation);
 				u4fv(gl, p, 'iMouse', mouse);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-				gl.drawArrays(gl.TRIANGLES, 0, 6);
+				gl.drawArrays(gl.TRIANGLES, 0, buf.vertCount);
 			}	
 			requestAnimationFrame(tick, glc);
 		};

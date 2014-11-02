@@ -328,7 +328,9 @@ var init = function() {
 		this.buffer = this.bufferArray.buffer;
 		this.matrix = new Float32Array(this.buffer, 4*4, 16);
 		mat4.identity(this.matrix);
-		this.position = new Float32Array(this.buffer, 4 * ( 4+12 ), 3); // Last row of transform matrix.
+		this.position = new Float32Array(3);
+		this.rotationQuat = quat.create(); // Quaternion.
+		this.rotationXYZ = [0,0,0]; // Euclidean XYZ rotation.
 		this.material = new DF.Material();
 		this.materialIndex = 0;
 		this.type = DF.Types.empty;
@@ -345,6 +347,13 @@ var init = function() {
 	};
 	DF.Object.prototype.tick = function() {};
 	DF.Object.prototype.write = function(array, offset) {
+		if (this.rotationXYZ) {
+			quat.identity(this.rotationQuat);
+			quat.rotateX(this.rotationQuat, this.rotationQuat, this.rotationXYZ[0])
+			quat.rotateY(this.rotationQuat, this.rotationQuat, this.rotationXYZ[1])
+			quat.rotateZ(this.rotationQuat, this.rotationQuat, this.rotationXYZ[2])
+		}
+		mat4.fromRotationTranslation(this.matrix, this.rotationQuat, this.position);
 		mat4.copy(DF._tmpMatrix, this.matrix);
 		mat4.invert(this.matrix, DF._tmpMatrix);
 		this.bufferArray[19] = (this.type << 8) | this.materialIndex;

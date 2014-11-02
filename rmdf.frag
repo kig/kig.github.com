@@ -30,8 +30,14 @@ varying float vObjectVisible[8];
 #define THRESHOLD 0.02
 #define MAX_DISTANCE 16.0
 
-#define RAY_STEPS 120
+#define RAY_STEPS 150
 #define MAX_SAMPLES (max(2.0, 8.0*maxDiffuseSum))
+
+#define DF_EMPTY 0.0
+#define DF_SPHERE 1.0
+#define DF_BOX 2.0
+#define DF_TORUS 3.0
+#define DF_TORUS8 4.0
 
 struct ray
 {
@@ -63,34 +69,101 @@ vec3 hash3( float n )
     return fract(sin(vec3(n,n+1.0,n+2.0))*vec3(43758.5453123,22578.1459123,19642.3490423));
 }
 
+float dfSphere(vec3 p, float radius) {
+	return length(p)-radius;
+}
+
+float dfBox(vec3 p, vec3 dimensions, float cornerRadius) {
+	return length(max(abs(p)-dimensions, 0.0))-cornerRadius;
+}
+
+float dfTorus(vec3 p, float innerRadius, float outerRadius) {
+	vec2 q = vec2(length(p.xz)-innerRadius,p.y);
+	return length(q)-outerRadius;
+}
+
+float length8(vec3 p) {
+	float d8 = pow(p.x, 8.0) + pow(p.y, 8.0) + pow(p.z, 8.0);
+	return pow(d8, 1.0/8.0);
+}
+
+float length8(vec2 p) {
+	float d8 = pow(p.x, 8.0) + pow(p.y, 8.0);
+	return pow(d8, 1.0/8.0);
+}
+
+float dfTorus82(vec3 p, float innerRadius, float outerRadius) {
+	vec2 q = vec2(length(p.xz)-innerRadius,p.y);
+	return length8(q)-outerRadius;
+}
+
+/*
+mat4 objectMatrices[8];
+void cacheMatrices() {
+	for (int i=0; i<8; i++) {
+		vec4 posT = texture2D(iChannel1, vec2(float(i*5+4)/128.0, 0.0));
+		float tm = posT.w;
+		float t = floor(tm / 256.0);
+		if (t == DF_EMPTY) {
+			objectMatrices[i][3][3] = DF_EMPTY;
+			break;
+		}
+		mat4 mx;
+		mx[0] = texture2D(iChannel1, vec2(float(i*5+1)/128.0, 0.0));
+		mx[1] = texture2D(iChannel1, vec2(float(i*5+2)/128.0, 0.0));
+		mx[2] = texture2D(iChannel1, vec2(float(i*5+3)/128.0, 0.0));
+		mx[3] = posT;
+		objectMatrices[i] = mx;
+	}
+}
+*/
+
 vec3 scene(vec3 p, bool bounce)
 {
 	float dist = 1e9;
 	float materialIndex = -1.0;
 	float hitIndex = -1.0;
 	float nd = 0.0;
+	vec4 p4 = vec4(p, 1.0);
 	for (int i=0; i<8; i++) {
 		if (!bounce && vObjectVisible[i] == 0.0) {
 			continue;
 		}
+		// mat4 mx = objectMatrices[i];
+		// float tm = mx[3][3];
+		// if (tm == DF_EMPTY) {
+		// 	break;
+		// }
+		// float t = floor(tm / 256.0);
+		// float m = floor(tm - t*256.0);
+		// vec4 params = texture2D(iChannel1, vec2(float(i*5)/128.0, 0.0));
+		// mx[3][3] = 1.0;
+		// vec3 tp = (mx * p4).xyz;
+		// mx[3][3] = tm;
+
 		vec4 posT = texture2D(iChannel1, vec2(float(i*5+4)/128.0, 0.0));
 		float tm = posT.w;
-		posT.w = 0.0;
 		float t = floor(tm / 256.0);
-		if (t == 0.0) break;
-
+		if (t == DF_EMPTY) break;
 		float m = floor(tm - t*256.0);
 		vec4 params = texture2D(iChannel1, vec2(float(i*5)/128.0, 0.0));
+
 		mat4 mx;
 		mx[0] = texture2D(iChannel1, vec2(float(i*5+1)/128.0, 0.0));
 		mx[1] = texture2D(iChannel1, vec2(float(i*5+2)/128.0, 0.0));
 		mx[2] = texture2D(iChannel1, vec2(float(i*5+3)/128.0, 0.0));
-		mx[3] = posT;
+		mx[3] = vec4(posT.xyz, 1.0);
 
-		if (t == 1.0) {
-			nd = length(vec3(posT+vec4(p,0.0)))-params.x;
-		} else if (t == 2.0) {
-			nd = length(max(vec3(abs(posT+vec4(p,0.0)))-params.xyz, 0.0))-params.w;
+		vec3 tp = (mx * p4).xyz;
+
+		if (t == DF_SPHERE) {
+			nd = dfSphere(tp, params.x);
+		} else if (t == DF_BOX) {
+			nd = dfBox(tp, params.xyz, params.w);
+		} else if (t == DF_TORUS) {
+			nd = dfTorus(tp, params.x, params.y);
+		} else if (t == DF_TORUS8) {
+			nd = dfTorus82(tp, params.x, params.y);
 		}
 		if (nd < dist) {
 			dist = nd;
@@ -204,6 +277,8 @@ vec3 trace(float time)
 	}
 	float k = 1.0;
 	bool bounce = false;
+
+	// cacheMatrices();
 
 	vec2 pixelAspect = vec2(iResolution.x / iResolution.y, 1.0);
 	vec2 pixelRatio = vec2(2.0) / iResolution.xy;

@@ -6,13 +6,14 @@ uniform vec3 iResolution;
 uniform vec3 iCamera;
 uniform vec3 iCameraTarget;
 
-uniform vec4 iBoundingSphere;
+uniform float iObjectCount;
 
-attribute vec3 position;
+attribute vec3 aPosition;
+attribute vec2 aGridUV;
 
 varying vec2 vUv;
 varying float vAnyObjectsVisible;
-varying float vObjectVisible[8];
+varying float vObjectVisible[3];
 
 struct ray
 {
@@ -100,19 +101,23 @@ float rayBV(ray r, vec3 center, float radius)
 
 void main() {
 	vec2 pixelAspect = vec2(iResolution.x / iResolution.y, 1.0);
-	vUv = position.xy * pixelAspect;
+	vUv = aPosition.xy * pixelAspect;
 	
-	ray r = setupRay(vUv, 1.0);
+	vec2 uv = aGridUV * pixelAspect;
+
+	ray r = setupRay(uv, 1.0);
+
+	gl_Position = vec4(aPosition, 1.0);
 
 	vAnyObjectsVisible = 0.0;
-	for (int i=0; i<8; i++) {
+	for (int i=0; i<3; i++) {
 		vObjectVisible[i] = 0.0;
-		sphere s = getBoundingSphere(i);
-		if (s.r > 0.0){
-			vObjectVisible[i] = rayBV(r, s.p, s.r+0.5);
-			vAnyObjectsVisible += vObjectVisible[i];
+		for (int j=0; j<8; j++) {
+			if (float(i*8+j) >= iObjectCount) return;
+			sphere s = getBoundingSphere(i*8+j);
+			float bit = rayBV(r, s.p, s.r+0.95);
+			vObjectVisible[i] += pow(2.0, float(j))*bit;
+			vAnyObjectsVisible += bit;
 		}
 	}
-
-	gl_Position = vec4(position, 1.0);
 }

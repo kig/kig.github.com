@@ -74,6 +74,10 @@
 		controller.color = 0xFFFFFF;
 
 		controller.createNew = function() {
+			if (this.objectCount === this.maxObjectCount) {
+				alert("Maximum object count reached, can't create more objects. Sorry about that.")
+				return;
+			}
 			var cube = new DF[this.typeName]();
 			cube.material.transmit.set([Math.random(), Math.random(), Math.random()])
 			cube.material.diffuse = 0.1;

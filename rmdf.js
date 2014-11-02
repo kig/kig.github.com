@@ -72,9 +72,8 @@ var init = function() {
 		}
 	};
 	var createBuffer = function(gl) {
-		var buf = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, buf);
 		var verts = [];
+		var gridVerts = [];
 		var cols = 32;
 		var rows = 18;
 		for (var y=0; y<rows; y++) {
@@ -86,20 +85,29 @@ var init = function() {
 				verts.push(-1+2*x/cols, -1+2*y/rows, 0);
 				verts.push(-1+2*(x+1)/cols, -1+2*(y+1)/rows, 0);
 				verts.push(-1+2*(x)/cols, -1+2*(y+1)/rows, 0);
+
+				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
+				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
+				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
+				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
+				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
+				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
 			}
 		}
+
 		var arr = new Float32Array(verts);
-		// verts = [
-		// 	-1,-1, 0,
-		// 	 1,-1, 0,
-		// 	 1, 1, 0,
-		// 	-1,-1, 0,
-		// 	 1, 1, 0,
-		// 	-1, 1, 0
-		// ]);
+		var buf = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, buf);
 		gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STATIC_DRAW);
 		buf.vertCount = arr.length/3;
-		return buf;
+
+		var arr = new Float32Array(gridVerts);
+		var gridUvBuf = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, gridUvBuf);
+		gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STATIC_DRAW);
+		gridUvBuf.vertCount = arr.length/2;
+
+		return [buf, gridUvBuf];
 	};
 	var createShader = function(gl, source, type) {
 		var s = source;
@@ -427,10 +435,13 @@ var init = function() {
 	Loader.get(shaderURLs, function() {
 		var t1 = Date.now();
 		var t0 = Date.now();
-		var buf = createBuffer(gl);
+		var bufs = createBuffer(gl);
+		var buf = bufs[0];
+		var gridUvBuf = bufs[1];
+
 		var rTex = createTexture(gl, randomTex, 0);
-		var posTex = new Float32Array(16*8 * 2 * 4);
-		posTex.width = 16 * 8;
+		var posTex = new Float32Array(128 /* Fits 25 objects */ * 2 * 4);
+		posTex.width = 128;
 		posTex.height = 2;
 		var pTex = createTexture(gl, posTex, 1);
 		if (DEBUG) console.log('Set up WebGL: '+(Date.now()-t0)+' ms');
@@ -439,6 +450,7 @@ var init = function() {
 		var controller = new DF.Box({position: [0.1, 0.1, 0.1], dimensions: [0.1, 0.1, 0.1]});
 		controller.objects = [];
 		controller.objectCount = 0;
+		controller.maxObjectCount = 24;
 		controller.setCurrent = function() {};
 
 		window.rmdfController = controller;
@@ -499,6 +511,10 @@ var init = function() {
 			var cc = rmdfScene.childNodes;
 			for (var i=0; i<cc.length; i++) {
 				var c = cc[i];
+				if (this.objectCount === this.maxObjectCount && c.tagName) {
+					console.log("controller.loadDOM: Hit maximum object count, can't create more objects.");
+					continue;
+				}
 				var options = {};
 				options.material = new DF.Material();
 				if (c.hasAttribute) {
@@ -583,9 +599,16 @@ var init = function() {
 			u3fv(gl, p, 'iResolution', iResolution);
 			u1i(gl, p, 'iChannel0', 0);
 			u1i(gl, p, 'iChannel1', 1);
-			var pos = gl.getAttribLocation(p, 'position');
+
+			var pos = gl.getAttribLocation(p, 'aPosition');
 			gl.enableVertexAttribArray(pos);
+			gl.bindBuffer(gl.ARRAY_BUFFER, buf);
 			gl.vertexAttribPointer(pos, 3, gl.FLOAT, false, 0, 0);
+
+			var pos = gl.getAttribLocation(p, 'aGridUV');
+			gl.enableVertexAttribArray(pos);
+			gl.bindBuffer(gl.ARRAY_BUFFER, gridUvBuf);
+			gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
 		};
 		for (var i=1; i<arguments.length; i++) {
 			if (sel) {
@@ -721,7 +744,7 @@ var init = function() {
 				t = Date.now() - startT;
 
 				var objects = controller.objects;
-				while (objects.length < 16) {
+				while (objects.length < 25) {
 					objects.push(new DF.Object());
 				}
 				var pick = -2.0;
@@ -748,7 +771,10 @@ var init = function() {
 					objects[j].tick();
 				}
 				for (var j=0; j<objects.length; j++) {
-					objects[j].materialIndex = objects[j].type === DF.Types.empty ? 0 : j;
+					if (j >= controller.maxObjectCount) {
+						break;
+					}
+					objects[j].materialIndex = (objects[j].type === DF.Types.empty ? 0 : j);
 					objects[j].write(posTex, j*20);
 					objects[j].material.write(posTex, posTex.width*4 + j*8);
 				}
@@ -765,7 +791,7 @@ var init = function() {
 				}
 				sceneBoundingSphere.set(s.center);
 				sceneBoundingSphere[3] = s.radius;
-				u4fv(gl, p, 'iBoundingSphere', sceneBoundingSphere);
+				//u4fv(gl, p, 'iBoundingSphere', sceneBoundingSphere);
 
 				updateTexture(gl, pTex, posTex, 1);
 
@@ -776,10 +802,12 @@ var init = function() {
 				u3fv(gl, p, 'iHorizonColor', vec3.scale(DF._tmpVec, controller.skybox.horizonColor, 1/255));
 				u1f(gl, p, 'iGlobalTime', t/1000);
 				u1f(gl, p, 'iPick', pick);
+				u1f(gl, p, 'iObjectCount', controller.objectCount);
 				u1f(gl, p, 'iISO', controller.camera.ISO);
 				u1f(gl, p, 'iShutterSpeed', controller.camera.shutterSpeed);
 				u1f(gl, p, 'iExposureCompensation', controller.camera.exposureCompensation);
 				u4fv(gl, p, 'iMouse', mouse);
+
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 				gl.drawArrays(gl.TRIANGLES, 0, buf.vertCount);
 			}	

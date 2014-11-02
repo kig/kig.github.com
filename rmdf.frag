@@ -11,13 +11,13 @@ uniform float iPick;
 uniform vec3 iCamera;
 uniform vec3 iCameraTarget;
 
-uniform vec4 iBoundingSphere;
-
 uniform vec3 iLightPos;
 uniform vec3 iSunColor;
 uniform vec3 iSkyColor;
 uniform vec3 iGroundColor;
 uniform vec3 iHorizonColor;
+
+uniform float iObjectCount;
 
 uniform float iShutterSpeed;
 uniform float iISO;
@@ -25,12 +25,12 @@ uniform float iExposureCompensation;
 
 varying vec2 vUv;
 varying float vAnyObjectsVisible;
-varying float vObjectVisible[8];
+varying float vObjectVisible[3];
 
 #define THRESHOLD 0.02
 #define MAX_DISTANCE 16.0
 
-#define RAY_STEPS 150
+#define RAY_STEPS 120
 #define MAX_SAMPLES (max(2.0, 8.0*maxDiffuseSum))
 
 #define DF_EMPTY 0.0
@@ -125,9 +125,15 @@ vec3 scene(vec3 p, bool bounce)
 	float hitIndex = -1.0;
 	float nd = 0.0;
 	vec4 p4 = vec4(p, 1.0);
-	for (int i=0; i<8; i++) {
-		if (!bounce && vObjectVisible[i] == 0.0) {
-			continue;
+	for (int i=0; i<24; i++) {
+		if (float(i) >= iObjectCount) break;
+		if (!bounce) {
+			float vis = vObjectVisible[i/8];
+			int idx = i/8;
+			int bit = i-8*idx;
+			if (mod(floor(vis / pow(2.0, float(bit))), 2.0) == 0.0) {
+				continue;
+			}
 		}
 		// mat4 mx = objectMatrices[i];
 		// float tm = mx[3][3];
@@ -141,17 +147,15 @@ vec3 scene(vec3 p, bool bounce)
 		// vec3 tp = (mx * p4).xyz;
 		// mx[3][3] = tm;
 
-		vec4 posT = texture2D(iChannel1, vec2(float(i*5+4)/128.0, 0.0));
-		float tm = posT.w;
-		float t = floor(tm / 256.0);
-		if (t == DF_EMPTY) break;
-		float m = floor(tm - t*256.0);
 		vec4 params = texture2D(iChannel1, vec2(float(i*5)/128.0, 0.0));
-
 		mat4 mx;
 		mx[0] = texture2D(iChannel1, vec2(float(i*5+1)/128.0, 0.0));
 		mx[1] = texture2D(iChannel1, vec2(float(i*5+2)/128.0, 0.0));
 		mx[2] = texture2D(iChannel1, vec2(float(i*5+3)/128.0, 0.0));
+		vec4 posT = texture2D(iChannel1, vec2(float(i*5+4)/128.0, 0.0));
+		float tm = posT.w;
+		float t = floor(tm / 256.0);
+		float m = floor(tm - t*256.0);
 		mx[3] = vec4(posT.xyz, 1.0);
 
 		vec3 tp = (mx * p4).xyz;

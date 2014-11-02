@@ -56,6 +56,7 @@
 
 		controller.onclick = ([
 		'// Example click event listener. Press Set Onclick to try it out.',
+		'if (this.ival) return;',
 		'var p = this.position[1];',
 		'var self = this;',
 		'var t = 0;',
@@ -63,6 +64,7 @@
 		'	if (t > 1000) {',
 		'		t = 1000;',
 		'		clearInterval(self.ival);',
+		'		self.ival = null;',
 		'	}',
 		'	self.position[1] = p + 1-Math.cos(t/1000*Math.PI*2);',
 		'	t += 16;',

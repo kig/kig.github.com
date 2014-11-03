@@ -304,7 +304,7 @@ this.ival = setInterval(function() {
 	}
 	self.rotation[1] = p + (0.5*(1-t/1000)*Math.sin(t/500*Math.PI*2));
 	t += 16;
-}, 16);</onclick></rmdf-box><rmdf-sphere position="-2.268916606903076,3.548459768295288,2.2059881687164307" material-transmit="1,0.8592848777770996,0.4019607901573181" material-diffuse="0" material-emit="0,0,0" radius="1.5"><title>rmdf | modeller</title><content><p>rmdf | modeller is a tool to build path traced websites out of ray marched distance field objects. Realistic lighting effects and complex procedural objects are within reach!</p><p>The 3D objects are interactive – you can build websites out of them. Add click handlers to change the scene when you click on an object or add HTML content to show on click.</p></content><onclick>if (this.ival) return;
+}, 16);</onclick></rmdf-box><rmdf-sphere position="-2.268916606903076,3.548459768295288,2.2059881687164307" material-transmit="1,0.8592848777770996,0.4019607901573181" material-diffuse="0" material-emit="0,0,0" radius="1.5" draggable="true"><title>rmdf | modeller</title><content><p>rmdf | modeller is a tool to build path traced websites out of ray marched distance field objects. Realistic lighting effects and complex procedural objects are within reach!</p><p>The 3D objects are interactive – you can build websites out of them. Add click handlers to change the scene when you click on an object or add HTML content to show on click.</p></content><onclick>if (this.ival) return;
 var p = this.radius;
 var self = this;
 var t = 0;

@@ -85,9 +85,12 @@
 				return;
 			}
 			var cube = new DF[this.typeName]();
-			cube.draggable = true;
-			cube.material.transmit.set([Math.random(), Math.random(), Math.random()])
-			cube.material.diffuse = 0.1;
+			cube.material.transmit.set(this.transmit.getValue().map(function(v) {return v/255;}));
+			cube.material.emit.set(this.emit.getValue().map(function(v) {return v/255;}));
+			cube.material.diffuse = this.diffuse.getValue();
+			if (!this.current) {
+				cube.title = this.titleC.getValue();
+			}
 			this.objects[this.objectCount++] = cube;
 			this.setCurrent(cube);
 		};
@@ -183,7 +186,20 @@
 		controller.type = gui.add(controller, 'typeName', ['Box', 'Sphere']).name("Type").onChange(function(type) {
 			var idx = controller.objects.indexOf(controller.current);
 			if (idx !== -1 && !(controller.current instanceof DF[type])) {
-				controller.objects[idx] = new DF[type]({position: controller.current.position, material: controller.current.material});
+				controller.objects[idx] = new DF[type]({
+					position: controller.current.position, 
+					rotation: controller.current.rotation, 
+					material: controller.current.material,
+					title: controller.current.title,
+					content: controller.current.content,
+					draggable: controller.current.draggable,
+					dragXAxis: controller.current.dragXAxis,
+					dragYAxis: controller.current.dragYAxis,
+					ontick: controller.current.ontick,
+					ontickString: controller.current.ontickString,
+					onclick: controller.current.onclick,
+					onclickString: controller.current.onclickString
+				});
 				controller.setCurrent(controller.objects[idx]);
 			}
 		});

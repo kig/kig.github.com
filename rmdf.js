@@ -247,6 +247,15 @@ var init = function() {
 		return dir;
 	};
 
+	var updateCameraTranslate = function(cameraTranslate, cameraPos, cameraTarget) {
+		vec3.normalize(zaxis, vec3.sub(zaxis, cameraTarget, cameraPos));
+		vec3.normalize(xaxis, vec3.cross(xaxis, up, zaxis));
+		vec3.normalize(yaxis, vec3.cross(yaxis, zaxis, xaxis));
+		cameraTranslate.up.set(yaxis);
+		cameraTranslate.right.set(xaxis);
+		return cameraTranslate;
+	};
+
 
 
 
@@ -357,13 +366,17 @@ var init = function() {
 	DF.Object = function(options) {
 		this.title = "";
 		this.content = "";
+		this.draggable = false;
+		this.dragXAxis = null;
+		this.dragYAxis = null;
 		this.bufferArray = new Float32Array(4 /* Object info */ + 16 /* Transform matrix */);
 		this.buffer = this.bufferArray.buffer;
 		this.matrix = new Float32Array(this.buffer, 4*4, 16);
 		mat4.identity(this.matrix);
-		this.position = new Float32Array(3);
+		this.position = new Float32Array([0,0,0]);
+		this.scale = new Float32Array([1,1,1]);
 		this.rotationQuat = quat.create(); // Quaternion.
-		this.rotationXYZ = [0,0,0]; // Euclidean XYZ rotation.
+		this.rotation = new Float32Array([0,0,0]); // Euclidean XYZ rotation.
 		this.material = new DF.Material();
 		this.materialIndex = 0;
 		this.type = DF.Types.empty;
@@ -380,13 +393,16 @@ var init = function() {
 	};
 	DF.Object.prototype.tick = function() {};
 	DF.Object.prototype.write = function(array, offset) {
-		if (this.rotationXYZ) {
+		if (this.rotation) {
 			quat.identity(this.rotationQuat);
-			quat.rotateX(this.rotationQuat, this.rotationQuat, this.rotationXYZ[0])
-			quat.rotateY(this.rotationQuat, this.rotationQuat, this.rotationXYZ[1])
-			quat.rotateZ(this.rotationQuat, this.rotationQuat, this.rotationXYZ[2])
+			quat.rotateX(this.rotationQuat, this.rotationQuat, this.rotation[0])
+			quat.rotateY(this.rotationQuat, this.rotationQuat, this.rotation[1])
+			quat.rotateZ(this.rotationQuat, this.rotationQuat, this.rotation[2])
 		}
 		mat4.fromRotationTranslation(this.matrix, this.rotationQuat, this.position);
+		if (this.scale) {
+			mat4.scale(this.matrix, this.matrix, this.scale);			
+		}
 		mat4.copy(DF._tmpMatrix, this.matrix);
 		mat4.invert(this.matrix, DF._tmpMatrix);
 		this.bufferArray[19] = (this.type << 8) | this.materialIndex;
@@ -525,6 +541,12 @@ var init = function() {
 					if (c.querySelector('title')) { options.title = c.querySelector('title').textContent; }
 					if (c.querySelector('content')) { options.content = c.querySelector('content').innerHTML; }
 					if (c.hasAttribute('position')) { options.position = JSON.parse('['+c.getAttribute('position')+']'); }
+					if (c.hasAttribute('rotation')) { options.rotation = JSON.parse('['+c.getAttribute('rotation')+']'); }
+					if (c.hasAttribute('scale')) { options.scale = JSON.parse('['+c.getAttribute('scale')+']'); }
+					if (c.hasAttribute('matrix')) { options.matrix = JSON.parse('['+c.getAttribute('matrix')+']'); }
+					if (c.hasAttribute('draggable')) { options.draggable = ('true' === c.getAttribute('draggable').toLowerCase()); }
+					if (c.hasAttribute('drag-x-axis')) { options.dragXAxis = JSON.parse('['+c.getAttribute('drag-x-axis')+']'); }
+					if (c.hasAttribute('drag-y-axis')) { options.dragYAxis = JSON.parse('['+c.getAttribute('drag-y-axis')+']'); }
 					if (c.hasAttribute('material-transmit')) { options.material.transmit.set(parseColorF(c.getAttribute('material-transmit'))); }
 					if (c.hasAttribute('material-diffuse')) { options.material.diffuse = parseFloat(c.getAttribute('material-diffuse')); }
 					if (c.hasAttribute('material-emit')) { options.material.emit.set(parseColorF(c.getAttribute('material-emit'))); }
@@ -638,19 +660,21 @@ var init = function() {
 		var clickEvent = false;
 		var startX, startY;
 		var cancelClick = false;
-
-		document.querySelector('#edit').onclick = function(ev) {
-			ev.preventDefault();
-			document.body.classList.toggle('editmode');
-		};
+		var downTarget = -1;
+		var cameraTranslate = {up: Vec3(0,1,0), right: Vec3(1, 0, 0), tmp: Vec3(0.0)};
 
 		glc.onmousedown = function(ev) {
 			cancelClick = false;
+			mouse[0] = ev.layerX;
+			mouse[1] = this.offsetHeight-ev.layerY;
 			startX = mouse[2] = ev.layerX;
 			startY = mouse[3] = this.offsetHeight-ev.layerY;
 			targetRot -= 0.25*Math.PI;
 			down = true;
 			tDown = t;
+			getDir(iResolution, controller.camera.position, controller.camera.target, mouse, cdir);
+			downTarget = trace(controller.camera.position, cdir, posTex).pick;
+			updateCameraTranslate(cameraTranslate, controller.camera.position, controller.camera.target);
 			ev.preventDefault();
 		};
 		glc.onclick = function(ev) {
@@ -667,6 +691,7 @@ var init = function() {
 			targetOpen = targetOpen ? 0 : 1;
 			down = false;
 			ev.preventDefault();
+			downTarget = -1;
 		};
 		glc.onmousemove = function(ev) {
 			mouse[0] = ev.layerX;
@@ -679,13 +704,23 @@ var init = function() {
 			if (down) {
 				var dx = mouse[2] - mouse[0];
 				var dy = mouse[3] - mouse[1];
-				controller.cameraTheta -= 0.01 * dy;
-				if (controller.cameraTheta > Math.PI) controller.cameraTheta = Math.PI;
-				if (controller.cameraTheta < 0.001) controller.cameraTheta = 0.001; // Avoid camera singularity at 0. Probably screwy upvector.
-				controller.cameraPhi += 0.01 * dx;
-				controller.camera.position[0] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.cos(controller.cameraPhi);
-				controller.camera.position[1] = controller.cameraDistance * Math.cos(controller.cameraTheta);
-				controller.camera.position[2] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.sin(controller.cameraPhi);
+				if (downTarget >= 0) {
+					var c = controller.objects[downTarget];
+					if (c.draggable || document.body.classList.contains('editmode')) {
+						vec3.scale(cameraTranslate.tmp, c.dragXAxis || cameraTranslate.up, -dy/50);
+						vec3.add(c.position, c.position, cameraTranslate.tmp);
+						vec3.scale(cameraTranslate.tmp, c.dragYAxis || cameraTranslate.right, -dx/50);
+						vec3.add(c.position, c.position, cameraTranslate.tmp);
+					}
+				} else {
+					controller.cameraTheta -= 0.01 * dy;
+					if (controller.cameraTheta > Math.PI) controller.cameraTheta = Math.PI;
+					if (controller.cameraTheta < 0.001) controller.cameraTheta = 0.001; // Avoid camera singularity at 0. Probably screwy upvector.
+					controller.cameraPhi += 0.01 * dx;
+					controller.camera.position[0] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.cos(controller.cameraPhi);
+					controller.camera.position[1] = controller.cameraDistance * Math.cos(controller.cameraTheta);
+					controller.camera.position[2] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.sin(controller.cameraPhi);
+				}
 				mouse[2] = mouse[0];
 				mouse[3] = mouse[1];
 			}

@@ -276,7 +276,7 @@
 		</div>
 		<div id="popup"><h2></h2><div class="content"></div><div class="close"></div></div>
 		<div id="edit"></div>
-<rmdf-scene sun-position="4.523285388946533,0.8382726311683655,-5.664690971374512" sun-color="0.9313725490196079,0.9034421150236334,0.8126682045367166" sky-color="0.19636112807291312,0.22549019607843135,0.19454056132256822" ground-color="0.32352941176470584,0.3018861523848293,0.23154555940023067" horizon-color="1,0.8,0.5" camera-position="5.7814788818359375,-2.087726354598999,5.344484329223633" camera-target="0,0,0" camera-iso="100" camera-exposure-compensation="0" camera-shutter-speed="0.016666666666666666"><rmdf-box position="0,0,0" material-transmit="1,0,0" material-diffuse="0" material-emit="0,0,0" dimensions="1,0.10000000149011612,1" corner-radius="0.05"></rmdf-box><rmdf-box position="0,-1.2999999523162842,0" material-transmit="0.8999999761581421,0.8999999761581421,0.8999999761581421" material-diffuse="0" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05"><title>about</title><content><p>Another toy from FHTR Ltd. Follow me on Twitter <a href="http://twitter.com/ilmarihei">@ilmarihei</a> to hear about updates and more hacks.</p></content><onclick>if (this.ival) return;
+<rmdf-scene sun-position="4.523285388946533,0.8382726311683655,-5.664690971374512" sun-color="0.9313725490196079,0.9034421150236334,0.8126682045367166" sky-color="0.19636112807291312,0.22549019607843135,0.19454056132256822" ground-color="0.32352941176470584,0.3018861523848293,0.23154555940023067" horizon-color="1,0.8,0.5" camera-position="5.7814788818359375,-2.087726354598999,5.344484329223633" camera-target="0,0,0" camera-iso="100" camera-exposure-compensation="0" camera-shutter-speed="0.016666666666666666"><rmdf-box position="0,0,0" material-transmit="1,0,0" material-diffuse="0" material-emit="0,0,0" dimensions="1,0.10000000149011612,1" corner-radius="0.05" rotation="0,0.7854,0"></rmdf-box><rmdf-box position="0,-1.2999999523162842,0" material-transmit="0.8999999761581421,0.8999999761581421,0.8999999761581421" material-diffuse="0" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05"><title>about</title><content><p>Another toy from FHTR Ltd. Follow me on Twitter <a href="http://twitter.com/ilmarihei">@ilmarihei</a> to hear about updates and more hacks.</p></content><onclick>if (this.ival) return;
 var px = this.position[0];
 var py = this.position[1];
 var self = this;
@@ -289,11 +289,11 @@ this.ival = setInterval(function() {
 	}
 	self.position[0] = px + (1-t/1000)*Math.sin(Math.PI*2*t/500);
 	self.position[1] = py - (1-Math.cos(Math.PI*2*t/500));
-	self.rotationXYZ[0] = t/1000*Math.PI;
-	self.rotationXYZ[1] = t/1000*Math.PI;
+	self.rotation[0] = t/1000*Math.PI;
+	self.rotation[1] = t/1000*Math.PI;
 	t += 16;
 }, 16);</onclick></rmdf-box><rmdf-box position="0,1.2999999523162842,0" material-transmit="0.13725490868091583,0.13725490868091583,0.13725490868091583" material-diffuse="0" material-emit="0,0,0" dimensions="1,1,1" corner-radius="0.05"><title>Path tracing</title><content><p>Path tracing is a computer graphics technique that simulates the way light works. For each pixel, shoot out a ray from the eye and bounce it around the scene to collect light.</p><p>Path tracing is computationally intensive but can simulate a wide variety of lighting effects. The path tracing implementation in rmdf is optimized for speed rather than quality, so you'll see some wonky artefacts at times.</p></content><onclick>if (this.ival) return;
-var p = this.rotationXYZ[1];
+var p = this.rotation[1];
 var self = this;
 var t = 0;
 this.ival = setInterval(function() {
@@ -302,10 +302,10 @@ this.ival = setInterval(function() {
 		clearInterval(self.ival);
 		self.ival = null;
 	}
-	self.rotationXYZ[1] = p + (0.5*(1-t/1000)*Math.sin(t/500*Math.PI*2));
+	self.rotation[1] = p + (0.5*(1-t/1000)*Math.sin(t/500*Math.PI*2));
 	t += 16;
 }, 16);</onclick></rmdf-box><rmdf-sphere position="-2.268916606903076,3.548459768295288,2.2059881687164307" material-transmit="1,0.8592848777770996,0.4019607901573181" material-diffuse="0" material-emit="0,0,0" radius="1.5"><title>rmdf | modeller</title><content><p>rmdf | modeller is a tool to build path traced websites out of ray marched distance field objects. Realistic lighting effects and complex procedural objects are within reach!</p><p>The 3D objects are interactive – you can build websites out of them. Add click handlers to change the scene when you click on an object or add HTML content to show on click.</p></content><onclick>if (this.ival) return;
-var p = this.radius = 1.5;
+var p = this.radius;
 var self = this;
 var t = 0;
 this.ival = setInterval(function() {

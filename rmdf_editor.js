@@ -5,6 +5,11 @@
 			editButton.classList.add('visible');
 		}
 
+		document.querySelector('#edit').onclick = function(ev) {
+			ev.preventDefault();
+			document.body.classList.toggle('editmode');
+		};
+
 	 	var gui = new dat.GUI();
 
 	 	var cont = document.createElement('div');
@@ -46,7 +51,6 @@
 	    contentEditor.setTheme("ace/theme/monokai");
 	    contentEditor.getSession().setMode("ace/mode/html");
 
-
 		controller.title = "Title";
 		controller.content = "<p>Content HTML</p>";
 
@@ -81,6 +85,7 @@
 				return;
 			}
 			var cube = new DF[this.typeName]();
+			cube.draggable = true;
 			cube.material.transmit.set([Math.random(), Math.random(), Math.random()])
 			cube.material.diffuse = 0.1;
 			this.objects[this.objectCount++] = cube;
@@ -107,6 +112,7 @@
 				editor.setValue(this.current.onclickString || this.onclick);
 				contentEditor.setValue(this.current.content);
 				this.titleC.setValue(this.current.title);
+				this.draggableC.setValue(this.current.draggable);
 				this.x.setValue(current.position[0]);
 				this.y.setValue(current.position[1]);
 				this.z.setValue(current.position[2]);
@@ -184,7 +190,7 @@
 
 		controller.toDOM = function() {
 			var sArray = function(arr) {
-				return [].join.call([].slice.call(arr, 0, 3), ',');
+				return [].join.call(arr, ',');
 			};
 			var sColor = function(arr) {
 				return sArray(arr.map(function(v) { return v / 255; }));
@@ -228,6 +234,16 @@
 					el.appendChild(ontick);
 				}
 				el.setAttribute('position', sArray(c.position));
+				el.setAttribute('rotation', sArray(c.rotation));
+				//el.setAttribute('scale', sArray(c.scale));
+				el.setAttribute('draggable', c.draggable);
+				if (c.dragXAxis) {
+					el.setAttribute('drag-x-axis', sArray(c.dragXAxis));
+				}
+				if (c.dragYAxis) {
+					el.setAttribute('drag-y-axis', sArray(c.dragYAxis));
+				}
+				//el.setAttribute('matrix', sArray(c.matrix));
 				el.setAttribute('material-transmit', sColorF(c.material.transmit));
 				el.setAttribute('material-diffuse', c.material.diffuse);
 				el.setAttribute('material-emit', sColorF(c.material.emit));
@@ -279,6 +295,12 @@
 		gui.add(controller, 'deleteSelected').name("Delete selected object");
 		gui.add(controller, 'package').name("Download scene");
 		gui.add(controller, 'load').name("Load scene");
+
+		controller.draggableC = gui.add(controller, 'draggable').onChange(function(v) {
+			if (controller.current) {
+				controller.current.draggable = v;
+			}
+		});
 
 		controller.x = controller.proxy(['position', 0], -10.1, 10.1, 0.1, "X");
 		controller.y = controller.proxy(['position', 1], -10.1, 10.1, 0.1, "Y");

@@ -100,6 +100,7 @@ float rayBV(ray r, vec3 center, float radius)
 }
 
 void main() {
+	gl_PointSize = 8.0;
 	vec2 pixelAspect = vec2(iResolution.x / iResolution.y, 1.0);
 	vUv = aPosition.xy * pixelAspect;
 	
@@ -115,7 +116,7 @@ void main() {
 		for (int j=0; j<8; j++) {
 			if (float(i*8+j) >= iObjectCount) return;
 			sphere s = getBoundingSphere(i*8+j);
-			float bit = rayBV(r, s.p, s.r+0.95);
+			float bit = rayBV(r, s.p, s.r+0.2);
 			vObjectVisible[i] += pow(2.0, float(j))*bit;
 			vAnyObjectsVisible += bit;
 		}

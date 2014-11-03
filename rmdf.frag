@@ -23,7 +23,6 @@ uniform float iShutterSpeed;
 uniform float iISO;
 uniform float iExposureCompensation;
 
-varying vec2 vUv;
 varying float vAnyObjectsVisible;
 varying float vObjectVisible[3];
 
@@ -271,7 +270,9 @@ vec3 trace(float time)
 	float count = 0.0;
 	float diffuseSum = 0.0, maxDiffuseSum = 0.0;
 	
-	vec2 uv = vUv;
+	vec2 pixelAspect = vec2(iResolution.x / iResolution.y, 1.0);
+	vec2 pixelRatio = vec2(2.0) / iResolution.xy;
+	vec2 uv = (gl_FragCoord.xy*pixelRatio - 1.0)*pixelAspect;
 
 	vec3 accum = vec3(0.0);
 
@@ -284,8 +285,6 @@ vec3 trace(float time)
 
 	// cacheMatrices();
 
-	vec2 pixelAspect = vec2(iResolution.x / iResolution.y, 1.0);
-	vec2 pixelRatio = vec2(2.0) / iResolution.xy;
 	vec2 uvD = ((2.0 * ((gl_FragCoord.xy+vec2(1.0, 1.0)) / iResolution.xy) - 1.0) * pixelAspect) - uv;
 		
 	for (int i=0; i<RAY_STEPS; i++) {

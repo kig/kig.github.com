@@ -78,23 +78,11 @@ var init = function() {
 	var createBuffer = function(gl) {
 		var verts = [];
 		var gridVerts = [];
-		var cols = 32;
-		var rows = 18;
+		var cols = window.innerWidth/8;
+		var rows = window.innerHeight/8;
 		for (var y=0; y<rows; y++) {
 			for (var x=0; x<cols; x++) {
-				verts.push(-1+2*x/cols, -1+2*y/rows, 0);
-				verts.push(-1+2*(x+1)/cols, -1+2*(y)/rows, 0);
-				verts.push(-1+2*(x+1)/cols, -1+2*(y+1)/rows, 0);
-
-				verts.push(-1+2*x/cols, -1+2*y/rows, 0);
-				verts.push(-1+2*(x+1)/cols, -1+2*(y+1)/rows, 0);
-				verts.push(-1+2*(x)/cols, -1+2*(y+1)/rows, 0);
-
-				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
-				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
-				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
-				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
-				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
+				verts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows, 0);
 				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
 			}
 		}
@@ -848,7 +836,7 @@ var init = function() {
 				u4fv(gl, p, 'iMouse', mouse);
 
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-				gl.drawArrays(gl.TRIANGLES, 0, buf.vertCount);
+				gl.drawArrays(gl.POINTS, 0, buf.vertCount);
 			}	
 			requestAnimationFrame(tick, glc);
 		};

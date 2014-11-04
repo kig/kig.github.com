@@ -190,6 +190,7 @@ var init = function() {
 	};
 
 	Loader.get(shaderURLs, function() {
+		var forceRedraw = false;
 		var t1 = Date.now();
 		var t0 = Date.now();
 		var buf = createBuffer(gl);
@@ -208,12 +209,15 @@ var init = function() {
 		var iResolution = vec3(glc.width, glc.height, 1.0);
 
 		var resize = function() {
-			glc.width = window.innerWidth * (window.mobile ? 1 : (window.devicePixelRatio || 1));
-			glc.height = window.innerHeight * (window.mobile ? 1 : (window.devicePixelRatio || 1));
+			// Disabled HiDPI because those machines don't have enough FLOPS per pixel. 
+			// FIXME Re-enable in 2016.
+			glc.width = window.innerWidth; // * (window.mobile ? 1 : (window.devicePixelRatio || 1));
+			glc.height = window.innerHeight; // * (window.mobile ? 1 : (window.devicePixelRatio || 1));
 			iResolution[0] = glc.width;
 			iResolution[1] = glc.height;
 			gl.viewport(0,0, glc.width, glc.height);
 			u3fv(gl, p, 'iResolution', iResolution);
+			forceRedraw = true;
 		};
 
 		var p;
@@ -303,7 +307,8 @@ var init = function() {
 		var target = 3;
 		var startT = Date.now();
 		var tick = function() {
-			if (!blurred) {
+			if (!blurred || forceRedraw) {
+				forceRedraw = false;
 				if (window.startScript) {
 					if (window.performance && performance.timing && performance.timing.navigationStart) {
 						console.log('navigationStart to first frame: '+(Date.now()-performance.timing.navigationStart)+' ms');

@@ -29,7 +29,7 @@ varying float vObjectVisible[3];
 #define THRESHOLD 0.02
 #define MAX_DISTANCE 16.0
 
-#define RAY_STEPS 120
+#define RAY_STEPS 50
 #define MAX_SAMPLES (max(1.0, 8.0*maxDiffuseSum))
 
 #define DF_EMPTY 0.0
@@ -68,8 +68,33 @@ vec3 hash3( float n )
     return fract(sin(vec3(n,n+1.0,n+2.0))*vec3(43758.5453123,22578.1459123,19642.3490423));
 }
 
+float noise( in vec3 x )
+{
+    vec3 p = floor(x);
+    vec3 f = fract(x);
+	f = f*f*(3.0-2.0*f);
+	
+	vec2 uv = (p.xy+vec2(37.0,17.0)*p.z) + f.xy;
+	vec2 rg = texture2D( iChannel0, (uv + 0.5)/256.0, -100.0 ).yx;
+	return mix( rg.x, rg.y, f.z );
+}
+
+float map( in vec3 p )
+{
+	vec3 q = p + 0.2*vec3(-1.0, 1.0, 2.2)*iGlobalTime;
+	float f;
+    f = 0.500*noise( q ); q = q*2.0;
+    f += 0.25*noise( q ); q = q*2.0;
+    f += 0.125*noise( q ); q = q*2.0;
+    f += 0.0625*noise( q ); q = q*2.0;
+    f += 0.03125*noise( q ); q = q*2.0;
+    f += 0.015625*noise( q );
+	return mix( pow(f*0.89, 6.0)*-2.0+0.2 , pow(f, 0.7)*0.1+0.2, mod(-1.75, -3.14159*15.0) );
+}
+
 float dfSphere(vec3 p, float radius) {
-	return length(p)-radius;
+	return max(length(p)-radius, (map(p/radius)));
+//	return length(p)-radius;
 }
 
 float dfBox(vec3 p, vec3 dimensions, float cornerRadius) {
@@ -190,7 +215,7 @@ mat material(vec3 p, float materialIndex)
 
 vec3 normal(ray r, float d, bool bounce)
 {
-	float e = 0.001;
+	float e = 0.03;
 	float dx = scene(vec3(e, 0.0, 0.0) + r.p, bounce).x - d;
 	float dy = scene(vec3(0.0, e, 0.0) + r.p, bounce).x - d;
 	float dz = scene(vec3(0.0, 0.0, e) + r.p, bounce).x - d;

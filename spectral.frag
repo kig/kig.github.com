@@ -1,5 +1,5 @@
 precision highp float;
-precision mediump int;
+precision highp int;
 
 uniform vec3      iResolution;
 uniform float     iGlobalTime;
@@ -136,21 +136,24 @@ float scene(inout ray r, inout vec3 nml) {
 
 	// Test a bunch of spheres for ray-sphere intersection.
 	dist = 10000.0;
+
 	s.p = vec3(0.0);
 	s.r = 0.95;
 	dist = rayIntersectsSphere(r, s, nml, dist);
-	s.p = vec3(1.0, 1.0, -1.0) * rot;
+
+	s.p = rot * vec3(1.0, 1.0, -1.0);
 	s.r = 0.25;
 	dist = rayIntersectsSphere(r, s, nml, dist);
-	s.p = vec3(1.0, -1.0, 1.0) * rot;
-	s.r = 0.25;
+
+	s.p = rot * vec3(1.0, -1.0, 1.0);
 	dist = rayIntersectsSphere(r, s, nml, dist);
-	s.p = vec3(-1.0, -1.0, -1.0) * rot;
-	s.r = 0.25;
+
+	s.p = rot * vec3(-1.0, -1.0, -1.0);
 	dist = rayIntersectsSphere(r, s, nml, dist);
-	s.p = vec3(-1.0, 1.0, 1.0) * rot;
-	s.r = 0.25;
+
+	s.p = rot * vec3(-1.0, 1.0, 1.0);
 	dist = rayIntersectsSphere(r, s, nml, dist);
+
 	//dist = rayIntersectsDisk(r, vec3(0.0, 0.5, 0.0), vec3(0.0, 1.0, 0.0), 0.0, 9.0, nml, dist);
 	//dist = rayIntersectsDisk(r, 1.3*vec3(1.0, -1.0, 1.0), normalize(vec3(-1.0, 1.0, -1.0)), 0.0, 2.0, nml, dist);
 	return dist;
@@ -159,6 +162,7 @@ float scene(inout ray r, inout vec3 nml) {
 void main(void)
 {
 	vec2 aspect = vec2(iResolution.x / iResolution.y, 1.0);
+	if (aspect.x < 1.1) aspect *= (1.0+(1.1-aspect.x));
 	vec2 uv = (1.0 - 2.0 * (gl_FragCoord.xy / iResolution.xy)) * aspect;
 
 	float time = 616.89 + iRot;
@@ -172,7 +176,7 @@ void main(void)
 	r.transmit = vec3(1.0);
 	r.light = vec3(0.0);
 
-	float epsilon = 0.015;
+	float epsilon = 0.15;
 	float rayCount=0.0, rayBounceCount=0.0;
 	bool rayComplete = false;
 

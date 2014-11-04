@@ -8,10 +8,8 @@ uniform vec3 iCameraTarget;
 
 uniform float iObjectCount;
 
-attribute vec3 aPosition;
-attribute vec2 aGridUV;
+attribute vec2 aPosition;
 
-varying vec2 vUv;
 varying float vAnyObjectsVisible;
 varying float vObjectVisible[3];
 
@@ -101,14 +99,15 @@ float rayBV(ray r, vec3 center, float radius)
 
 void main() {
 	gl_PointSize = 8.0;
+
 	vec2 pixelAspect = vec2(iResolution.x / iResolution.y, 1.0);
-	vUv = aPosition.xy * pixelAspect;
-	
-	vec2 uv = aGridUV * pixelAspect;
+	vec2 uv = -1.0 + 2.0 * (aPosition / iResolution.xy);
+
+	gl_Position = vec4(uv, 0.0, 1.0);
+
+	uv *= pixelAspect;
 
 	ray r = setupRay(uv, 1.0);
-
-	gl_Position = vec4(aPosition, 1.0);
 
 	vAnyObjectsVisible = 0.0;
 	for (int i=0; i<3; i++) {

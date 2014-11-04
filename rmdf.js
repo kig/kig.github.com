@@ -75,32 +75,42 @@ var init = function() {
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, buf.width, buf.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, buf);
 		}
 	};
-	var createBuffer = function(gl) {
-		var verts = [];
-		var gridVerts = [];
-		var cols = window.innerWidth/8;
-		var rows = window.innerHeight/8;
+
+	// Resize the point sprite buffer to match window size.
+	// The point sprite buffer consists of 8x8 px point sprites that cover the window dimensions. 
+	//
+	var resizeBuffer = function(gl, buf) {
+		var cols = glc.width/8;
+		var rows = glc.height/8;
+		if (buf.cols === Math.ceil(cols) && buf.rows === Math.ceil(rows)) {
+			return;
+		}
+		buf.cols = Math.ceil(cols);
+		buf.rows = Math.ceil(rows);
+		var arr = new Float32Array(Math.ceil(cols)*Math.ceil(rows)*2);
+		var iHalfCols = 2 / cols;
+		var iHalfRows = 2 / rows;
+		var i=0;
 		for (var y=0; y<rows; y++) {
 			for (var x=0; x<cols; x++) {
-				verts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows, 0);
-				gridVerts.push(-1+2*(x+0.5)/cols, -1+2*(y+0.5)/rows);
+				arr[i++] = x * 8 + 4;
+				arr[i++] = y * 8 + 4;
 			}
 		}
-
-		var arr = new Float32Array(verts);
-		var buf = gl.createBuffer();
+		buf.vertCount = arr.length/2;
 		gl.bindBuffer(gl.ARRAY_BUFFER, buf);
 		gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STATIC_DRAW);
-		buf.vertCount = arr.length/3;
-
-		var arr = new Float32Array(gridVerts);
-		var gridUvBuf = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, gridUvBuf);
-		gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STATIC_DRAW);
-		gridUvBuf.vertCount = arr.length/2;
-
-		return [buf, gridUvBuf];
 	};
+
+	// Create buffer for drawing the scene plane.
+	// The buffer consists of 8x8 px point sprite XY coords.
+	//
+	var createBuffer = function(gl) {
+		var buf = gl.createBuffer();
+		resizeBuffer(gl, buf);
+		return buf;
+	};
+
 	var createShader = function(gl, source, type) {
 		var s = source;
 		if (typeof source === 'string') {
@@ -443,9 +453,9 @@ var init = function() {
 	Loader.get(shaderURLs, function() {
 		var t1 = Date.now();
 		var t0 = Date.now();
-		var bufs = createBuffer(gl);
-		var buf = bufs[0];
-		var gridUvBuf = bufs[1];
+		var buf = createBuffer(gl);
+
+		var forceRedraw = false;
 
 		var rTex = createTexture(gl, randomTex, 0);
 		var posTex = new Float32Array(128 /* Fits 25 objects */ * 2 * 4);
@@ -587,12 +597,13 @@ var init = function() {
 		}
 
 		var resize = function() {
-			glc.width = window.innerWidth * (window.mobile ? 1 : (window.devicePixelRatio || 1));
-			glc.height = window.innerHeight * (window.mobile ? 1 : (window.devicePixelRatio || 1));
+			glc.width = window.innerWidth; // * (window.mobile ? 1 : (window.devicePixelRatio || 1));
+			glc.height = window.innerHeight; // * (window.mobile ? 1 : (window.devicePixelRatio || 1));
 			iResolution[0] = glc.width;
 			iResolution[1] = glc.height;
 			gl.viewport(0,0, glc.width, glc.height);
 			u3fv(gl, p, 'iResolution', iResolution);
+			forceRedraw = true;
 		};
 
 		var p;
@@ -617,11 +628,6 @@ var init = function() {
 			var pos = gl.getAttribLocation(p, 'aPosition');
 			gl.enableVertexAttribArray(pos);
 			gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-			gl.vertexAttribPointer(pos, 3, gl.FLOAT, false, 0, 0);
-
-			var pos = gl.getAttribLocation(p, 'aGridUV');
-			gl.enableVertexAttribArray(pos);
-			gl.bindBuffer(gl.ARRAY_BUFFER, gridUvBuf);
 			gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
 		};
 		for (var i=1; i<arguments.length; i++) {
@@ -760,7 +766,8 @@ var init = function() {
 		var sceneBoundingSphere = new Float32Array(4);
 
 		var tick = function() {
-			if (!blurred) {
+			if (!blurred || forceRedraw) {
+				forceRedraw = false;
 				if (window.startScript) {
 					if (window.performance && performance.timing && performance.timing.navigationStart) {
 						console.log('navigationStart to first frame: '+(Date.now()-performance.timing.navigationStart)+' ms');
@@ -836,6 +843,7 @@ var init = function() {
 				u4fv(gl, p, 'iMouse', mouse);
 
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+				resizeBuffer(gl, buf);
 				gl.drawArrays(gl.POINTS, 0, buf.vertCount);
 			}	
 			requestAnimationFrame(tick, glc);

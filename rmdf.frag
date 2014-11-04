@@ -94,7 +94,7 @@ float map( in vec3 p )
 
 float dfSphere(vec3 p, float radius) {
 	return max(length(p)-radius, (map(p/radius)));
-//	return length(p)-radius;
+	// return length(p)-radius;
 }
 
 float dfBox(vec3 p, vec3 dimensions, float cornerRadius) {
@@ -213,13 +213,43 @@ mat material(vec3 p, float materialIndex)
 	return m;
 }
 
-vec3 normal(ray r, float d, bool bounce)
+vec3 normal(ray r, float d, bool bounce, float i)
 {
-	float e = 0.03;
-	float dx = scene(vec3(e, 0.0, 0.0) + r.p, bounce).x - d;
-	float dy = scene(vec3(0.0, e, 0.0) + r.p, bounce).x - d;
-	float dz = scene(vec3(0.0, 0.0, e) + r.p, bounce).x - d;
-	return normalize(vec3(dx, dy, dz));
+	vec4 params = texture2D(iChannel1, vec2(float(i*5.0)/128.0, 0.0));
+	mat4 mx;
+	mx[0] = texture2D(iChannel1, vec2(float(i*5.0+1.0)/128.0, 0.0));
+	mx[1] = texture2D(iChannel1, vec2(float(i*5.0+2.0)/128.0, 0.0));
+	mx[2] = texture2D(iChannel1, vec2(float(i*5.0+3.0)/128.0, 0.0));
+	vec4 posT = texture2D(iChannel1, vec2(float(i*5.0+4.0)/128.0, 0.0));
+	float tm = posT.w;
+	float t = floor(tm / 256.0);
+	mx[3] = vec4(posT.xyz, 1.0);
+
+	vec4 p = vec4(r.p, 1.0);
+
+	float e = 0.001;
+	if (t == DF_SPHERE) {
+		vec3 dp = (mx * p).xyz;
+		if (abs(length(dp) - params.x) <= THRESHOLD) {
+			return normalize(dp);
+		} else {
+			p = (mx * p);
+			float e = 0.02;
+			float dx = dfSphere((mx[0]*e + p).xyz, params.x) - d;
+			float dy = dfSphere((mx[1]*e + p).xyz, params.x) - d;
+			float dz = dfSphere((mx[2]*e + p).xyz, params.x) - d;
+			return normalize(vec3(dx, dy, dz));
+		}
+	} else if (t == DF_BOX) {
+		p = (mx * p);
+		float dx = dfBox((mx[0]*e + p).xyz, params.xyz, params.w) - d;
+		float dy = dfBox((mx[1]*e + p).xyz, params.xyz, params.w) - d;
+		float dz = dfBox((mx[2]*e + p).xyz, params.xyz, params.w) - d;
+		return normalize(vec3(dx, dy, dz));
+	} else {
+		return -r.d; // Don't know what this object is, treat as mirror.
+	}
+
 }
 
 vec3 shadeBg(float time, vec3 nml)
@@ -320,7 +350,7 @@ vec3 trace(float time)
 		r.p += dist * r.d;
 		if (dist < THRESHOLD) {
 			r.p -= dist * r.d;
-			vec3 nml = normal(r, dist, bounce);
+			vec3 nml = normal(r, dist, bounce, distHitMat.y);
 			float f = pow(1.0 - clamp(dot(nml, r.d), 0.0, 1.0), 5.0);
 			float diffuse = shade(r, nml, dist, distHitMat.z, f);
 			diffuseSum += diffuse;

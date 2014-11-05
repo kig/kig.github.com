@@ -11,6 +11,7 @@ uniform float iOpen;
 
 #define THRESHOLD 0.01
 #define MAX_DISTANCE 8.0
+#define INITIAL_DISTANCE 999999.0
 
 #define RAY_STEPS 120
 #define MAX_SAMPLES 4.0
@@ -210,12 +211,12 @@ ray setupRay(vec2 uv, float k) {
 
 vec3 trace(vec2 uv, vec2 uvD, inout float sceneDist)
 {	
-	float minDist = 9999999.0;
+	float minDist = INITIAL_DISTANCE;
 	float count = 0.0;
 	float diffuseSum = 0.0, maxDiffuseSum = 0.0;
 	
 	vec3 accum = vec3(0.0);
-	sceneDist = 9999999.0;
+	sceneDist = INITIAL_DISTANCE;
 
 	ray r = setupRay(uv, 1.0);
 	vec3 op = r.p + 5.0*r.d;
@@ -228,7 +229,7 @@ vec3 trace(vec2 uv, vec2 uvD, inout float sceneDist)
 		minDist = min(minDist, dist);
 		r.p += dist * r.d;
 		if (dist < THRESHOLD) {
-			if (sceneDist == 9999999.0) {
+			if (sceneDist == INITIAL_DISTANCE) {
 				sceneDist = length(r.p - op);
 			}
 			r.p -= dist * r.d;
@@ -279,14 +280,15 @@ void main(void)
 	ray r;
 	r = setupRay(uv, 0.0);
 	
-	float dist = 9999999.0;
+	float dist = INITIAL_DISTANCE;
 	vec3 light;
 	if (abs(uv.x) < 0.35 && abs(uv.y+0.15) < 0.5) {
 		light = trace(uv, uvD, dist);
 	} else {
 		light = shadeBg(-r.d);
 	}
-	if (dist > 10000.0) {
+	if (dist > MAX_DISTANCE) { // Background hit
+		// Raymarch some clouds
 		r.p += 5.0*r.d;
 		for (int i=0; i<5; i++) {
 			float c = map( r.p );

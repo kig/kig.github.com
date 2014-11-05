@@ -279,9 +279,9 @@ void main(void)
 	ray r;
 	r = setupRay(uv, 0.0);
 	
-	float dist = 999999.0;
-	vec3 light = vec3(0.0);
-	if (abs(uv.x) < 0.4 && abs(uv.y) < 0.6) {
+	float dist = 9999999.0;
+	vec3 light;
+	if (abs(uv.x) < 0.35 && abs(uv.y+0.15) < 0.5) {
 		light = trace(uv, uvD, dist);
 	} else {
 		light = shadeBg(-r.d);

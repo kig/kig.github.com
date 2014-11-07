@@ -62,6 +62,7 @@ sphere getBoundingSphere(int i) {
 
 	s.r = params.x;
 	if (t == 2.0) s.r = length(params.xyz);
+	if (t == 3.0 || t == 4.0) s.r *= 1.0+params.y;
 
 	s.p = (mx * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 	return s;

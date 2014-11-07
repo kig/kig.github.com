@@ -29,14 +29,14 @@ varying float vObjectVisible[3];
 #define THRESHOLD 0.02
 #define MAX_DISTANCE 16.0
 
-#define RAY_STEPS 50
-#define MAX_SAMPLES (max(1.0, 8.0*maxDiffuseSum))
+#define RAY_STEPS 100
+#define MAX_SAMPLES (max(2.0, 8.0*maxDiffuseSum))
 
 #define DF_EMPTY 0.0
 #define DF_SPHERE 1.0
 #define DF_BOX 2.0
 #define DF_TORUS 3.0
-#define DF_TORUS8 4.0
+#define DF_TORUS82 4.0
 
 struct ray
 {
@@ -93,8 +93,8 @@ float map( in vec3 p )
 }
 
 float dfSphere(vec3 p, float radius) {
-	return max(length(p)-radius, (map(p/radius)));
-	// return length(p)-radius;
+	//return max(length(p)-radius, (map(p/radius)));
+	return length(p)-radius;
 }
 
 float dfBox(vec3 p, vec3 dimensions, float cornerRadius) {
@@ -190,7 +190,7 @@ vec3 scene(vec3 p, bool bounce)
 			nd = dfBox(tp, params.xyz, params.w);
 		} else if (t == DF_TORUS) {
 			nd = dfTorus(tp, params.x, params.y);
-		} else if (t == DF_TORUS8) {
+		} else if (t == DF_TORUS82) {
 			nd = dfTorus82(tp, params.x, params.y);
 		}
 		if (nd < dist) {
@@ -226,28 +226,33 @@ vec3 normal(ray r, float d, bool bounce, float i)
 	mx[3] = vec4(posT.xyz, 1.0);
 
 	vec4 p = vec4(r.p, 1.0);
+	p = (mx * p);
 
 	float e = 0.001;
 	if (t == DF_SPHERE) {
-		vec3 dp = (mx * p).xyz;
-		if (abs(length(dp) - params.x) <= THRESHOLD) {
-			return normalize(dp);
-		} else {
-			p = (mx * p);
-			float e = 0.02;
-			float dx = dfSphere((mx[0]*e + p).xyz, params.x) - d;
-			float dy = dfSphere((mx[1]*e + p).xyz, params.x) - d;
-			float dz = dfSphere((mx[2]*e + p).xyz, params.x) - d;
-			return normalize(vec3(dx, dy, dz));
+		float len = length(p.xyz) - params.x;
+		if (abs(len) >= THRESHOLD*2.0) {
+			e = 0.02;
 		}
+		float dx = dfSphere((mx[0]*e + p).xyz, params.x) - d;
+		float dy = dfSphere((mx[1]*e + p).xyz, params.x) - d;
+		float dz = dfSphere((mx[2]*e + p).xyz, params.x) - d;
+		return normalize(vec3(dx, dy, dz));
 	} else if (t == DF_BOX) {
-		p = (mx * p);
 		float dx = dfBox((mx[0]*e + p).xyz, params.xyz, params.w) - d;
 		float dy = dfBox((mx[1]*e + p).xyz, params.xyz, params.w) - d;
 		float dz = dfBox((mx[2]*e + p).xyz, params.xyz, params.w) - d;
 		return normalize(vec3(dx, dy, dz));
-	} else {
-		return -r.d; // Don't know what this object is, treat as mirror.
+	} else if (t == DF_TORUS) {
+		float dx = dfTorus((mx[0]*e + p).xyz, params.x, params.y) - d;
+		float dy = dfTorus((mx[1]*e + p).xyz, params.x, params.y) - d;
+		float dz = dfTorus((mx[2]*e + p).xyz, params.x, params.y) - d;
+		return normalize(vec3(dx, dy, dz));
+	} else if (t == DF_TORUS82) {
+		float dx = dfTorus82((mx[0]*e + p).xyz, params.x, params.y) - d;
+		float dy = dfTorus82((mx[1]*e + p).xyz, params.x, params.y) - d;
+		float dz = dfTorus82((mx[2]*e + p).xyz, params.x, params.y) - d;
+		return normalize(vec3(dx, dy, dz));
 	}
 
 }

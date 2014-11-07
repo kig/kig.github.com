@@ -216,11 +216,14 @@ var init = function() {
 			vec3.transformMat3(traceTmp, traceTmp, traceTmpM3);
 			vec3.scale(traceTmp, traceTmp, -1);
 			var r = posTex[off];
-			if (Math.floor(posTex[off+19] / 256) == DF.Types.Box) {
+			var t = Math.floor(posTex[off+19] / 256);
+			if (t == DF.Types.Box) {
 				var x = r;
 				var y = posTex[off+1];
 				var z = posTex[off+2];
 				r = Math.sqrt(x*x+y*y+z*z);
+			} else if (t == DF.Types.Torus || t == DF.Types.Torus82) {
+				r *= 1.0 + posTex[off+1];
 			}
 			raySphere(ro, rd, traceTmp, r, i, hit);
 		}
@@ -330,7 +333,7 @@ var init = function() {
 		Sphere: 1,
 		Box: 2,
 		Torus: 3,
-		Plane: 4,
+		Torus82: 4,
 
 		empty: 0
 	};
@@ -449,6 +452,41 @@ var init = function() {
 		return this.boundingSphere;
 	};
 
+	DF.Torus = function(options) {
+		this.radius = 1;
+		this.innerRadius = 0.5; 
+		DF.Object.call(this, options);
+		this.type = DF.Types.Torus;
+		this.computeBoundingSphere();
+	};
+	DF.Torus.prototype = Object.create(DF.Object.prototype);
+	DF.Torus.prototype.write = function(array, offset) {
+		this.bufferArray[0] = this.radius * 0.5;
+		this.bufferArray[1] = this.innerRadius * this.radius * 0.5;
+		DF.Object.prototype.write.call(this, array, offset);
+	};
+	DF.Torus.prototype.computeBoundingSphere = function() {
+		this.boundingSphere.radius = this.radius * (1+this.innerRadius);
+		return this.boundingSphere;
+	};
+
+	DF.Torus82 = function(options) {
+		this.radius = 1;
+		this.innerRadius = 0.5; 
+		DF.Object.call(this, options);
+		this.type = DF.Types.Torus82;
+		this.computeBoundingSphere();
+	};
+	DF.Torus82.prototype = Object.create(DF.Object.prototype);
+	DF.Torus82.prototype.write = function(array, offset) {
+		this.bufferArray[0] = this.radius * 0.5;
+		this.bufferArray[1] = this.innerRadius * this.radius * 0.5;
+		DF.Object.prototype.write.call(this, array, offset);
+	};
+	DF.Torus82.prototype.computeBoundingSphere = function() {
+		this.boundingSphere.radius = this.radius * (1+this.innerRadius);
+		return this.boundingSphere;
+	};
 
 	Loader.get(shaderURLs, function() {
 		var t1 = Date.now();
@@ -566,6 +604,16 @@ var init = function() {
 					case 'RMDF-SPHERE':
 						if (c.hasAttribute('radius')) { options.radius = parseFloat(c.getAttribute('radius')); }
 						this.objects[this.objectCount++] = new DF.Sphere(options);
+						break;
+					case 'RMDF-TORUS':
+						if (c.hasAttribute('radius')) { options.radius = parseFloat(c.getAttribute('radius')); }
+						if (c.hasAttribute('inner-radius')) { options.innerRadius = parseFloat(c.getAttribute('inner-radius')); }
+						this.objects[this.objectCount++] = new DF.Torus(options);
+						break;
+					case 'RMDF-TORUS82':
+						if (c.hasAttribute('radius')) { options.radius = parseFloat(c.getAttribute('radius')); }
+						if (c.hasAttribute('inner-radius')) { options.innerRadius = parseFloat(c.getAttribute('inner-radius')); }
+						this.objects[this.objectCount++] = new DF.Torus82(options);
 						break;
 				}
 			}

@@ -55,6 +55,7 @@
 		controller.content = "<p>Content HTML</p>";
 
 		controller.radius = 0.95;
+		controller.innerRadius = 0.5;
 		controller.cornerRadius = 0.05;
 		controller.material.diffuse = 0.1;
 
@@ -132,6 +133,9 @@
 				if (current.radius != null) {
 					this.radiusC.setValue(current.radius);					
 				}
+				if (current.innerRadius != null) {
+					this.innerRadiusC.setValue(current.innerRadius);
+				}
 				editorContainer.style.display = 'block';
 			} else {
 				editorContainer.style.display = 'none';
@@ -183,7 +187,7 @@
 		editorContainer.style.display = 'none';
 
 		controller.typeName = 'Box';
-		controller.type = gui.add(controller, 'typeName', ['Box', 'Sphere']).name("Type").onChange(function(type) {
+		controller.type = gui.add(controller, 'typeName', ['Box', 'Sphere', 'Torus', 'Torus82']).name("Type").onChange(function(type) {
 			var idx = controller.objects.indexOf(controller.current);
 			if (idx !== -1 && !(controller.current instanceof DF[type])) {
 				controller.objects[idx] = new DF[type]({
@@ -271,6 +275,11 @@
 					case DF.Types.Sphere:
 						el.setAttribute('radius', c.radius);
 						break;
+					case DF.Types.Torus:
+					case DF.Types.Torus82:
+						el.setAttribute('radius', c.radius);
+						el.setAttribute('inner-radius', c.innerRadius);
+						break;
 				}
 			}
 			return scene;
@@ -336,6 +345,9 @@
 
 		// Sphere editors
 		controller.radiusC = controller.proxy(['radius'], 0.1, 6, 0.1, 'Radius');
+
+		// Torus editors
+		controller.innerRadiusC = controller.proxy(['innerRadius'], 0.1, 0.9, 0.1, 'Inner Radius');
 
 		// Skybox editors
 		controller.sunColor = gui.addColor(controller.skybox, 'sunColor');

@@ -37,6 +37,7 @@ varying float vObjectVisible[3];
 #define DF_BOX 2.0
 #define DF_TORUS 3.0
 #define DF_TORUS82 4.0
+#define DF_PRISM 5.0
 
 struct ray
 {
@@ -121,6 +122,12 @@ float dfTorus82(vec3 p, float innerRadius, float outerRadius) {
 	return length8(q)-outerRadius;
 }
 
+float dfTriPrism( vec3 p, vec2 h )
+{
+    vec3 q = abs(p);
+    return max(q.z-h.y,max(q.x*0.866025+p.y*0.5,-p.y)-h.x*0.5);
+}
+
 /*
 mat4 objectMatrices[8];
 void cacheMatrices() {
@@ -192,6 +199,8 @@ vec3 scene(vec3 p, bool bounce)
 			nd = dfTorus(tp, params.x, params.y);
 		} else if (t == DF_TORUS82) {
 			nd = dfTorus82(tp, params.x, params.y);
+		} else if (t == DF_PRISM) {
+			nd = dfTriPrism(tp, params.xy);
 		}
 		if (nd < dist) {
 			dist = nd;
@@ -252,6 +261,11 @@ vec3 normal(ray r, float d, bool bounce, float i)
 		float dx = dfTorus82((mx[0]*e + p).xyz, params.x, params.y) - d;
 		float dy = dfTorus82((mx[1]*e + p).xyz, params.x, params.y) - d;
 		float dz = dfTorus82((mx[2]*e + p).xyz, params.x, params.y) - d;
+		return normalize(vec3(dx, dy, dz));
+	} else if (t == DF_PRISM) {
+		float dx = dfTriPrism((mx[0]*e + p).xyz, params.xy) - d;
+		float dy = dfTriPrism((mx[1]*e + p).xyz, params.xy) - d;
+		float dz = dfTriPrism((mx[2]*e + p).xyz, params.xy) - d;
 		return normalize(vec3(dx, dy, dz));
 	}
 

@@ -334,6 +334,7 @@ var init = function() {
 		Box: 2,
 		Torus: 3,
 		Torus82: 4,
+		Prism: 5,
 
 		empty: 0
 	};
@@ -485,6 +486,25 @@ var init = function() {
 	};
 	DF.Torus82.prototype.computeBoundingSphere = function() {
 		this.boundingSphere.radius = this.radius * (1+this.innerRadius);
+		return this.boundingSphere;
+	};
+
+
+	DF.Prism = function(options) {
+		this.radius = 1;
+		this.innerRadius = 0.5; 
+		DF.Object.call(this, options);
+		this.type = DF.Types.Prism;
+		this.computeBoundingSphere();
+	};
+	DF.Prism.prototype = Object.create(DF.Object.prototype);
+	DF.Prism.prototype.write = function(array, offset) {
+		this.bufferArray[1] = this.radius;
+		this.bufferArray[0] = this.innerRadius;
+		DF.Object.prototype.write.call(this, array, offset);
+	};
+	DF.Prism.prototype.computeBoundingSphere = function() {
+		this.boundingSphere.radius = Math.sqrt(this.radius*this.radius + this.innerRadius*this.innerRadius)
 		return this.boundingSphere;
 	};
 

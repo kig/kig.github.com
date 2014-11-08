@@ -13,6 +13,13 @@ attribute vec2 aPosition;
 varying float vAnyObjectsVisible;
 varying float vObjectVisible[3];
 
+#define DF_EMPTY 0.0
+#define DF_SPHERE 1.0
+#define DF_BOX 2.0
+#define DF_TORUS 3.0
+#define DF_TORUS82 4.0
+#define DF_PRISM 5.0
+
 struct ray
 {
 	vec3 p; // ray origin
@@ -61,8 +68,10 @@ sphere getBoundingSphere(int i) {
 	mx[3] = -mx*vec4(posT.xyz, 1.0);
 
 	s.r = params.x;
-	if (t == 2.0) s.r = length(params.xyz);
-	if (t == 3.0 || t == 4.0) s.r *= 1.0+params.y;
+	if (t == DF_BOX) s.r = length(params.xyz);
+	if (t == DF_TORUS) s.r *= 1.0+params.y;
+	if (t == DF_TORUS82) s.r *= 1.0+sqrt(2.0)*params.y;
+	if (t == DF_PRISM) s.r = length(params.xy);
 
 	s.p = (mx * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 	return s;

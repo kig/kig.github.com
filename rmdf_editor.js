@@ -187,7 +187,7 @@
 		editorContainer.style.display = 'none';
 
 		controller.typeName = 'Box';
-		controller.type = gui.add(controller, 'typeName', ['Box', 'Sphere', 'Torus', 'Torus82']).name("Type").onChange(function(type) {
+		controller.type = gui.add(controller, 'typeName', ['Box', 'Sphere', 'Torus', 'Torus82', 'Prism']).name("Type").onChange(function(type) {
 			var idx = controller.objects.indexOf(controller.current);
 			if (idx !== -1 && !(controller.current instanceof DF[type])) {
 				controller.objects[idx] = new DF[type]({
@@ -277,6 +277,7 @@
 						break;
 					case DF.Types.Torus:
 					case DF.Types.Torus82:
+					case DF.Types.Prism:
 						el.setAttribute('radius', c.radius);
 						el.setAttribute('inner-radius', c.innerRadius);
 						break;

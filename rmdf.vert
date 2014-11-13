@@ -69,7 +69,7 @@ sphere getBoundingSphere(int i) {
 
 	s.r = params.x;
 	if (t == DF_BOX) s.r = length(params.xyz);
-	if (t == DF_TORUS) s.r = sqrt(2.0)*s.r;
+	if (t == DF_TORUS) s.r = sqrt(2.0)*(s.r + params.y);
 	if (t == DF_PRISM) s.r = length(params.xy);
 	if (t == DF_RING) s.r = sqrt(params.x*params.x + params.z*params.z);
 

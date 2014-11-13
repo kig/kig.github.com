@@ -129,7 +129,7 @@ float dfCylinder(vec3 p, float radius, float height) {
 
 float dfRing(vec3 p, float radius, float innerRadius, float height, float cornerRadius)
 {
-	float c1 = dfCylinder(p, radius, height);
+	float c1 = dfCylinder(p, radius-cornerRadius, height-cornerRadius) - cornerRadius;
 	float c2 = dfCylinder(p, innerRadius, height*2.0);
 	return max(c1, -c2);
 }

@@ -122,8 +122,8 @@
 			var maxSC = this.maxSampleCount;
 			var maxRaySteps = this.maxRaySteps;
 			this.minSampleCount = 16;
-			this.maxSampleCount = 200;
-			this.maxRaySteps = 2000;
+			this.maxSampleCount = 500;
+			this.maxRaySteps = 3000;
 			this.render();
 			this.minSampleCount = minSC;
 			this.maxSampleCount = maxSC;
@@ -164,10 +164,18 @@
 	 	var editor = ace.edit("onclick-editor");
 	    editor.setTheme("ace/theme/monokai");
 	    editor.getSession().setMode("ace/mode/javascript");
+	    editor.on('focus', function() {
+	    	pre.classList.add('focused');
+	    	editor.resize();
+	    });
+	    editor.on('blur', function() {
+	    	pre.classList.remove('focused');
+	    	editor.resize();
+	    });
 
-	 	var pre = document.createElement('pre');
-	 	pre.id = 'content-editor';
-	 	cont.appendChild(pre);
+	 	var contentPre = document.createElement('pre');
+	 	contentPre.id = 'content-editor';
+	 	cont.appendChild(contentPre);
 	 	var btn = document.createElement('button');
 	 	btn.innerHTML = "Set Content";
 	 	btn.onclick = function() {
@@ -180,6 +188,14 @@
 	 	var contentEditor = ace.edit("content-editor");
 	    contentEditor.setTheme("ace/theme/monokai");
 	    contentEditor.getSession().setMode("ace/mode/html");
+	    contentEditor.on('focus', function() {
+	    	contentPre.classList.add('focused');
+	    	contentEditor.resize();
+	    });
+	    contentEditor.on('blur', function() {
+	    	contentPre.classList.remove('focused');
+	    	contentEditor.resize();
+	    });
 
 		controller.title = "Title";
 		controller.content = "<p>Content HTML</p>";
@@ -375,10 +391,10 @@
 		});
 
 		// Skybox editors
-		controller.sunColor = gui.addColor(controller.skybox, 'sunColor');
-		controller.skyColor = gui.addColor(controller.skybox, 'skyColor');
-		controller.groundColor = gui.addColor(controller.skybox, 'groundColor');
-		controller.horizonColor = gui.addColor(controller.skybox, 'horizonColor');
+		controller.sunColor = gui.addColor(controller.skybox, 'sunColor').onChange(function() {controller.changed=true;});
+		controller.skyColor = gui.addColor(controller.skybox, 'skyColor').onChange(function() {controller.changed=true;});
+		controller.groundColor = gui.addColor(controller.skybox, 'groundColor').onChange(function() {controller.changed=true;});
+		controller.horizonColor = gui.addColor(controller.skybox, 'horizonColor').onChange(function() {controller.changed=true;});
 
 		// Title
 		controller.titleC = controller.proxy(['title'], undefined, undefined, undefined, "Title");
@@ -397,22 +413,22 @@
 		controller.sY = controller.proxy(['dimensions', 1], 0.1, 6, 0.1, 'Height');
 		controller.sZ = controller.proxy(['dimensions', 2], 0.1, 6, 0.1, 'Depth');
 
-		controller.cornerRadiusC = controller.proxy(['cornerRadius'], 0.0, 0.5, 0.05, 'Corner radius');
+		controller.cornerRadiusC = controller.proxy(['cornerRadius'], 0.0, 1.0, 0.05, 'Corner radius');
 		controller.boxinessC = controller.proxy(['boxiness'], 0.0, 1.0, 0.1, 'Boxiness');
 
 		// Sphere editors
 		controller.radiusC = controller.proxy(['radius'], 0.1, 6, 0.1, 'Radius');
 
 		// Torus editors
-		controller.innerRadiusC = controller.proxy(['innerRadius'], 0.1, 0.9, 0.1, 'Inner Radius');
+		controller.innerRadiusC = controller.proxy(['innerRadius'], 0.0, 0.9, 0.1, 'Inner Radius');
 
 		// Ring editors
 		controller.heightC = controller.proxy(['height'], 0.1, 6, 0.1, 'Height');
 
 		// Light position
-		controller.lightPosX = gui.add(controller.skybox.lightPos, 0, -10, 10, 0.1).name("Light X");
-		controller.lightPosY = gui.add(controller.skybox.lightPos, 1, -10, 10, 0.1).name("Light Y");
-		controller.lightPosZ = gui.add(controller.skybox.lightPos, 2, -10, 10, 0.1).name("Light Z");
+		controller.lightPosX = gui.add(controller.skybox.lightPos, 0, -10, 10, 0.1).name("Light X").onChange(function() {controller.changed=true;});
+		controller.lightPosY = gui.add(controller.skybox.lightPos, 1, -10, 10, 0.1).name("Light Y").onChange(function() {controller.changed=true;});
+		controller.lightPosZ = gui.add(controller.skybox.lightPos, 2, -10, 10, 0.1).name("Light Z").onChange(function() {controller.changed=true;});
 
 		gui.add(controller, 'package').name("Download scene");
 		gui.add(controller, 'load').name("Load scene");

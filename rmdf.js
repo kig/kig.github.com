@@ -333,8 +333,8 @@ var init = function() {
 		Sphere: 1,
 		Box: 2,
 		Torus: 3,
-		Torus82: 4,
-		Prism: 5,
+		Prism: 4,
+		Ring: 5,
 
 		empty: 0
 	};
@@ -344,6 +344,32 @@ var init = function() {
 			DF.typeNames[DF.Types[i]] = i;
 		}
 	})();
+
+	DF._monitorChangedBufferArray = function() {
+		this.lastBufferArray = new Float32Array(this.bufferArray.length);
+		this.lastBufferArray[0] = ~this.bufferArray[0]; // Force changed state
+		Object.defineProperty(this, 'changed', {
+			get: function() {
+				for (var i=0; i<this.bufferArray.length; i++) {
+					if (this.bufferArray[i] !== this.lastBufferArray[i]) {
+						return true;
+					}
+				}
+				return false;
+			},
+			set: function(v) {
+				if (v) {
+					this.lastBufferArray[0] = ~this.bufferArray[0];
+				} else {
+					this.lastBufferArray.set(this.bufferArray);
+				}
+			}
+		});
+		this.write = function(array, offset) {
+			array.set(this.bufferArray, offset);
+			this.lastBufferArray.set(this.bufferArray);
+		};
+	};
 
 	DF.Material = function(options) {
 		this.bufferArray = new Float32Array(8);
@@ -359,10 +385,10 @@ var init = function() {
 				}
 			}
 		}
+		DF._monitorChangedBufferArray.call(this);
 	};
-	DF.Material.prototype.write = function(array, offset) {
+	DF.Material.prototype.prepareWrite = function() {
 		this.bufferArray[7] = this.diffuse;
-		array.set(this.bufferArray, offset);
 	};
 
 	DF.Object = function(options) {
@@ -392,9 +418,10 @@ var init = function() {
 				}
 			}
 		}
+		DF._monitorChangedBufferArray.call(this);
 	};
 	DF.Object.prototype.tick = function() {};
-	DF.Object.prototype.write = function(array, offset) {
+	DF.Object.prototype.prepareWrite = function() {
 		if (this.rotation) {
 			quat.identity(this.rotationQuat);
 			quat.rotateX(this.rotationQuat, this.rotationQuat, this.rotation[0])
@@ -408,8 +435,6 @@ var init = function() {
 		mat4.copy(DF._tmpMatrix, this.matrix);
 		mat4.invert(this.matrix, DF._tmpMatrix);
 		this.bufferArray[19] = (this.type << 8) | this.materialIndex;
-		array.set(this.bufferArray, offset);
-		mat4.copy(this.matrix, DF._tmpMatrix);
 	};
 	DF.Object.prototype.computeBoundingSphere = function() {
 		return this.boundingSphere;
@@ -422,9 +447,9 @@ var init = function() {
 		this.computeBoundingSphere();
 	};
 	DF.Sphere.prototype = Object.create(DF.Object.prototype);
-	DF.Sphere.prototype.write = function(array, offset) {
+	DF.Sphere.prototype.prepareWrite = function() {
 		this.bufferArray[0] = this.radius;
-		DF.Object.prototype.write.call(this, array, offset);
+		DF.Object.prototype.prepareWrite.call(this);
 	};
 	DF.Sphere.prototype.computeBoundingSphere = function() {
 		this.boundingSphere.radius = this.radius;
@@ -442,9 +467,9 @@ var init = function() {
 		this.computeBoundingSphere();
 	};
 	DF.Box.prototype = Object.create(DF.Object.prototype);
-	DF.Box.prototype.write = function(array, offset) {
+	DF.Box.prototype.prepareWrite = function() {
 		this.bufferArray[3] = this.cornerRadius;
-		DF.Object.prototype.write.call(this, array, offset);
+		DF.Object.prototype.prepareWrite.call(this);
 	};
 	DF.Box.prototype.computeBoundingSphere = function() {
 		var x = this.dimensions[0], y = this.dimensions[1], z = this.dimensions[2];
@@ -455,56 +480,63 @@ var init = function() {
 
 	DF.Torus = function(options) {
 		this.radius = 1;
-		this.innerRadius = 0.5; 
+		this.innerRadius = 0.5;
+		this.cornerRadius = 1.0;
+		this.boxiness = 0.0;
 		DF.Object.call(this, options);
 		this.type = DF.Types.Torus;
 		this.computeBoundingSphere();
 	};
 	DF.Torus.prototype = Object.create(DF.Object.prototype);
-	DF.Torus.prototype.write = function(array, offset) {
+	DF.Torus.prototype.prepareWrite = function() {
 		this.bufferArray[0] = this.radius * 0.5;
 		this.bufferArray[1] = this.innerRadius * this.radius * 0.5;
-		DF.Object.prototype.write.call(this, array, offset);
+		this.bufferArray[2] = this.cornerRadius;
+		this.bufferArray[3] = this.boxiness;
+		DF.Object.prototype.prepareWrite.call(this);
 	};
 	DF.Torus.prototype.computeBoundingSphere = function() {
-		this.boundingSphere.radius = this.radius * (1+this.innerRadius);
+		this.boundingSphere.radius = this.radius * Math.sqrt(2) * (1+this.innerRadius);
 		return this.boundingSphere;
 	};
-
-	DF.Torus82 = function(options) {
-		this.radius = 1;
-		this.innerRadius = 0.5; 
-		DF.Object.call(this, options);
-		this.type = DF.Types.Torus82;
-		this.computeBoundingSphere();
-	};
-	DF.Torus82.prototype = Object.create(DF.Object.prototype);
-	DF.Torus82.prototype.write = function(array, offset) {
-		this.bufferArray[0] = this.radius * 0.5;
-		this.bufferArray[1] = this.innerRadius * this.radius * 0.5;
-		DF.Object.prototype.write.call(this, array, offset);
-	};
-	DF.Torus82.prototype.computeBoundingSphere = function() {
-		this.boundingSphere.radius = this.radius * (1+this.innerRadius);
-		return this.boundingSphere;
-	};
-
 
 	DF.Prism = function(options) {
 		this.radius = 1;
-		this.innerRadius = 0.5; 
+		this.innerRadius = 0.5;
 		DF.Object.call(this, options);
 		this.type = DF.Types.Prism;
 		this.computeBoundingSphere();
 	};
 	DF.Prism.prototype = Object.create(DF.Object.prototype);
-	DF.Prism.prototype.write = function(array, offset) {
-		this.bufferArray[1] = this.radius;
-		this.bufferArray[0] = this.innerRadius;
-		DF.Object.prototype.write.call(this, array, offset);
+	DF.Prism.prototype.prepareWrite = function() {
+		this.bufferArray[0] = this.radius;
+		this.bufferArray[1] = this.height;
+		DF.Object.prototype.prepareWrite.call(this);
 	};
 	DF.Prism.prototype.computeBoundingSphere = function() {
-		this.boundingSphere.radius = Math.sqrt(this.radius*this.radius + this.innerRadius*this.innerRadius)
+		this.boundingSphere.radius = Math.sqrt(this.radius*this.radius + this.height*this.height)
+		return this.boundingSphere;
+	};
+
+	DF.Ring = function(options) {
+		this.radius = 1;
+		this.innerRadius = 0.75;
+		this.height = 0.25;
+		this.cornerRadius = 0.01;
+		DF.Object.call(this, options);
+		this.type = DF.Types.Ring;
+		this.computeBoundingSphere();
+	};
+	DF.Ring.prototype = Object.create(DF.Object.prototype);
+	DF.Ring.prototype.prepareWrite = function() {
+		this.bufferArray[0] = this.radius;
+		this.bufferArray[1] = this.innerRadius * this.radius;
+		this.bufferArray[2] = this.height;
+		this.bufferArray[3] = this.cornerRadius;
+		DF.Object.prototype.prepareWrite.call(this);
+	};
+	DF.Ring.prototype.computeBoundingSphere = function() {
+		this.boundingSphere.radius = Math.sqrt(this.radius*this.radius + this.height * this.height);
 		return this.boundingSphere;
 	};
 
@@ -512,8 +544,6 @@ var init = function() {
 		var t1 = Date.now();
 		var t0 = Date.now();
 		var buf = createBuffer(gl);
-
-		var forceRedraw = false;
 
 		var rTex = createTexture(gl, randomTex, 0);
 		var posTex = new Float32Array(128 /* Fits 25 objects */ * 2 * 4);
@@ -524,6 +554,10 @@ var init = function() {
 		var iResolution = Vec3(glc.width, glc.height, 1.0);
 
 		var controller = new DF.Box({position: [0.1, 0.1, 0.1], dimensions: [0.1, 0.1, 0.1]});
+		controller.changed = true;
+		controller.minSampleCount = 2;
+		controller.maxSampleCount = 8;
+		controller.maxRaySteps = 200;
 		controller.objects = [];
 		controller.objectCount = 0;
 		controller.maxObjectCount = 24;
@@ -628,12 +662,20 @@ var init = function() {
 					case 'RMDF-TORUS':
 						if (c.hasAttribute('radius')) { options.radius = parseFloat(c.getAttribute('radius')); }
 						if (c.hasAttribute('inner-radius')) { options.innerRadius = parseFloat(c.getAttribute('inner-radius')); }
+						if (c.hasAttribute('corner-radius')) { options.cornerRadius = parseFloat(c.getAttribute('corner-radius')); }
+						if (c.hasAttribute('boxiness')) { options.boxiness = parseFloat(c.getAttribute('boxiness')); }
 						this.objects[this.objectCount++] = new DF.Torus(options);
 						break;
-					case 'RMDF-TORUS82':
+					case 'RMDF-PRISM':
+						if (c.hasAttribute('radius')) { options.radius = parseFloat(c.getAttribute('radius')); }
+						if (c.hasAttribute('height')) { options.innerRadius = parseFloat(c.getAttribute('height')); }
+						this.objects[this.objectCount++] = new DF.Prism(options);
+						break;
+					case 'RMDF-RING':
 						if (c.hasAttribute('radius')) { options.radius = parseFloat(c.getAttribute('radius')); }
 						if (c.hasAttribute('inner-radius')) { options.innerRadius = parseFloat(c.getAttribute('inner-radius')); }
-						this.objects[this.objectCount++] = new DF.Torus82(options);
+						if (c.hasAttribute('height')) { options.height = parseFloat(c.getAttribute('height')); }
+						this.objects[this.objectCount++] = new DF.Ring(options);
 						break;
 				}
 			}
@@ -671,7 +713,7 @@ var init = function() {
 			iResolution[1] = glc.height;
 			gl.viewport(0,0, glc.width, glc.height);
 			u3fv(gl, p, 'iResolution', iResolution);
-			forceRedraw = true;
+			controller.changed = true;
 		};
 
 		var p;
@@ -697,6 +739,7 @@ var init = function() {
 			gl.enableVertexAttribArray(pos);
 			gl.bindBuffer(gl.ARRAY_BUFFER, buf);
 			gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+			controller.changed = true;
 		};
 		for (var i=1; i<arguments.length; i++) {
 			if (sel) {
@@ -782,6 +825,7 @@ var init = function() {
 					controller.camera.position[0] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.cos(controller.cameraPhi);
 					controller.camera.position[1] = controller.cameraDistance * Math.cos(controller.cameraTheta);
 					controller.camera.position[2] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.sin(controller.cameraPhi);
+					controller.changed = true;
 				}
 				mouse[2] = mouse[0];
 				mouse[3] = mouse[1];
@@ -794,6 +838,7 @@ var init = function() {
 			controller.camera.position[0] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.cos(controller.cameraPhi);
 			controller.camera.position[1] = controller.cameraDistance * Math.cos(controller.cameraTheta);
 			controller.camera.position[2] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.sin(controller.cameraPhi);
+			controller.changed = true;
 		}, false);
 		window.onresize = resize;
 
@@ -805,21 +850,6 @@ var init = function() {
 			blurred = false;
 		};
 		if (DEBUG) console.log('WebGL setup total: '+(Date.now()-t1)+' ms'); 
-
-		var bounce = function(ev) {
-			ev.preventDefault();
-			var self = this;
-			var p = this.position[1];
-			var t = 0;
-			var ival = setInterval(function() {
-				if (t > 1000) {
-					t = 1000;
-					clearInterval(ival);
-				}
-				self.position[1] = p + Math.abs(Math.sin((t/1000)*2*Math.PI));
-				t += 16;
-			}, 16);
-		};
 
 		controller.camera.position[0] = controller.cameraDistance * Math.sin(controller.cameraTheta) * Math.cos(controller.cameraPhi);
 		controller.camera.position[1] = controller.cameraDistance * Math.cos(controller.cameraTheta);
@@ -833,45 +863,88 @@ var init = function() {
 
 		var sceneBoundingSphere = new Float32Array(4);
 
-		var tick = function() {
-			if (!blurred || forceRedraw) {
-				forceRedraw = false;
-				if (window.startScript) {
-					if (window.performance && performance.timing && performance.timing.navigationStart) {
-						console.log('navigationStart to first frame: '+(Date.now()-performance.timing.navigationStart)+' ms');
-					}
-					console.log('script start to first frame: '+(Date.now()-window.startScript)+' ms');
-					window.startScript = 0;
-				}
-				t = Date.now() - startT;
+		controller.render = function() {
+			updateTexture(gl, pTex, posTex, 1);
 
-				var objects = controller.objects;
-				while (objects.length < 25) {
-					objects.push(new DF.Object());
+			u3fv(gl, p, 'iCamera', controller.camera.position);
+			u3fv(gl, p, 'iCameraTarget', controller.camera.target);
+			u4fv(gl, p, 'iBoundingSphere', sceneBoundingSphere);
+
+			u3fv(gl, p, 'iLightPos', vec3.scale(DF._tmpVec, controller.skybox.lightPos, 1/255));
+			u3fv(gl, p, 'iSunColor', vec3.scale(DF._tmpVec, controller.skybox.sunColor, 1/255));
+			u3fv(gl, p, 'iSkyColor', vec3.scale(DF._tmpVec, controller.skybox.skyColor, 1/255));
+			u3fv(gl, p, 'iGroundColor', vec3.scale(DF._tmpVec, controller.skybox.groundColor, 1/255));
+			u3fv(gl, p, 'iHorizonColor', vec3.scale(DF._tmpVec, controller.skybox.horizonColor, 1/255));
+			u1f(gl, p, 'iGlobalTime', t/1000);
+			u1f(gl, p, 'iPick', controller.pick);
+			u1f(gl, p, 'iObjectCount', controller.objectCount);
+			u1f(gl, p, 'iISO', controller.camera.ISO);
+			u1f(gl, p, 'iShutterSpeed', controller.camera.shutterSpeed);
+			u1f(gl, p, 'iExposureCompensation', controller.camera.exposureCompensation);
+			u4fv(gl, p, 'iMouse', mouse);
+
+			u1f(gl, p, 'iMinSampleCount', controller.minSampleCount);
+			u1f(gl, p, 'iMaxSampleCount', controller.maxSampleCount);
+			u1i(gl, p, 'iMaxRaySteps', controller.maxRaySteps);
+
+			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+			resizeBuffer(gl, buf);
+			gl.drawArrays(gl.POINTS, 0, buf.vertCount);
+		};
+
+		var changed = true;
+		var tick = function() {
+			changed = false;
+			if (window.startScript) {
+				if (window.performance && performance.timing && performance.timing.navigationStart) {
+					console.log('navigationStart to first frame: '+(Date.now()-performance.timing.navigationStart)+' ms');
 				}
-				var pick = -2.0;
-				if (clickEvent) {
-					getDir(iResolution, controller.camera.position, controller.camera.target, mouse, cdir);
-					pick = trace(controller.camera.position, cdir, posTex).pick;
-					if (pick >= 0) {
-						controller.setCurrent(controller.objects[pick]);
-						var o = objects[pick];
-						if (o.title && o.content) {
-							showPopup(o.title, o.content, glc.width/2 + (clickEvent.pageX > glc.width/2 ? 150 : -250), clickEvent.pageY);
-						}
-						if (o.onclick) {
-							try {
-								o.onclick(clickEvent);
-							} catch(e){ console.log(e); }
-						}
-					} else {
-						controller.setCurrent(null);
+				console.log('script start to first frame: '+(Date.now()-window.startScript)+' ms');
+				window.startScript = 0;
+			}
+			t = Date.now() - startT;
+
+			var objects = controller.objects;
+			while (objects.length < 25) {
+				objects.push(new DF.Object());
+			}
+			var pick = -2.0;
+			if (clickEvent) {
+				getDir(iResolution, controller.camera.position, controller.camera.target, mouse, cdir);
+				pick = trace(controller.camera.position, cdir, posTex).pick;
+				if (pick >= 0) {
+					controller.setCurrent(controller.objects[pick]);
+					var o = objects[pick];
+					if (o.title && o.content) {
+						showPopup(o.title, o.content, glc.width/2 + (clickEvent.pageX > glc.width/2 ? 150 : -250), clickEvent.pageY);
 					}
-					clickEvent = false;
+					if (o.onclick) {
+						try {
+							o.onclick(clickEvent);
+						} catch(e){ console.log(e); }
+					}
+				} else {
+					controller.setCurrent(null);
 				}
-				for (var j=0; j<controller.objectCount; j++) {
-					objects[j].tick();
+				clickEvent = false;
+			}
+			controller.pick = pick;
+			for (var j=0; j<controller.objectCount; j++) {
+				objects[j].tick();
+				objects[j].prepareWrite();
+				objects[j].material.prepareWrite();
+			}
+			changed = changed || controller.changed;
+			controller.changed = false;
+			for (var j=0; j<controller.objectCount; j++) {
+				if (changed) {
+					break;
 				}
+				changed = changed || objects[j].changed;
+				changed = changed || objects[j].material.changed;
+			}
+
+			if (changed) {
 				for (var j=0; j<objects.length; j++) {
 					if (j >= controller.maxObjectCount) {
 						break;
@@ -880,12 +953,6 @@ var init = function() {
 					objects[j].write(posTex, j*20);
 					objects[j].material.write(posTex, posTex.width*4 + j*8);
 				}
-				var tx,ty,tz;
-				tx = ty = tz = 0;
-				var r = 30 + 100 * (0.5+0.5*Math.cos(Math.PI*Math.min(Math.max(0, t-1000), 1000)/1000));
-				u3fv(gl, p, 'iCamera', controller.camera.position);
-				u3fv(gl, p, 'iCameraTarget', controller.camera.target);
-
 				var s = objects[0].computeBoundingSphere();
 				for (var i=1; i<controller.objectCount; i++) {
 					var os = objects[i].computeBoundingSphere();
@@ -893,27 +960,8 @@ var init = function() {
 				}
 				sceneBoundingSphere.set(s.center);
 				sceneBoundingSphere[3] = s.radius;
-				//u4fv(gl, p, 'iBoundingSphere', sceneBoundingSphere);
-
-				updateTexture(gl, pTex, posTex, 1);
-
-				u3fv(gl, p, 'iLightPos', vec3.scale(DF._tmpVec, controller.skybox.lightPos, 1/255));
-				u3fv(gl, p, 'iSunColor', vec3.scale(DF._tmpVec, controller.skybox.sunColor, 1/255));
-				u3fv(gl, p, 'iSkyColor', vec3.scale(DF._tmpVec, controller.skybox.skyColor, 1/255));
-				u3fv(gl, p, 'iGroundColor', vec3.scale(DF._tmpVec, controller.skybox.groundColor, 1/255));
-				u3fv(gl, p, 'iHorizonColor', vec3.scale(DF._tmpVec, controller.skybox.horizonColor, 1/255));
-				u1f(gl, p, 'iGlobalTime', t/1000);
-				u1f(gl, p, 'iPick', pick);
-				u1f(gl, p, 'iObjectCount', controller.objectCount);
-				u1f(gl, p, 'iISO', controller.camera.ISO);
-				u1f(gl, p, 'iShutterSpeed', controller.camera.shutterSpeed);
-				u1f(gl, p, 'iExposureCompensation', controller.camera.exposureCompensation);
-				u4fv(gl, p, 'iMouse', mouse);
-
-				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-				resizeBuffer(gl, buf);
-				gl.drawArrays(gl.POINTS, 0, buf.vertCount);
-			}	
+				controller.render();
+			}
 			requestAnimationFrame(tick, glc);
 		};
 		resize();

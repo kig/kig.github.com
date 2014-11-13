@@ -17,8 +17,8 @@ varying float vObjectVisible[3];
 #define DF_SPHERE 1.0
 #define DF_BOX 2.0
 #define DF_TORUS 3.0
-#define DF_TORUS82 4.0
-#define DF_PRISM 5.0
+#define DF_PRISM 4.0
+#define DF_RING 5.0
 
 struct ray
 {
@@ -69,9 +69,9 @@ sphere getBoundingSphere(int i) {
 
 	s.r = params.x;
 	if (t == DF_BOX) s.r = length(params.xyz);
-	if (t == DF_TORUS) s.r *= 1.0+params.y;
-	if (t == DF_TORUS82) s.r *= 1.0+sqrt(2.0)*params.y;
+	if (t == DF_TORUS) s.r = sqrt(2.0)*s.r;
 	if (t == DF_PRISM) s.r = length(params.xy);
+	if (t == DF_RING) s.r = sqrt(params.x*params.x + params.z*params.z);
 
 	s.p = (mx * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 	return s;

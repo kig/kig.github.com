@@ -1,212 +1,5 @@
 (function() {
 	var initEditor = function(controller) {
-		var editButton = document.getElementById('edit');
-		if (editButton) {
-			editButton.classList.add('visible');
-		}
-
-		document.querySelector('#edit').onclick = function(ev) {
-			ev.preventDefault();
-			document.body.classList.toggle('editmode');
-		};
-
-	 	var gui = new dat.GUI();
-
-	 	var cont = document.createElement('div');
-	 	var editorContainer = cont;
-	 	cont.id = 'onclick-editor-container';
-	 	document.body.appendChild(cont);
-
-	 	var pre = document.createElement('pre');
-	 	pre.id = 'onclick-editor';
-	 	cont.appendChild(pre);
-	 	var btn = document.createElement('button');
-	 	btn.innerHTML = "Set Onclick";
-	 	btn.onclick = function() {
-	 		if (controller.current) {
-	 			var val = editor.getValue();
-	 			controller.current.onclickString = val;
-		 		controller.current.onclick = new Function('ev', val);
-	 			console.log("click listener set");
-	 		}
-	 	};
-	 	cont.appendChild(btn);
-	 	var editor = ace.edit("onclick-editor");
-	    editor.setTheme("ace/theme/monokai");
-	    editor.getSession().setMode("ace/mode/javascript");
-
-	 	var pre = document.createElement('pre');
-	 	pre.id = 'content-editor';
-	 	cont.appendChild(pre);
-	 	var btn = document.createElement('button');
-	 	btn.innerHTML = "Set Content";
-	 	btn.onclick = function() {
-	 		if (controller.current) {
-	 			var val = contentEditor.getValue();
-	 			controller.current.content = val;
-	 		}
-	 	};
-	 	cont.appendChild(btn);
-	 	var contentEditor = ace.edit("content-editor");
-	    contentEditor.setTheme("ace/theme/monokai");
-	    contentEditor.getSession().setMode("ace/mode/html");
-
-		controller.title = "Title";
-		controller.content = "<p>Content HTML</p>";
-
-		controller.radius = 0.95;
-		controller.innerRadius = 0.5;
-		controller.cornerRadius = 0.05;
-		controller.material.diffuse = 0.1;
-
-		controller.onclick = ([
-		'// Example click event listener. Press Set Onclick to try it out.',
-		'if (this.ival) return;',
-		'var p = this.position[1];',
-		'var self = this;',
-		'var t = 0;',
-		'this.ival = setInterval(function() {',
-		'	if (t > 1000) {',
-		'		t = 1000;',
-		'		clearInterval(self.ival);',
-		'		self.ival = null;',
-		'	}',
-		'	self.position[1] = p + 1-Math.cos(t/1000*Math.PI*2);',
-		'	t += 16;',
-		'}, 16);'
-		]).join("\n");
-
-		editor.setValue( controller.onclick.toString() );
-		controller.gui = gui;
-		controller.color = 0xFFFFFF;
-
-		controller.createNew = function() {
-			if (this.objectCount === this.maxObjectCount) {
-				alert("Maximum object count reached, can't create more objects. Sorry about that.")
-				return;
-			}
-			var cube = new DF[this.typeName]();
-			cube.material.transmit.set(this.transmit.getValue().map(function(v) {return v/255;}));
-			cube.material.emit.set(this.emit.getValue().map(function(v) {return v/255;}));
-			cube.material.diffuse = this.diffuse.getValue();
-			if (!this.current) {
-				cube.title = this.titleC.getValue();
-			}
-			this.objects[this.objectCount++] = cube;
-			this.setCurrent(cube);
-		};
-		controller.deleteSelected = function() {
-			if (this.current) {
-				this.objects.splice(this.objects.indexOf(this.current), 1);
-				this.objectCount--;
-				this.current = null;
-			}
-		};
-		controller.setCurrent = function(current) {
-			if (this.current && this.current.originalEmit != null) {
-				//this.current.material.emit.set(this.current.originalEmit);
-				//this.current.originalEmit = null;
-			}
-			this.current = current;
-			if (this.current) {
-				if (this.current.material.emit[0] !== 0.2) {
-					//this.current.originalEmit = vec3.clone(this.current.material.emit);
-					//this.current.material.emit.set(Vec3(0.2));
-				}
-				editor.setValue(this.current.onclickString || this.onclick);
-				contentEditor.setValue(this.current.content);
-				this.titleC.setValue(this.current.title);
-				this.draggableC.setValue(this.current.draggable);
-				this.x.setValue(current.position[0]);
-				this.y.setValue(current.position[1]);
-				this.z.setValue(current.position[2]);
-				this.diffuse.setValue(current.material.diffuse);
-				this.transmit.setValue([].map.call(current.material.transmit, function(v) { return v*255; }))
-				this.emit.setValue([].map.call(current.material.emit, function(v) { return v*255; }))
-				this.type.setValue(DF.typeNames[current.type]);
-				if (current.dimensions) {
-					this.sX.setValue(current.dimensions[0]);
-					this.sY.setValue(current.dimensions[1]);
-					this.sZ.setValue(current.dimensions[2]);
-					this.cornerRadiusC.setValue(current.cornerRadius);
-				}
-				if (current.radius != null) {
-					this.radiusC.setValue(current.radius);					
-				}
-				if (current.innerRadius != null) {
-					this.innerRadiusC.setValue(current.innerRadius);
-				}
-				editorContainer.style.display = 'block';
-			} else {
-				editorContainer.style.display = 'none';
-				this.titleC.setValue("");
-				this.x.setValue(0);
-				this.y.setValue(0);
-				this.z.setValue(0);
-				this.type.setValue('Box');				
-			}
-		};
-		controller.proxy = function(propertyChain, min, max, step, name) {
-			var controller = this;
-			var tgt = controller;
-			for (var i=0; i<propertyChain.length-1; i++) {
-				tgt = tgt[propertyChain[i]];
-			}
-			var last = propertyChain[propertyChain.length-1];
-			return this.gui.add(tgt, last, min, max, step).name(name).onChange(function(v) {
-				var t = controller.current;
-				if (t) {
-					for (var i=0; i<propertyChain.length-1; i++) {
-						t = t[propertyChain[i]];
-					}
-					t[last] = v;
-				}
-			});
-		};
-		controller.proxyColor = function(propertyChain, name) {
-			var controller = this;
-			var tgt = controller;
-			for (var i=0; i<propertyChain.length-1; i++) {
-				tgt = tgt[propertyChain[i]];
-			}
-			var last = propertyChain[propertyChain.length-1];
-			tgt[last] = [].slice.call(tgt[last]).map(function(v) { return v*255; });
-			return this.gui.addColor(tgt, last).name(name).onChange(function(v) {
-				var t = controller.current;
-				if (t) {
-					for (var i=0; i<propertyChain.length-1; i++) {
-						t = t[propertyChain[i]];
-					}
-					t[last][0] = v[0]/255;
-					t[last][1] = v[1]/255;
-					t[last][2] = v[2]/255;
-				}
-			});
-		};
-
-		editorContainer.style.display = 'none';
-
-		controller.typeName = 'Box';
-		controller.type = gui.add(controller, 'typeName', ['Box', 'Sphere', 'Torus', 'Torus82', 'Prism']).name("Type").onChange(function(type) {
-			var idx = controller.objects.indexOf(controller.current);
-			if (idx !== -1 && !(controller.current instanceof DF[type])) {
-				controller.objects[idx] = new DF[type]({
-					position: controller.current.position, 
-					rotation: controller.current.rotation, 
-					material: controller.current.material,
-					title: controller.current.title,
-					content: controller.current.content,
-					draggable: controller.current.draggable,
-					dragXAxis: controller.current.dragXAxis,
-					dragYAxis: controller.current.dragYAxis,
-					ontick: controller.current.ontick,
-					ontickString: controller.current.ontickString,
-					onclick: controller.current.onclick,
-					onclickString: controller.current.onclickString
-				});
-				controller.setCurrent(controller.objects[idx]);
-			}
-		});
 
 		controller.toDOM = function() {
 			var sArray = function(arr) {
@@ -276,20 +69,30 @@
 						el.setAttribute('radius', c.radius);
 						break;
 					case DF.Types.Torus:
-					case DF.Types.Torus82:
-					case DF.Types.Prism:
 						el.setAttribute('radius', c.radius);
 						el.setAttribute('inner-radius', c.innerRadius);
+						break;
+					case DF.Types.Prism:
+						el.setAttribute('radius', c.radius);
+						el.setAttribute('height', c.height);
+						break;
+					case DF.Types.Ring:
+						el.setAttribute('radius', c.radius);
+						el.setAttribute('inner-radius', c.innerRadius);
+						el.setAttribute('boxiness', c.boxiness);
+						el.setAttribute('corner-radius', c.cornerRadius);
 						break;
 				}
 			}
 			return scene;
 		};
+
 		controller.toHTML = function() {
 			var frag = document.createElement('div');
 			frag.appendChild(this.toDOM());
 			return frag.innerHTML;
 		};
+
 		controller.package = function() {
 			var sceneHTML = this.toHTML();
 			var blob = new Blob([sceneHTML], {type: 'text/html'});
@@ -298,15 +101,11 @@
 			a.download = 'scene.rmdf';
 			a.click();
 		};
+
 		controller.load = function() {
-			//var form = document.createElement('form');
 			var input = document.createElement('input');
 			input.type = 'file';
-			//form.appendChild(input);
-			//form.style.display = 'none';
-			//document.body.appendChild(form);
 			input.onchange = function(ev) {
-				//document.body.removeChild(form);
 				var f = this.files[0];
 				var r = new FileReader();
 				r.onload = function(res) {
@@ -317,10 +116,257 @@
 			input.click();
 		};
 
+
+		controller.renderHQ = function() {
+			var minSC = this.minSampleCount;
+			var maxSC = this.maxSampleCount;
+			var maxRaySteps = this.maxRaySteps;
+			this.minSampleCount = 16;
+			this.maxSampleCount = 200;
+			this.maxRaySteps = 2000;
+			this.render();
+			this.minSampleCount = minSC;
+			this.maxSampleCount = maxSC;
+			this.maxRaySteps = maxRaySteps;
+		};
+
+		var editButton = document.getElementById('edit');
+		if (editButton) {
+			editButton.classList.add('visible');
+		}
+
+		document.querySelector('#edit').onclick = function(ev) {
+			ev.preventDefault();
+			document.body.classList.toggle('editmode');
+		};
+
+	 	var gui = new dat.GUI();
+
+	 	var cont = document.createElement('div');
+	 	var editorContainer = cont;
+	 	cont.id = 'onclick-editor-container';
+	 	document.body.appendChild(cont);
+
+	 	var pre = document.createElement('pre');
+	 	pre.id = 'onclick-editor';
+	 	cont.appendChild(pre);
+	 	var btn = document.createElement('button');
+	 	btn.innerHTML = "Set Onclick";
+	 	btn.onclick = function() {
+	 		if (controller.current) {
+	 			var val = editor.getValue();
+	 			controller.current.onclickString = val;
+		 		controller.current.onclick = new Function('ev', val);
+	 			console.log("click listener set");
+	 		}
+	 	};
+	 	cont.appendChild(btn);
+	 	var editor = ace.edit("onclick-editor");
+	    editor.setTheme("ace/theme/monokai");
+	    editor.getSession().setMode("ace/mode/javascript");
+
+	 	var pre = document.createElement('pre');
+	 	pre.id = 'content-editor';
+	 	cont.appendChild(pre);
+	 	var btn = document.createElement('button');
+	 	btn.innerHTML = "Set Content";
+	 	btn.onclick = function() {
+	 		if (controller.current) {
+	 			var val = contentEditor.getValue();
+	 			controller.current.content = val;
+	 		}
+	 	};
+	 	cont.appendChild(btn);
+	 	var contentEditor = ace.edit("content-editor");
+	    contentEditor.setTheme("ace/theme/monokai");
+	    contentEditor.getSession().setMode("ace/mode/html");
+
+		controller.title = "Title";
+		controller.content = "<p>Content HTML</p>";
+
+		controller.radius = 0.95;
+		controller.innerRadius = 0.5;
+		controller.cornerRadius = 0.05;
+		controller.height = 0.1;
+		controller.boxiness = 0.01;
+		controller.material.diffuse = 0.1;
+
+		controller.onclick = ([
+		'// Example click event listener. Press Set Onclick to try it out.',
+		'if (this.ival) return;',
+		'var p = this.position[1];',
+		'var self = this;',
+		'var t = 0;',
+		'this.ival = setInterval(function() {',
+		'	if (t > 1000) {',
+		'		t = 1000;',
+		'		clearInterval(self.ival);',
+		'		self.ival = null;',
+		'	}',
+		'	self.position[1] = p + 1-Math.cos(t/1000*Math.PI*2);',
+		'	t += 16;',
+		'}, 16);'
+		]).join("\n");
+
+		editor.setValue( controller.onclick.toString() );
+		controller.gui = gui;
+		controller.color = 0xFFFFFF;
+
+		controller.createNew = function() {
+			if (this.objectCount === this.maxObjectCount) {
+				alert("Maximum object count reached, can't create more objects. Sorry about that.")
+				return;
+			}
+			var cube = new DF[this.typeName]();
+			cube.material.transmit.set(this.transmit.getValue().map(function(v) {return v/255;}));
+			cube.material.emit.set(this.emit.getValue().map(function(v) {return v/255;}));
+			cube.material.diffuse = this.diffuse.getValue();
+			if (!this.current) {
+				cube.title = this.titleC.getValue();
+			}
+			this.objects[this.objectCount++] = cube;
+			this.setCurrent(cube);
+		};
+		controller.deleteSelected = function() {
+			if (this.current) {
+				this.objects.splice(this.objects.indexOf(this.current), 1);
+				this.objectCount--;
+				this.current = null;
+			}
+		};
+
+		var hide = function(el) { el.domElement.parentNode.parentNode.parentNode.style.display = 'none'; };
+		var show = function(el) { el.domElement.parentNode.parentNode.parentNode.style.display = 'block'; };
+
+		controller.setCurrent = function(current) {
+			if (this.current && this.current.originalEmit != null) {
+				//this.current.material.emit.set(this.current.originalEmit);
+				//this.current.originalEmit = null;
+			}
+			this.current = current;
+			if (this.current) {
+				if (this.current.material.emit[0] !== 0.2) {
+					//this.current.originalEmit = vec3.clone(this.current.material.emit);
+					//this.current.material.emit.set(Vec3(0.2));
+				}
+				editor.setValue(this.current.onclickString || this.onclick);
+				contentEditor.setValue(this.current.content);
+				this.titleC.setValue(this.current.title);
+				this.draggableC.setValue(this.current.draggable);
+				this.x.setValue(current.position[0]);
+				this.y.setValue(current.position[1]);
+				this.z.setValue(current.position[2]);
+				this.diffuse.setValue(current.material.diffuse);
+				this.transmit.setValue([].map.call(current.material.transmit, function(v) { return v*255; }))
+				this.emit.setValue([].map.call(current.material.emit, function(v) { return v*255; }))
+				this.type.setValue(DF.typeNames[current.type]);
+				if (current.dimensions) {
+					show(this.sX);
+					show(this.sY);
+					show(this.sZ);
+					this.sX.setValue(current.dimensions[0]);
+					this.sY.setValue(current.dimensions[1]);
+					this.sZ.setValue(current.dimensions[2]);
+				} else {
+					hide(this.sX);
+					hide(this.sY);
+					hide(this.sZ);
+				}
+				if (current.height != null) {
+					show(this.heightC);
+					this.heightC.setValue(current.height);
+				} else { hide(this.heightC); }
+				if (current.radius != null) {
+					show(this.radiusC);
+					this.radiusC.setValue(current.radius);					
+				} else { hide(this.radiusC); }
+				if (current.innerRadius != null) {
+					show(this.innerRadiusC);
+					this.innerRadiusC.setValue(current.innerRadius);
+				} else { hide(this.innerRadiusC); }
+				if (current.boxiness != null) {
+					show(this.boxinessC);
+					this.boxinessC.setValue(current.boxiness);					
+				} else { hide(this.boxinessC); }
+				if (current.cornerRadius != null) {
+					show(this.cornerRadiusC);
+					this.cornerRadiusC.setValue(current.cornerRadius);					
+				} else { hide(this.cornerRadiusC); }
+				editorContainer.style.display = 'block';
+			} else {
+				editorContainer.style.display = 'none';
+				this.titleC.setValue("");
+				this.x.setValue(0);
+				this.y.setValue(0);
+				this.z.setValue(0);
+				this.type.setValue('Box');				
+			}
+		};
+		controller.proxy = function(propertyChain, min, max, step, name) {
+			var controller = this;
+			var tgt = controller;
+			for (var i=0; i<propertyChain.length-1; i++) {
+				tgt = tgt[propertyChain[i]];
+			}
+			var last = propertyChain[propertyChain.length-1];
+			return this.gui.add(tgt, last, min, max, step).name(name).onChange(function(v) {
+				var t = controller.current;
+				if (t) {
+					for (var i=0; i<propertyChain.length-1; i++) {
+						t = t[propertyChain[i]];
+					}
+					t[last] = v;
+				}
+			});
+		};
+		controller.proxyColor = function(propertyChain, name) {
+			var controller = this;
+			var tgt = controller;
+			for (var i=0; i<propertyChain.length-1; i++) {
+				tgt = tgt[propertyChain[i]];
+			}
+			var last = propertyChain[propertyChain.length-1];
+			tgt[last] = [].slice.call(tgt[last]).map(function(v) { return v*255; });
+			return this.gui.addColor(tgt, last).name(name).onChange(function(v) {
+				var t = controller.current;
+				if (t) {
+					for (var i=0; i<propertyChain.length-1; i++) {
+						t = t[propertyChain[i]];
+					}
+					t[last][0] = v[0]/255;
+					t[last][1] = v[1]/255;
+					t[last][2] = v[2]/255;
+				}
+			});
+		};
+
+		editorContainer.style.display = 'none';
+
+		controller.typeName = 'Box';
+		controller.type = gui.add(controller, 'typeName', ['Box', 'Sphere', 'Torus', 'Prism', 'Ring']).name("Type").onChange(function(type) {
+			var idx = controller.objects.indexOf(controller.current);
+			if (idx !== -1 && !(controller.current instanceof DF[type])) {
+				controller.objects[idx] = new DF[type]({
+					position: controller.current.position, 
+					rotation: controller.current.rotation, 
+					material: controller.current.material,
+					title: controller.current.title,
+					content: controller.current.content,
+					draggable: controller.current.draggable,
+					dragXAxis: controller.current.dragXAxis,
+					dragYAxis: controller.current.dragYAxis,
+					ontick: controller.current.ontick,
+					ontickString: controller.current.ontickString,
+					onclick: controller.current.onclick,
+					onclickString: controller.current.onclickString
+				});
+				controller.setCurrent(controller.objects[idx]);
+			}
+		});
+
 		gui.add(controller, 'createNew').name("Create new object");
 		gui.add(controller, 'deleteSelected').name("Delete selected object");
-		gui.add(controller, 'package').name("Download scene");
-		gui.add(controller, 'load').name("Load scene");
+		gui.add(controller, 'renderHQ').name("HQ render");
 
 		controller.draggableC = gui.add(controller, 'draggable').onChange(function(v) {
 			if (controller.current) {
@@ -328,21 +374,31 @@
 			}
 		});
 
-		controller.x = controller.proxy(['position', 0], -10.1, 10.1, 0.1, "X");
-		controller.y = controller.proxy(['position', 1], -10.1, 10.1, 0.1, "Y");
-		controller.z = controller.proxy(['position', 2], -10.1, 10.1, 0.1, "Z");
+		// Skybox editors
+		controller.sunColor = gui.addColor(controller.skybox, 'sunColor');
+		controller.skyColor = gui.addColor(controller.skybox, 'skyColor');
+		controller.groundColor = gui.addColor(controller.skybox, 'groundColor');
+		controller.horizonColor = gui.addColor(controller.skybox, 'horizonColor');
 
+		// Title
 		controller.titleC = controller.proxy(['title'], undefined, undefined, undefined, "Title");
 
+		// Material
 		controller.transmit = controller.proxyColor(['material', 'transmit'], 'Transmit');
 		controller.emit = controller.proxyColor(['material', 'emit'], 'Emit');
 		controller.diffuse = controller.proxy(['material', 'diffuse'], 0.0, 1.0, 0.01, 'Diffuse');
+
+		controller.x = controller.proxy(['position', 0], -10.1, 10.1, 0.1, "X");
+		controller.y = controller.proxy(['position', 1], -10.1, 10.1, 0.1, "Y");
+		controller.z = controller.proxy(['position', 2], -10.1, 10.1, 0.1, "Z");
 
 		// Box editors
 		controller.sX = controller.proxy(['dimensions', 0], 0.1, 6, 0.1, 'Width');
 		controller.sY = controller.proxy(['dimensions', 1], 0.1, 6, 0.1, 'Height');
 		controller.sZ = controller.proxy(['dimensions', 2], 0.1, 6, 0.1, 'Depth');
-		controller.cornerRadiusC = controller.proxy(['cornerRadius'], 0.05, 1, 0.05, 'Corner radius');
+
+		controller.cornerRadiusC = controller.proxy(['cornerRadius'], 0.0, 0.5, 0.05, 'Corner radius');
+		controller.boxinessC = controller.proxy(['boxiness'], 0.0, 1.0, 0.1, 'Boxiness');
 
 		// Sphere editors
 		controller.radiusC = controller.proxy(['radius'], 0.1, 6, 0.1, 'Radius');
@@ -350,14 +406,16 @@
 		// Torus editors
 		controller.innerRadiusC = controller.proxy(['innerRadius'], 0.1, 0.9, 0.1, 'Inner Radius');
 
-		// Skybox editors
-		controller.sunColor = gui.addColor(controller.skybox, 'sunColor');
-		controller.skyColor = gui.addColor(controller.skybox, 'skyColor');
-		controller.groundColor = gui.addColor(controller.skybox, 'groundColor');
-		controller.horizonColor = gui.addColor(controller.skybox, 'horizonColor');
+		// Ring editors
+		controller.heightC = controller.proxy(['height'], 0.1, 6, 0.1, 'Height');
+
+		// Light position
 		controller.lightPosX = gui.add(controller.skybox.lightPos, 0, -10, 10, 0.1).name("Light X");
 		controller.lightPosY = gui.add(controller.skybox.lightPos, 1, -10, 10, 0.1).name("Light Y");
 		controller.lightPosZ = gui.add(controller.skybox.lightPos, 2, -10, 10, 0.1).name("Light Z");
+
+		gui.add(controller, 'package').name("Download scene");
+		gui.add(controller, 'load').name("Load scene");
 	};
 
 	var ticker = function() {

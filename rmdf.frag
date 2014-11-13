@@ -23,21 +23,25 @@ uniform float iShutterSpeed;
 uniform float iISO;
 uniform float iExposureCompensation;
 
+uniform float iMinSampleCount;
+uniform float iMaxSampleCount;
+uniform int iMaxRaySteps;
+
 varying float vAnyObjectsVisible;
 varying float vObjectVisible[3];
 
-#define THRESHOLD 0.02
+#define THRESHOLD 0.01
 #define MAX_DISTANCE 16.0
 
-#define RAY_STEPS 100
-#define MAX_SAMPLES (max(2.0, 8.0*maxDiffuseSum))
+#define RAY_STEPS 10000
+#define MAX_SAMPLES (max(iMinSampleCount, iMaxSampleCount*sqrt(maxDiffuseSum)))
 
 #define DF_EMPTY 0.0
 #define DF_SPHERE 1.0
 #define DF_BOX 2.0
 #define DF_TORUS 3.0
-#define DF_TORUS82 4.0
-#define DF_PRISM 5.0
+#define DF_PRISM 4.0
+#define DF_RING 5.0
 
 struct ray
 {
@@ -102,54 +106,35 @@ float dfBox(vec3 p, vec3 dimensions, float cornerRadius) {
 	return length(max(abs(p)-dimensions, 0.0))-cornerRadius;
 }
 
-float dfTorus(vec3 p, float innerRadius, float outerRadius) {
-	vec2 q = vec2(length(p.xz)-innerRadius,p.y);
-	return length(q)-outerRadius;
+float lengthN(vec2 p, float n) {
+	float d = pow(p.x, n) + pow(p.y, n);
+	return pow(d, 1.0/n);
 }
 
-float length8(vec3 p) {
-	float d8 = pow(p.x, 8.0) + pow(p.y, 8.0) + pow(p.z, 8.0);
-	return pow(d8, 1.0/8.0);
+float dfTorus(vec3 p, float innerRadius, float outerRadius, float cornerRadius, float boxiness) {
+	vec2 q = vec2(lengthN(p.xz, 2.0+18.0*boxiness)-innerRadius, p.y);
+	return lengthN(q, 2.0+8.0*(0.5-cornerRadius))-outerRadius;
 }
 
-float length8(vec2 p) {
-	float d8 = pow(p.x, 8.0) + pow(p.y, 8.0);
-	return pow(d8, 1.0/8.0);
-}
-
-float dfTorus82(vec3 p, float innerRadius, float outerRadius) {
-	vec2 q = vec2(length(p.xz)-innerRadius,p.y);
-	return length8(q)-outerRadius;
-}
-
-float dfTriPrism( vec3 p, vec2 h )
+float dfTriPrism(vec3 p, float radius, float height)
 {
     vec3 q = abs(p);
-    return max(q.z-h.y,max(q.x*0.866025+p.y*0.5,-p.y)-h.x*0.5);
+    return max(q.z-height,max(q.x*0.866025+p.y*0.5,-p.y)-radius*0.5);
 }
 
-/*
-mat4 objectMatrices[8];
-void cacheMatrices() {
-	for (int i=0; i<8; i++) {
-		vec4 posT = texture2D(iChannel1, vec2(float(i*5+4)/128.0, 0.0));
-		float tm = posT.w;
-		float t = floor(tm / 256.0);
-		if (t == DF_EMPTY) {
-			objectMatrices[i][3][3] = DF_EMPTY;
-			break;
-		}
-		mat4 mx;
-		mx[0] = texture2D(iChannel1, vec2(float(i*5+1)/128.0, 0.0));
-		mx[1] = texture2D(iChannel1, vec2(float(i*5+2)/128.0, 0.0));
-		mx[2] = texture2D(iChannel1, vec2(float(i*5+3)/128.0, 0.0));
-		mx[3] = posT;
-		objectMatrices[i] = mx;
-	}
+float dfCylinder(vec3 p, float radius, float height) {
+	vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(radius, height);
+	return min(max(d.x,d.y),0.0) + length(max(d,0.0));	
 }
-*/
 
-vec3 scene(vec3 p, bool bounce)
+float dfRing(vec3 p, float radius, float innerRadius, float height, float cornerRadius)
+{
+	float c1 = dfCylinder(p, radius, height);
+	float c2 = dfCylinder(p, innerRadius, height*2.0);
+	return max(c1, -c2);
+}
+
+vec3 scene(vec3 p, bool bounce, inout float testCount)
 {
 	float dist = 1e9;
 	float materialIndex = -1.0;
@@ -166,17 +151,7 @@ vec3 scene(vec3 p, bool bounce)
 				continue;
 			}
 		}
-		// mat4 mx = objectMatrices[i];
-		// float tm = mx[3][3];
-		// if (tm == DF_EMPTY) {
-		// 	break;
-		// }
-		// float t = floor(tm / 256.0);
-		// float m = floor(tm - t*256.0);
-		// vec4 params = texture2D(iChannel1, vec2(float(i*5)/128.0, 0.0));
-		// mx[3][3] = 1.0;
-		// vec3 tp = (mx * p4).xyz;
-		// mx[3][3] = tm;
+		testCount++;
 
 		vec4 params = texture2D(iChannel1, vec2(float(i*5)/128.0, 0.0));
 		mat4 mx;
@@ -196,11 +171,11 @@ vec3 scene(vec3 p, bool bounce)
 		} else if (t == DF_BOX) {
 			nd = dfBox(tp, params.xyz, params.w);
 		} else if (t == DF_TORUS) {
-			nd = dfTorus(tp, params.x, params.y);
-		} else if (t == DF_TORUS82) {
-			nd = dfTorus82(tp, params.x, params.y);
+			nd = dfTorus(tp, params.x, params.y, params.z, params.w);
 		} else if (t == DF_PRISM) {
-			nd = dfTriPrism(tp, params.xy);
+			nd = dfTriPrism(tp, params.x, params.y);
+		} else if (t == DF_RING) {
+			nd = dfRing(tp, params.x, params.y, params.z, params.w);
 		}
 		if (nd < dist) {
 			dist = nd;
@@ -253,19 +228,19 @@ vec3 normal(ray r, float d, bool bounce, float i)
 		float dz = dfBox((mx[2]*e + p).xyz, params.xyz, params.w) - d;
 		return normalize(vec3(dx, dy, dz));
 	} else if (t == DF_TORUS) {
-		float dx = dfTorus((mx[0]*e + p).xyz, params.x, params.y) - d;
-		float dy = dfTorus((mx[1]*e + p).xyz, params.x, params.y) - d;
-		float dz = dfTorus((mx[2]*e + p).xyz, params.x, params.y) - d;
-		return normalize(vec3(dx, dy, dz));
-	} else if (t == DF_TORUS82) {
-		float dx = dfTorus82((mx[0]*e + p).xyz, params.x, params.y) - d;
-		float dy = dfTorus82((mx[1]*e + p).xyz, params.x, params.y) - d;
-		float dz = dfTorus82((mx[2]*e + p).xyz, params.x, params.y) - d;
+		float dx = dfTorus((mx[0]*e + p).xyz, params.x, params.y, params.z, params.w) - d;
+		float dy = dfTorus((mx[1]*e + p).xyz, params.x, params.y, params.z, params.w) - d;
+		float dz = dfTorus((mx[2]*e + p).xyz, params.x, params.y, params.z, params.w) - d;
 		return normalize(vec3(dx, dy, dz));
 	} else if (t == DF_PRISM) {
-		float dx = dfTriPrism((mx[0]*e + p).xyz, params.xy) - d;
-		float dy = dfTriPrism((mx[1]*e + p).xyz, params.xy) - d;
-		float dz = dfTriPrism((mx[2]*e + p).xyz, params.xy) - d;
+		float dx = dfTriPrism((mx[0]*e + p).xyz, params.x, params.y) - d;
+		float dy = dfTriPrism((mx[1]*e + p).xyz, params.x, params.y) - d;
+		float dz = dfTriPrism((mx[2]*e + p).xyz, params.x, params.y) - d;
+		return normalize(vec3(dx, dy, dz));
+	} else if (t == DF_RING) {
+		float dx = dfRing((mx[0]*e + p).xyz, params.x, params.y, params.z, params.w) - d;
+		float dy = dfRing((mx[1]*e + p).xyz, params.x, params.y, params.z, params.w) - d;
+		float dz = dfRing((mx[2]*e + p).xyz, params.x, params.y, params.z, params.w) - d;
 		return normalize(vec3(dx, dy, dz));
 	}
 
@@ -292,7 +267,7 @@ float shade(inout ray r, vec3 nml, float d, float materialIndex, float fresnel)
 {
 	mat m = material(r.p, materialIndex);
 	r.light += m.emit * r.transmit;
-	r.transmit *= mix(vec3(1.0,0.0,1.0), m.transmit, fresnel);
+	r.transmit *= mix(vec3(1.0,1.0,1.0), m.transmit, fresnel);
 	return m.diffuse;
 }
 
@@ -301,16 +276,15 @@ vec2 xy(float k, float n)
 	return vec2(floor(k/n), k-(floor(k/n)*n));
 }
 
-void offset(inout vec3 nml, float k, float count, float diffuse) {
-	vec3  uu  = normalize( cross( nml, vec3(0.01,1.0,1.0) ) );
-	vec3  vv  = normalize( cross( uu, nml ) );
-	vec2  aa = hash2( count );
-	float ra = sqrt(aa.y);
-	float rx = ra*cos(6.2831*aa.x); 
-	float ry = ra*sin(6.2831*aa.x);
-	float rz = sqrt( sqrt(k)*(1.0-aa.y) );
-	vec3  rr = vec3( rx*uu + ry*vv + rz*nml );	
-	nml = normalize(mix(nml, rr, diffuse));
+void offset(inout vec3 dir, vec3 nml, float k, float count, float diffuse) {
+	vec2 phiTheta = hash2(count) * 6.2831;
+	float u = cos(phiTheta.x);
+	float sq = sqrt(1.0 - u * u);
+	float rx = sq * cos(phiTheta.y); 
+	float ry = sq * sin(phiTheta.y);
+	float rz = u;
+	vec3 v = vec3(rx, ry, rz);
+	dir = normalize(mix(dir, nml + v, diffuse));
 }
 
 vec3 getDir(float time, vec2 uv, float k)
@@ -352,18 +326,18 @@ vec3 trace(float time)
 
 	ray r = setupRay(time, uv, 1.0);
 	if (vAnyObjectsVisible == 0.0) {
+		// return vec3(0.0); 
 		return shadeBg(time, -r.d);
 	}
 	float k = 1.0;
+	float fi = 0.0;
 	bool bounce = false;
-
-	// cacheMatrices();
 
 	vec2 uvD = ((2.0 * ((gl_FragCoord.xy+vec2(1.0, 1.0)) / iResolution.xy) - 1.0) * pixelAspect) - uv;
 		
 	for (int i=0; i<RAY_STEPS; i++) {
-		if (k > MAX_SAMPLES) break;
-		vec3 distHitMat = scene(r.p, bounce);
+		if (k > MAX_SAMPLES || i >= iMaxRaySteps) break;
+		vec3 distHitMat = scene(r.p, bounce, fi);
 		float dist = distHitMat.x;
 		minDist = min(minDist, dist);
 		r.p += dist * r.d;
@@ -373,18 +347,22 @@ vec3 trace(float time)
 			float f = pow(1.0 - clamp(dot(nml, r.d), 0.0, 1.0), 5.0);
 			float diffuse = shade(r, nml, dist, distHitMat.z, f);
 			diffuseSum += diffuse;
-						
-			offset(r.d, k, k+10.0*dot(nml, r.d), diffuse*0.5*f);
+
+			r.p -= 4.0*THRESHOLD*diffuse*f * r.d;
+
 			r.d = reflect(r.d, nml);
+			offset(r.d, nml, k, k+10.0*dot(nml, r.d), diffuse*f);
 			r.p += 4.0*THRESHOLD * r.d;
+
 			count++;
 			bounce = true;
 			
-			if (dot(r.transmit, vec3(8.0)) < 1.0) {
+			if (dot(r.transmit, vec3(8.0)) < 1.0 || count > 2.0+(1.0-diffuse*f)*4.0) {
 				// if even the brightest light in the scene can't
 				// make the ray brighter, let's bail.
 				accum += r.light;
 				k++;
+				count = 0.0;
 				r = setupRay(time, uv+(uvD*mod(xy(k, 4.0), 4.0)/4.0), k);
 				bounce = false;
 				maxDiffuseSum = max(diffuseSum, maxDiffuseSum);
@@ -398,12 +376,15 @@ vec3 trace(float time)
 			}
 			accum += r.light + r.transmit * bg;
 			k++;
+			count = 0.0;
 			r = setupRay(time, uv+(uvD*mod(xy(k, 4.0), 4.0)/4.0), k);
 			bounce = false;
 			maxDiffuseSum = max(diffuseSum, maxDiffuseSum);
 			diffuseSum = 0.0;
 		}
 	}
+
+//	return vec3(fi / 1000.0);
 
 	accum += r.light;
 	return accum / k;

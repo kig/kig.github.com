@@ -382,7 +382,9 @@
 
 		gui.add(controller, 'createNew').name("Create new object");
 		gui.add(controller, 'deleteSelected').name("Delete selected object");
-		gui.add(controller, 'renderHQ').name("HQ render");
+		if (!window.windows) { // DX9 doesn't have instruction budget for single-pass HQ renders
+			gui.add(controller, 'renderHQ').name("HQ render");
+		}
 
 		controller.draggableC = gui.add(controller, 'draggable').onChange(function(v) {
 			if (controller.current) {

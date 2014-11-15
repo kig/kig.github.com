@@ -7,8 +7,10 @@
 		<script>
 			window.DEBUG = true;
 			window.startScript = Date.now();
+			window.dx9 = (/Windows/.test(navigator.userAgent));
+			window.mobile = (/mobile/i.test(navigator.userAgent));
 			window.shaderURLs = [
-				'rmdf.vert', 'rmdf.frag'
+				'rmdf.vert', (window.dx9 || window.mobile) ? 'rmdf_dx9.frag' : 'rmdf.frag'
 			];
 			window.Loader = {
 				cache: {},

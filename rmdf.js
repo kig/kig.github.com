@@ -2,13 +2,7 @@
 var init = function() {
 	if (DEBUG) console.log('script start to execute: '+(Date.now()-window.startScript)+' ms');
 
-	if (/Windows/.test(navigator.userAgent)) {
-		var ok = confirm("This page doesn't really work on DirectX-based WebGL. Try anyway?");
-		if (!ok) {
-			return;
-		}
-	}
-	if (/mobile/i.test(navigator.userAgent)) {
+	if (window.mobile) {
 		alert("This page may crash your mobile browser. Try on a Mac / Linux box instead.")
 		return;
 	}
@@ -560,7 +554,7 @@ var init = function() {
 		controller.maxRaySteps = 200;
 		controller.objects = [];
 		controller.objectCount = 0;
-		controller.maxObjectCount = 24;
+		controller.maxObjectCount = window.windows ? 4 : 24;
 		controller.setCurrent = function() {};
 
 		window.rmdfController = controller;

@@ -33,7 +33,7 @@ varying float vObjectVisible[3];
 #define THRESHOLD 0.01
 #define MAX_DISTANCE 16.0
 
-#define RAY_STEPS 1
+#define RAY_STEPS 10000
 #define MAX_SAMPLES (max(iMinSampleCount, iMaxSampleCount*sqrt(maxDiffuseSum)))
 
 #define DF_EMPTY 0.0
@@ -141,7 +141,7 @@ vec3 scene(vec3 p, bool bounce, inout float testCount)
 	float hitIndex = -1.0;
 	float nd = 0.0;
 	vec4 p4 = vec4(p, 1.0);
-	for (int i=0; i<4; i++) {
+	for (int i=0; i<24; i++) {
 		if (float(i) >= iObjectCount) break;
 		if (!bounce) {
 			float vis = vObjectVisible[i/8];

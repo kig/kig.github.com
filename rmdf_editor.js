@@ -147,55 +147,51 @@
 	 	cont.id = 'onclick-editor-container';
 	 	document.body.appendChild(cont);
 
-	 	var pre = document.createElement('pre');
-	 	pre.id = 'onclick-editor';
-	 	cont.appendChild(pre);
-	 	var btn = document.createElement('button');
-	 	btn.innerHTML = "Set Onclick";
-	 	btn.onclick = function() {
-	 		if (controller.current) {
-	 			var val = editor.getValue();
-	 			controller.current.onclickString = val;
-		 		controller.current.onclick = new Function('ev', val);
-	 			console.log("click listener set");
-	 		}
-	 	};
-	 	cont.appendChild(btn);
-	 	var editor = ace.edit("onclick-editor");
-	    editor.setTheme("ace/theme/monokai");
-	    editor.getSession().setMode("ace/mode/javascript");
-	    editor.on('focus', function() {
-	    	pre.classList.add('focused');
-	    	editor.resize();
-	    });
-	    editor.on('blur', function() {
-	    	pre.classList.remove('focused');
-	    	editor.resize();
-	    });
+		var makeEditor = function(id, buttonText, onButton) {
+			var pre = document.createElement('pre');
+			pre.id = id;
+			cont.appendChild(pre);
+			var btn = document.createElement('button');
+			btn.innerHTML = buttonText;
+			btn.onclick = function() {
+				if (controller.current) {
+					var val = editor.getValue();
+					onButton(val);
+				}
+			};
+			cont.appendChild(btn);
+			var editor = ace.edit(id);
+			editor.setTheme("ace/theme/monokai");
+			editor.getSession().setMode("ace/mode/javascript");
+			editor.on('focus', function() {
+				pre.classList.add('focused');
+				editor.resize();
+			});
+			editor.on('blur', function() {
+				if (!document.activeElement || document.activeElement.tagName !== 'BUTTON') {
+					pre.classList.remove('focused');
+					editor.resize();
+				}
+			});
+			return editor;
+		};
 
-	 	var contentPre = document.createElement('pre');
-	 	contentPre.id = 'content-editor';
-	 	cont.appendChild(contentPre);
-	 	var btn = document.createElement('button');
-	 	btn.innerHTML = "Set Content";
-	 	btn.onclick = function() {
-	 		if (controller.current) {
-	 			var val = contentEditor.getValue();
-	 			controller.current.content = val;
-	 		}
-	 	};
-	 	cont.appendChild(btn);
-	 	var contentEditor = ace.edit("content-editor");
-	    contentEditor.setTheme("ace/theme/monokai");
-	    contentEditor.getSession().setMode("ace/mode/html");
-	    contentEditor.on('focus', function() {
-	    	contentPre.classList.add('focused');
-	    	contentEditor.resize();
-	    });
-	    contentEditor.on('blur', function() {
-	    	contentPre.classList.remove('focused');
-	    	contentEditor.resize();
-	    });
+		var editor = makeEditor('onclick-editor', 'Set OnClick', function(val) {
+			controller.current.onclickString = val;
+			controller.current.onclick = new Function('ev', val);
+			console.log("click listener set");
+		});
+
+		var tickEditor = makeEditor('ontick-editor', 'Set OnTick', function(val) {
+			controller.current.ontickString = val;
+			controller.current.ontick = new Function('time', val);
+			console.log("tick listener set");
+		});
+
+		var contentEditor = makeEditor('content-editor', 'Set Content', function(val) {
+			controller.current.content = val;
+		});
+
 
 		controller.title = "Title";
 		controller.content = "<p>Content HTML</p>";
@@ -208,7 +204,7 @@
 		controller.material.diffuse = 0.1;
 
 		controller.onclick = ([
-		'// Example click event listener. Press Set Onclick to try it out.',
+		'// Example click event listener. Press Set OnClick to try it out.',
 		'if (this.ival) return;',
 		'var p = this.position[1];',
 		'var self = this;',
@@ -222,6 +218,13 @@
 		'	self.position[1] = p + 1-Math.cos(t/1000*Math.PI*2);',
 		'	t += 16;',
 		'}, 16);'
+		]).join("\n");
+
+		controller.ontick = ([
+		'// Example frame tick listener. Press Set OnTick to try it out.',
+		'this.rotation[0] += 0.001;',
+		'this.rotation[1] += 0.001;',
+		'this.rotation[2] += 0.001;'
 		]).join("\n");
 
 		editor.setValue( controller.onclick.toString() );
@@ -266,6 +269,7 @@
 					//this.current.material.emit.set(Vec3(0.2));
 				}
 				editor.setValue(this.current.onclickString || this.onclick);
+				tickEditor.setValue(this.current.ontickString || this.ontick);
 				contentEditor.setValue(this.current.content);
 				this.titleC.setValue(this.current.title);
 				this.draggableC.setValue(this.current.draggable);
@@ -374,6 +378,7 @@
 					ontick: controller.current.ontick,
 					ontickString: controller.current.ontickString,
 					onclick: controller.current.onclick,
+					ontick: controller.current.ontick,
 					onclickString: controller.current.onclickString
 				});
 				controller.setCurrent(controller.objects[idx]);

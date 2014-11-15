@@ -414,7 +414,11 @@ var init = function() {
 		}
 		DF._monitorChangedBufferArray.call(this);
 	};
-	DF.Object.prototype.tick = function() {};
+	DF.Object.prototype.tick = function(time) {
+		if (this.ontick) {
+			this.ontick(time)
+		}
+	};
 	DF.Object.prototype.prepareWrite = function() {
 		if (this.rotation) {
 			quat.identity(this.rotationQuat);
@@ -495,8 +499,8 @@ var init = function() {
 	};
 
 	DF.Prism = function(options) {
-		this.radius = 1;
-		this.innerRadius = 0.5;
+		this.height = 1;
+		this.radius = 0.5;
 		DF.Object.call(this, options);
 		this.type = DF.Types.Prism;
 		this.computeBoundingSphere();
@@ -640,7 +644,7 @@ var init = function() {
 					}
 					if (c.querySelector('ontick')) { 
 						options.ontickString = c.querySelector('ontick').textContent;
-						options.ontick = new Function('ev', options.ontickString);
+						options.ontick = new Function('time', options.ontickString);
 					}
 				}
 				switch (c.tagName) {
@@ -924,7 +928,7 @@ var init = function() {
 			}
 			controller.pick = pick;
 			for (var j=0; j<controller.objectCount; j++) {
-				objects[j].tick();
+				objects[j].tick(t);
 				objects[j].prepareWrite();
 				objects[j].material.prepareWrite();
 			}

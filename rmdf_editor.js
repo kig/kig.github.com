@@ -79,7 +79,7 @@
 					case DF.Types.Ring:
 						el.setAttribute('radius', c.radius);
 						el.setAttribute('inner-radius', c.innerRadius);
-						el.setAttribute('boxiness', c.boxiness);
+						el.setAttribute('height', c.height);
 						el.setAttribute('corner-radius', c.cornerRadius);
 						break;
 				}

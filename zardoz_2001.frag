@@ -79,7 +79,7 @@ float noise( in vec3 x )
 // cloud fBm with three noise samples, flow direction & exponential y-scale
 float map( in vec3 p )
 {
-	p.y = pow(p.y, 1.3);
+	p.y = pow(abs(p.y), 1.3);
 	
 	float d = -0.1 - p.y;
 
@@ -256,20 +256,21 @@ vec3 trace(vec2 uv, vec2 uvD, inout float sceneDist)
 		} else if (dist > MAX_DISTANCE) {
 			vec3 bg = shadeBg(-r.d);
 			if (minDist > THRESHOLD*1.5) {
-				r.light = bg;
+				accum = bg;
 				break;
 			}
 			accum += r.light + r.transmit * bg;
 			k++;
 			r = setupRay(uv+(uvD*mod(xy(k, aa_size), aa_size)/aa_size), k);
-			r.p += (min(MAX_DISTANCE, sceneDist)*0.95)*r.d;
+			if (sceneDist < 9999999.0) {
+				r.p += sceneDist*0.95*r.d;
+			}
 			maxDiffuseSum = max(diffuseSum, maxDiffuseSum);
 			diffuseSum = 0.0;
 		}
 	}
 	
-	accum += r.light;
-	return accum / k;
+	return accum / max(1.0, k-1.0);
 }
 
 void main(void)

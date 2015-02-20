@@ -11,10 +11,11 @@
 			window.mobile = /mobile/i.test(navigator.userAgent);
 			if (mobile) {
 				// Use the simple shaders on mobiles
-				window.shaderURLs = ['heart.frag', 'mandelbrot.frag', 'atmosphere_distortion.frag', 'audiophilia.frag', 'spectral.frag'];
+				window.shaderURLs = ['beat.frag', 'heart.frag', 'mandelbrot.frag', 'atmosphere_distortion.frag', 'audiophilia.frag', 'spectral.frag'];
 			} else {
 				if (window.windows) {
 					window.shaderURLs = [
+						'beat.frag',
 						'heart.frag',
 						'mandelbrot.frag',
 						'seazoom3.frag',
@@ -28,6 +29,7 @@
 					];
 				} else {
 					window.shaderURLs = [
+						'beat.frag',
 						'heart.frag',
 						'mandelbrot.frag',
 						'spinners.frag',

@@ -4,16 +4,13 @@ precision mediump int;
 uniform vec3      iResolution;
 uniform float     iGlobalTime;
 uniform sampler2D iChannel0;
+float     iWallTime = iGlobalTime;
 
 #define THRESHOLD 0.01
 #define MAX_DISTANCE 8.0
 
 #define RAY_STEPS 120
 #define MAX_SAMPLES 4.0
-
-#define aa_size 2.0
-
-float     iWallTime = iGlobalTime;
 
 struct ray
 {
@@ -89,8 +86,8 @@ float map( in vec3 p )
 	vec3 q = p - dir+vec3(-0.0,3.0,-0.0)*(0.1*iWallTime);
 	float f;
     f  = 0.6*noise( q ); q = q*3.01;
-    f += 0.3*noise( q ); q = q*3.02;
-    f += 0.1*noise( q );
+    f += 0.3*noise( q ); /*q = q*3.02;
+    f += 0.1*noise( q );*/
 
 	d += 3.5 * f;
 
@@ -99,23 +96,7 @@ float map( in vec3 p )
 	return d;
 }
 
-mat3 transpose(in mat3 inMatrix)
-{
-	vec3 i0 = inMatrix[0];
-	vec3 i1 = inMatrix[1];
-	vec3 i2 = inMatrix[2];
-
-	mat3 outMatrix = mat3(
-                 vec3(i0.x, i1.x, i2.x),
-                 vec3(i0.y, i1.y, i2.y),
-                 vec3(i0.z, i1.z, i2.z)
-                 );
-	return outMatrix;
-}
-
-mat3 mp = rotationXY(vec2(0.0, 0.25*3.14159)) * rotationXY(vec2(3.14159*0.25, 0.0));
-
-float scene(vec3 p)
+float scene(vec3 p, mat3 mp)
 {
 	float cube = length(max(abs(mp*p - vec3(0.0, 0.0, 0.0)) - vec3(1.95), 0.0)) - 0.05;
 	return cube;
@@ -123,22 +104,21 @@ float scene(vec3 p)
 
 mat material(vec3 p)
 {
-	float cube = length(max(abs(p - vec3(0.0, 2.0, 0.0)) - vec3(1.95), 0.0)) - 0.05;
 	mat m;
 	m.emit = vec3(0.0);
 	m.transmit = vec3(1.0);
-    float n = map(p.yzz*1.5*tan(0.25*3.14159*iWallTime)-tan(p.z*0.1+0.25*3.14159*iWallTime));
+    float n = min(1.0, pow(abs(p.z+0.0)*16.0, 2.0));
 	m.transmit = vec3(1.1)*n; // 0.95, 0.7, 0.5);
 	m.diffuse = 0.1+(1.0-sqrt(abs(n)));
 	return m;
 }
 
-vec3 normal(ray r, float d)
+vec3 normal(ray r, float d, mat3 m)
 {
 	float e = 0.001;
-	float dx = scene(vec3(e, 0.0, 0.0) + r.p) - d;
-	float dy = scene(vec3(0.0, e, 0.0) + r.p) - d;
-	float dz = scene(vec3(0.0, 0.0, e) + r.p) - d;
+	float dx = scene(vec3(e, 0.0, 0.0) + r.p, m) - d;
+	float dy = scene(vec3(0.0, e, 0.0) + r.p, m) - d;
+	float dz = scene(vec3(0.0, 0.0, e) + r.p, m) - d;
 	return normalize(vec3(dx, dy, dz));
 }
 
@@ -179,16 +159,15 @@ vec2 xy(float k, float n)
 	return vec2(floor(k/n), k-(floor(k/n)*n));
 }
 
-void offset(inout vec3 nml, float k, float count, float diffuse) {
-	vec3  uu  = normalize( cross( nml, vec3(0.01,1.0,1.0) ) );
-	vec3  vv  = normalize( cross( uu, nml ) );
-	vec2  aa = hash2( count );
-	float ra = sqrt(aa.y);
-	float rx = ra*cos(6.2831*aa.x);
-	float ry = ra*sin(6.2831*aa.x);
-	float rz = sqrt( sqrt(k)*(1.0-aa.y) );
-	vec3  rr = vec3( rx*uu + ry*vv + rz*nml );
-	nml = normalize(mix(nml, rr, diffuse));
+vec3 offset(vec3 dir, vec3 nml, float k, float count, float diffuse) {
+	vec2 phiTheta = hash2(count) * 6.2831;
+	float u = cos(phiTheta.x);
+	float sq = sqrt(1.0 - u * u);
+	float rx = sq * cos(phiTheta.y); 
+	float ry = sq * sin(phiTheta.y);
+	float rz = u;
+	vec3 v = vec3(rx, ry, rz);
+	return normalize(mix(dir, nml + v, diffuse));
 }
 
 
@@ -209,55 +188,32 @@ vec3 trace(vec2 uv, vec2 uvD, inout float sceneDist)
 	float count = 0.0;
 	float diffuseSum = 0.0, maxDiffuseSum = 0.0;
 
+    mat3 mp = rotationXY(vec2(0.0, 0.25*3.14159)) * rotationXY(vec2(3.14159*0.25, 0.0));
+
 	vec3 accum = vec3(0.0);
 	sceneDist = 9999999.0;
 
 	ray r = setupRay(uv, 1.0);
 	vec3 op = r.p + 1.0*r.d;
 	r.p = op;
-	float k = 1.0;
 
 	for (int i=0; i<RAY_STEPS; i++) {
-		if (k > MAX_SAMPLES) break;
-		float dist = scene(r.p);
+		float dist = scene(r.p, mp);
 		minDist = min(minDist, dist);
 		r.p += dist * r.d;
 		if (dist < THRESHOLD) {
-			if (sceneDist == 9999999.0) {
-				sceneDist = length(r.p - op);
-			}
 			r.p -= dist * r.d;
-			vec3 nml = normal(r, dist);
+			vec3 nml = normal(r, dist, mp);
 			float diffuse = shade(r, nml, dist);
-			diffuseSum += diffuse;
-			offset(r.d, k, k+10.0*dot(nml, r.d), diffuse*0.5);
 			r.d = reflect(r.d, nml);
-			r.p += 4.0*THRESHOLD * r.d;
-			count++;
-
-			if (dot(r.transmit, vec3(8.0)) < 0.2) {
-				// if even the brightest light in the scene can't
-				// make the ray brighter, let's bail.
-				accum += r.light;
-				k++;
-				r = setupRay(uv+(uvD*mod(xy(k, aa_size), aa_size)/aa_size), k);
-				maxDiffuseSum = max(diffuseSum, maxDiffuseSum);
-				diffuseSum = 0.0;
-			}
+			r.d = offset(r.d, nml, 1.0, 1.0, diffuse);
+			vec3 bg = shadeBg(-r.d);
+			accum = r.transmit * bg;
+			break;
 		} else if (dist > MAX_DISTANCE) {
 			vec3 bg = shadeBg(-r.d);
-			if (minDist > THRESHOLD*10.5) {
-				accum = bg;
-				break;
-			}
-			accum += r.light + r.transmit * bg;
-			k++;
-			r = setupRay(uv+(uvD*mod(xy(k, aa_size), aa_size)/aa_size), k);
-			if (sceneDist < 9999999.0) {
-				r.p += sceneDist*0.95*r.d;
-			}
-			maxDiffuseSum = max(diffuseSum, maxDiffuseSum);
-			diffuseSum = 0.0;
+			accum = r.transmit * bg;
+			break;
 		}
 	}
 	float glow = 0.0;
@@ -265,7 +221,7 @@ vec3 trace(vec2 uv, vec2 uvD, inout float sceneDist)
         minDist += -4.0*pow(abs(r.d.y), 2.8);
 		glow = 0.04*pow(pow(max(0.0, (1.0-minDist)), 2.0), 5.0);
     }
-	return accum / max(1.0, k-1.0) + glow;
+	return accum + glow;
 }
 
 void main(void)

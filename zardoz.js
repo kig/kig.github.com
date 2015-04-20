@@ -307,7 +307,7 @@ var init = function() {
 		var target = 3;
 		var startT = Date.now();
 		var tick = function() {
-			if (!blurred || forceRedraw) {
+			if (!blurred || forceRedraw || window.noOnBlurPause) {
 				forceRedraw = false;
 				if (window.startScript) {
 					if (window.performance && performance.timing && performance.timing.navigationStart) {

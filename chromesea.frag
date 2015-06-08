@@ -14,6 +14,24 @@ uniform float iOpen;
 
 #define RAY_STEPS 30
 
+// improved bilinear interpolated texture fetch
+vec4 textureGood( sampler2D sam, vec2 uv )
+{
+    vec2 res = vec2(256.0);
+
+    vec2 st = uv*res - 0.5;
+
+    vec2 iuv = floor( st );
+    vec2 fuv = fract( st );
+
+    vec4 a = texture2D( sam, (iuv+vec2(0.5,0.5))/res, -100.0 );
+    vec4 b = texture2D( sam, (iuv+vec2(1.5,0.5))/res, -100.0 );
+    vec4 c = texture2D( sam, (iuv+vec2(0.5,1.5))/res, -100.0 );
+    vec4 d = texture2D( sam, (iuv+vec2(1.5,1.5))/res, -100.0 );
+
+    return mix( mix( a, b, fuv.x),
+                mix( c, d, fuv.x), fuv.y );
+}
 
 // iq's LUT based 3d value noise
 float noise( in vec3 x )
@@ -23,7 +41,7 @@ float noise( in vec3 x )
 	f = f*f*(3.0-2.0*f);
 	
 	vec2 uv = (p.xy+vec2(37.0,17.0)*p.z) + f.xy;
-	vec2 rg = texture2D( iChannel0, (mod(uv,256.0) + 0.5)/256.0, -100.0 ).yx;
+	vec2 rg = textureGood( iChannel0, (mod(uv,256.0) + 0.5)/256.0).yx;
 	return mix( rg.x, rg.y, f.z );
 }
 

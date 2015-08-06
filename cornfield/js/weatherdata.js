@@ -74,15 +74,41 @@ var fetchWeather = function(cityName) {
 };
 
 var fetchCities = function() {
-	cityNames = document.getElementById('city-names').value
-				.split('\n')
-				.map(function(c) { return c.replace(/^\s+|\s+$/g, ''); })
-				.filter(function(c) { return c !== ''; });
 	for (var i = 0; i < cityNames.length; i++) {
 		fetchWeather(cityNames[i]);
 	}
 };
 
-fetchCities();
 setInterval(fetchCities, 15*60*1000);
-document.getElementById('city-names').onchange = fetchCities;
+
+var getCityNames = function() {
+	return document.getElementById('city-names').value
+			.split('\n')
+			.map(function(c) { return c.replace(/^\s+|\s+$/g, ''); })
+			.filter(function(c) { return c !== ''; });	
+};
+
+var updateCityNames = function() {
+	cityNames = getCityNames() || ['London'];
+	if (window.localStorage) {
+		localStorage.setItem('cityNames', JSON.stringify(cityNames));
+	}
+	fetchCities();
+};
+
+var initializeCityNames = function() {
+	try {
+		cityNames = JSON.parse(localStorage.getItem('cityNames'));
+		if (cityNames.length === 0) {
+			cityNames = getCityNames();
+			localStorage.setItem('cityNames', JSON.stringify(cityNames));
+		}
+		document.getElementById('city-names').value = cityNames.join("\n");
+	} catch(e) {
+		cityNames = getCityNames();
+	}
+	fetchCities();
+};
+
+initializeCityNames();
+document.getElementById('city-names').onchange = updateCityNames;

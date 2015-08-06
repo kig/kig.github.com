@@ -1,4 +1,4 @@
-var cityNames = ['London,UK', 'Nantong', 'Bangkok', 'Bergen', 'Johannesburg', 'Chengdu', 'Melbourne', 'New York', 'Shanghai', 'Marrakech', 'Tokyo', 'Mumbai'];
+var cityNames = [];
 
 var cities = {};
 var currentCityIndex = 0;
@@ -74,6 +74,10 @@ var fetchWeather = function(cityName) {
 };
 
 var fetchCities = function() {
+	cityNames = document.getElementById('city-names').value
+				.split('\n')
+				.map(function(c) { return c.replace(/^\s+|\s+$/g, ''); })
+				.filter(function(c) { return c !== ''; });
 	for (var i = 0; i < cityNames.length; i++) {
 		fetchWeather(cityNames[i]);
 	}
@@ -81,3 +85,4 @@ var fetchCities = function() {
 
 fetchCities();
 setInterval(fetchCities, 15*60*1000);
+document.getElementById('city-names').onchange = fetchCities;

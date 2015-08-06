@@ -93,6 +93,9 @@
 				width: 200px;
 				height: 200px;
 			}
+			.weather #weather-data {
+				display: none;
+			}
 		</style>
 	</head>
 	<body>
@@ -106,7 +109,9 @@ Paris
 San Francisco
 Berlin
 Rio de Janeiro
-Moscow</textarea>
+Moscow</textarea><br>
+			<input type="checkbox" id="show-weather" checked onclick="document.body.classList.toggle('weather')"> <label for="show-weather">Show weather text</label><br>
+
 		</div>
 		<div id="come-birds" class="fade-out">
 			Birdy birdy come come...
@@ -120,7 +125,7 @@ Moscow</textarea>
 		<div id="weather-data">
 			<div id="city">London</div>
 			<div id="temperature">7 °C</div>
-			<div><span id="wind-speed">wind 2.1 m/s</span> from <span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='60' width='60'><g id='wind-direction-arrow' transform='rotate(220 30 30)'><line x1='30' y1='30' x2='60' y2='30' style='stroke:white;stroke-width:2;'/><circle cx='54' cy='30' r='6' style='fill:white;'/></g><circle cx='30' cy='30' r='25' style='stroke:white;stroke-width:2;fill:none;'/></svg></span></div>
+			<div id="wind-data"><span id="wind-speed">wind 2.1 m/s</span> from <span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='60' width='60'><g id='wind-direction-arrow' transform='rotate(220 30 30)'><line x1='30' y1='30' x2='60' y2='30' style='stroke:white;stroke-width:2;'/><circle cx='54' cy='30' r='6' style='fill:white;'/></g><circle cx='30' cy='30' r='25' style='stroke:white;stroke-width:2;fill:none;'/></svg></span></div>
 			<div id="cloud-cover">cloud cover 0%</div>
 			<div id="weather-desc"></div>
 		</div>

@@ -55,8 +55,8 @@ var updateWeather = function(cityName, weatherData) {
 	}
 	c.weatherData = weatherData;
 	c.cloudCover = weatherData.clouds ? (weatherData.clouds.all || 0) / 100 : 0;
-	c.windDirection = weatherData.wind.deg;
-	c.windStrength = weatherData.wind.speed;
+	c.windDirection = weatherData.wind.deg || 0;
+	c.windStrength = weatherData.wind.speed || 0.1;
 	c.rainAmount = parseRainAmount(weatherData);
 	c.temperature = weatherData.main.temp;
 	c.sunrise = weatherData.sys.sunrise;

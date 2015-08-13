@@ -53,14 +53,15 @@ var updateWeather = function(cityName, weatherData) {
 	if (!c) {
 		c = cities[cityName] = {};
 	}
+	weatherData = weatherData || {};
 	c.weatherData = weatherData;
 	c.cloudCover = weatherData.clouds ? (weatherData.clouds.all || 0) / 100 : 0;
-	c.windDirection = weatherData.wind.deg || 0;
-	c.windStrength = weatherData.wind.speed || 0.1;
+	c.windDirection = (weatherData.wind && weatherData.wind.deg) || 0;
+	c.windStrength = (weatherData.wind && weatherData.wind.speed) || 0.1;
 	c.rainAmount = parseRainAmount(weatherData);
-	c.temperature = weatherData.main.temp;
-	c.sunrise = weatherData.sys.sunrise;
-	c.sunset = weatherData.sys.sunset;
+	c.temperature = (weatherData.main && weatherData.main.temp) || 0;
+	c.sunrise = (weatherData.sys && weatherData.sys.sunrise) || (86400 * 1/4);
+	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3/4);
 };
 
 var fetchWeather = function(cityName) {

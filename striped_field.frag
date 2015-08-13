@@ -14,7 +14,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 	vec2 uv = fragCoord.xy / iResolution.xy;
     uv = (-1.0 + 2.0 * uv) * vec2(iResolution.x / iResolution.y, 1.0);
 
-    vec2 p0 = 0.6*vec2(sin(iGlobalTime), cos(iGlobalTime*1.2));
+    vec2 p0 = 0.76*vec2(sin(iGlobalTime+2.1), 0.8*cos(iGlobalTime*1.7));
     vec2 p1 = 0.6*vec2(-sin(iGlobalTime*0.9), -cos(iGlobalTime));
     
     vec2 v0 = uv - p0;
@@ -27,11 +27,12 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         fragColor = vec4(1.0);
     } else if (length(uv-p1) < 0.05) {
         fragColor = vec4(1.0);
-    } else if (mod(floor(atan(v.y*v.x)*2.0*3.14159), 2.0) == 0.0) {
+    } else if (mod(floor(atan(v.y*v.x)*3.0*3.14159), 2.0) == 0.0) {
         fragColor = 0.8 * vec4(abs(v.y)/3.0, abs(v.x)/3.0, length(v)/7.0,1.0);
     } else {
         fragColor = vec4(abs(v.y)/3.0, abs(v.x)/3.0, length(v)/7.0,1.0);
     }
+    fragColor.a = 1.0;
 }
 
 void main() {

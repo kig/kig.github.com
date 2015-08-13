@@ -1,4 +1,4 @@
-var cityNames = ['London,UK', 'Nantong', 'Bangkok', 'Bergen', 'Johannesburg', 'Chengdu', 'Melbourne', 'New York', 'Shanghai', 'Marrakech', 'Tokyo', 'Mumbai'];
+var cityNames = [];
 
 var cities = {};
 var currentCityIndex = 0;
@@ -53,14 +53,15 @@ var updateWeather = function(cityName, weatherData) {
 	if (!c) {
 		c = cities[cityName] = {};
 	}
+	weatherData = weatherData || {};
 	c.weatherData = weatherData;
 	c.cloudCover = weatherData.clouds ? (weatherData.clouds.all || 0) / 100 : 0;
-	c.windDirection = weatherData.wind.deg;
-	c.windStrength = weatherData.wind.speed;
+	c.windDirection = (weatherData.wind && weatherData.wind.deg) || 0;
+	c.windStrength = (weatherData.wind && weatherData.wind.speed) || 0.1;
 	c.rainAmount = parseRainAmount(weatherData);
-	c.temperature = weatherData.main.temp;
-	c.sunrise = weatherData.sys.sunrise;
-	c.sunset = weatherData.sys.sunset;
+	c.temperature = (weatherData.main && weatherData.main.temp) || 0;
+	c.sunrise = (weatherData.sys && weatherData.sys.sunrise) || (86400 * 1/4);
+	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3/4);
 };
 
 var fetchWeather = function(cityName) {
@@ -79,5 +80,36 @@ var fetchCities = function() {
 	}
 };
 
-fetchCities();
 setInterval(fetchCities, 15*60*1000);
+
+var getCityNames = function() {
+	return document.getElementById('city-names').value
+			.split('\n')
+			.map(function(c) { return c.replace(/^\s+|\s+$/g, ''); })
+			.filter(function(c) { return c !== ''; });	
+};
+
+var updateCityNames = function() {
+	cityNames = getCityNames() || ['London'];
+	if (window.localStorage) {
+		localStorage.setItem('cityNames', JSON.stringify(cityNames));
+	}
+	fetchCities();
+};
+
+var initializeCityNames = function() {
+	try {
+		cityNames = JSON.parse(localStorage.getItem('cityNames'));
+		if (cityNames.length === 0) {
+			cityNames = getCityNames();
+			localStorage.setItem('cityNames', JSON.stringify(cityNames));
+		}
+		document.getElementById('city-names').value = cityNames.join("\n");
+	} catch(e) {
+		cityNames = getCityNames();
+	}
+	fetchCities();
+};
+
+initializeCityNames();
+document.getElementById('city-names').onchange = updateCityNames;

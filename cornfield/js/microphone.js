@@ -1,5 +1,4 @@
 (function() {
-  window.grassHeightModifier = 0.15;
   // return;
   navigator.getUserMedia = ( navigator.getUserMedia ||
                          navigator.webkitGetUserMedia ||

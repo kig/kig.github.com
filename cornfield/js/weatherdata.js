@@ -64,19 +64,34 @@ var updateWeather = function(cityName, weatherData) {
 	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3/4);
 };
 
-var fetchWeather = function(cityName) {
+var fetchWeather = function(cityName, callback, onerror) {
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', 'http://api.openweathermap.org/data/2.5/weather?q='+encodeURIComponent(cityName)+'&units=metric', true);
 	xhr.onload = function(ev) {
 		var weatherData = JSON.parse(ev.target.responseText);
-		updateWeather(cityName, weatherData);
+		if (callback) {
+			callback(cityName, weatherData);
+		}
 	};
+	xhr.onerror = onerror;
 	xhr.send(null);
 };
 
 var fetchCities = function() {
+	var loadCount = cityNames.length;
 	for (var i = 0; i < cityNames.length; i++) {
-		fetchWeather(cityNames[i]);
+		fetchWeather(cityNames[i], function(cityName, weatherData) {
+			updateWeather(cityName, weatherData);
+			loadCount--;
+			if (loadCount === 0) {
+				document.body.classList.add('loaded');
+			}
+		}, function() {
+			loadCount--;
+			if (loadCount === 0) {
+				document.body.classList.add('loaded');
+			}
+		});
 	}
 };
 

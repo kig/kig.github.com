@@ -1,6 +1,7 @@
 var impactFrames = 0;
 var grassHeight = 1;
 var scareBirds = false, attractBirds = false;
+window.grassHeightModifier = 0.15;
 window.addEventListener('keydown', function(ev) {
 	if (ev.which === 38) // up
 	{

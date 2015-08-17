@@ -83,6 +83,9 @@ var fetchCities = function() {
 		fetchWeather(cityNames[i], function(cityName, weatherData) {
 			updateWeather(cityName, weatherData);
 			loadCount--;
+			if (cityNames[currentCityIndex] === cityName) {
+				weatherUpdateTriggered = true;
+			}
 			if (loadCount === 0) {
 				document.body.classList.add('loaded');
 			}

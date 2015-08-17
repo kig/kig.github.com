@@ -8,6 +8,7 @@ var weatherTimer = 0;
 
 var showCityDuration = 30000;
 var cityChangeDuration = 3000;
+var weatherUpdateTriggered = false;
 
 var setWeather = function() {
 	weatherTimer += 16;
@@ -15,6 +16,10 @@ var setWeather = function() {
 	if (weatherTimer > showCityDuration) {
 		weatherTimer = 0;
 		currentCityIndex = (currentCityIndex + 1) % cityNames.length;
+		weatherUpdateTriggered = true;
+	}
+	if (weatherUpdateTriggered) {
+		weatherUpdateTriggered = false;
 		var c = cities[cityNames[currentCityIndex]] || zeroCity;
 		document.getElementById('city').textContent = cityNames[currentCityIndex].split(",")[0];
 		document.getElementById('temperature').textContent = Math.floor(c.temperature*10)/10 + ' °C';

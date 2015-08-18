@@ -41,5 +41,10 @@ var impactTick = function() {
 	}
 	impactFrames--;
 	cornShaderMat.uniforms.ufGrassHeight.value += 0.1 * (grassHeight-cornShaderMat.uniforms.ufGrassHeight.value) + Math.max(0.0, grassHeightModifier / 100 - 0.15);
+	if (cornShaderMat.uniforms.ufGrassHeight.value < 0.001) {
+		cornMesh.visible = false;
+	} else {
+		cornMesh.visible = true;		
+	}
 };
 

@@ -109,6 +109,8 @@ if (window.Worker) {
 
 	window.cornWorker.postMessage('createCornFieldModel');
 
+	grassHeight = 0;
+
 	window.cornWorker.onmessage = function(ev) {
 		if (window.birds) {
 			setTimeout(function() {

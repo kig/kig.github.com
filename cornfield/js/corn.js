@@ -110,14 +110,17 @@ if (window.Worker) {
 	window.cornWorker.postMessage('createCornFieldModel');
 
 	window.cornWorker.onmessage = function(ev) {
-		cornShaderMat.uniforms.ufGrassHeight.value = 0;
-		grassHeight = 1;
 		if (window.birds) {
 			setTimeout(function() {
 				window.birds.visible = true;
 			}, 400);
 		}
+		cornShaderMat.uniforms.ufGrassHeight.value = 0;
+		grassHeight = 0;
 		populateCornFieldModel(ev.data);
+		setTimeout(function() {
+			grassHeight = 1;
+		}, 400);
 	};
 
 } else {

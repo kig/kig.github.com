@@ -54,11 +54,9 @@ var birdsCenter = new THREE.Vector3(0,0,0);
 var birdsPhase = Math.random()*Math.PI*2;
 var birdScareCounter = 0;
 var birdsTick = function() {
-	if (!birds.visible) {
-		return;
+	if (birds.visible) {
+		birdMat.opacity += 0.05 * (0.5-birdMat.opacity);
 	}
-
-	birdMat.opacity += 0.05 * (0.5-birdMat.opacity);
     if (scareBirds) {
         document.getElementById('fly-away').classList.remove('fade-out');
     } else {

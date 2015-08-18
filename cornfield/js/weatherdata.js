@@ -84,8 +84,14 @@ var fetchCities = function() {
 			updateWeather(cityName, weatherData);
 			loadCount--;
 			if (cityNames[currentCityIndex] === cityName) {
-				weatherUpdateTriggered = true;
-				document.body.classList.add('loaded');
+				if (!document.body.classList.contains('loaded')) {
+					document.body.classList.add('loaded');
+					setTimeout(function() {
+						weatherUpdateTriggered = true;
+					}, 800);
+				} else {
+					weatherUpdateTriggered = true;
+				}
 			}
 			if (loadCount === 0) {
 				document.body.classList.add('loaded');

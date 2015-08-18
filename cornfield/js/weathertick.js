@@ -22,7 +22,7 @@ var setWeather = function() {
 		weatherUpdateTriggered = false;
 		var c = cities[cityNames[currentCityIndex]] || zeroCity;
 		document.getElementById('city').textContent = cityNames[currentCityIndex].split(",")[0];
-		document.getElementById('temperature').textContent = Math.floor(c.temperature*10)/10 + ' °C';
+		document.getElementById('temperature').textContent = Math.floor(c.temperature*10)/10 + '°C';
 		document.getElementById('cloud-cover').textContent = 'cloud cover ' + Math.floor(c.cloudCover*100) + '%';
 		document.getElementById('wind-speed').textContent = 'wind ' + Math.floor(c.windStrength*10)/10 + ' m/s';
 		document.getElementById('wind-direction-arrow').transform.baseVal[0].setRotate(c.windDirection, 30, 30);
@@ -30,6 +30,15 @@ var setWeather = function() {
 			return wd.description;
 		}).join(", ");
 		document.getElementById('weather-data').classList.remove('fade-out');
+
+		// Update window title.
+		if (currentCityIndex === 0) {
+			var temp = Math.round(c.temperature) + 'C';
+			var desc = c.weatherData.weather.map(function(wd) {
+				return wd.description;
+			}).join(", ");
+			document.title = temp + ', ' + desc + ' - ' + cityNames[currentCityIndex] + ' Weather';
+		}
 	}
 
 	if (weatherTimer > showCityDuration-cityChangeDuration) {

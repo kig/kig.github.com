@@ -25,7 +25,6 @@
 				box-shadow: 0px 0px 40px rgba(0,0,0,0.4);
 			}
 			#weather-data {
-				/*display: none;*/
 				color: white;
 				position: absolute;
 				top: 50%;
@@ -34,7 +33,7 @@
 				font-family: 'Proxima Nova', Helvetica Neue, Segoe UI, sans-serif;
 				font-weight: 100;
 				font-size: 36px;
-				transition: 0.5s;
+				transition: 1s;
 				text-align: center;
 				width: 100%;
 				text-shadow: 0px 0px 30px rgba(0,0,0,0.2);
@@ -103,21 +102,62 @@
 				position: absolute;
 				top: 50%;
 				left: 50%;
-				width: 50px;
-				height: 50px;
-				margin-left: -25px;
-				margin-top: -25px;
-				background: url(oval.svg) 0 0 / 100% 100% no-repeat;
-				opacity: 1;
-				transition: 0.5s;
-			}
-			.loaded #loader {
+				width: 400px;
+				height: 140px;
+				margin-left: -50px;
+				margin-top: -40px;
+				background: url(oval.svg) 28px 14px / 50px no-repeat;
 				opacity: 0;
+				transition: 0.5s;
+				text-align: left;
+				text-indent: 108px;
+				font-family: 'Proxima Nova', Helvetica Neue, Segoe UI, sans-serif;
+				color: white;
+				font-size: 52px;
+				font-weight: 100;
+				-webkit-animation: loader-intro 1s 1 ease-in-out;
+				-webkit-animation-fill-mode: both;
+			}
+
+			.loaded #loader {
+				-webkit-animation: loader-outro 0.5s 1 ease-in-out;
+				-webkit-animation-fill-mode: forwards;
+			}
+
+			@-webkit-keyframes loader-intro {
+				0% {
+					opacity: 0;
+					background-size: 0px;
+					background-position: 53px 39px;
+					color: rgba(255,255,255,0);
+				}
+				50% {
+					color: rgba(255,255,255,0);
+				}
+				100% {
+					opacity: 1;
+					background-size: 50px;
+					background-position: 28px 14px;
+					color: rgba(255,255,255,1);
+				}
+			}
+
+			@-webkit-keyframes loader-outro {
+				0% {
+					opacity: 1;
+					background-size: 50px;
+					background-position: 28px 14px;
+				}
+				100% {
+					opacity: 0;
+					background-size: 0px; 
+					background-position: 53px 39px;
+				}
 			}
 		</style>
 	</head>
 	<body>
-		<div id="loader"></div>
+		<div id="loader">Weather</div>
 		<div id="cities">
 <textarea id="city-names">London
 New York

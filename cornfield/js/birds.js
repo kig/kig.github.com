@@ -1,6 +1,10 @@
 var birds = new THREE.Object3D();
 
-var birdMat = new THREE.MeshBasicMaterial({color: 0x000000, transparent: true, opacity: 0.5});
+if (window.cornWorker) {
+	birds.visible = false;
+}
+
+var birdMat = new THREE.MeshBasicMaterial({color: 0x000000, transparent: true, opacity: 0.0});
 var leftWingGeo = new THREE.PlaneBufferGeometry(0.5, 0.15, 2, 1);
 leftWingGeo.attributes.position.array[3*0 + 1] = -0.075;
 leftWingGeo.attributes.position.array[3*3 + 1] = -0.05;
@@ -50,6 +54,11 @@ var birdsCenter = new THREE.Vector3(0,0,0);
 var birdsPhase = Math.random()*Math.PI*2;
 var birdScareCounter = 0;
 var birdsTick = function() {
+	if (!birds.visible) {
+		return;
+	}
+
+	birdMat.opacity += 0.05 * (0.5-birdMat.opacity);
     if (scareBirds) {
         document.getElementById('fly-away').classList.remove('fade-out');
     } else {

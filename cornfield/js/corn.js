@@ -105,13 +105,18 @@ var populateCornFieldModel = function(data) {
 
 if (window.Worker) {
 
-	var cornWorker = new Worker('js/corn_worker.js');
+	window.cornWorker = new Worker('js/corn_worker.js');
 
-	cornWorker.postMessage('createCornFieldModel');
+	window.cornWorker.postMessage('createCornFieldModel');
 
-	cornWorker.onmessage = function(ev) {
+	window.cornWorker.onmessage = function(ev) {
 		cornShaderMat.uniforms.ufGrassHeight.value = 0;
 		grassHeight = 1;
+		if (window.birds) {
+			setTimeout(function() {
+				window.birds.visible = true;
+			}, 400);
+		}
 		populateCornFieldModel(ev.data);
 	};
 

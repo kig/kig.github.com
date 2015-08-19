@@ -3,6 +3,9 @@ var grassHeight = 1;
 var scareBirds = false, attractBirds = false;
 window.grassHeightModifier = 0.15;
 window.addEventListener('keydown', function(ev) {
+	if (ev.target && ev.target.tagName === 'TEXTAREA') {
+		return;
+	}
 	if (ev.which === 38) // up
 	{
 		grassHeight += 0.1;

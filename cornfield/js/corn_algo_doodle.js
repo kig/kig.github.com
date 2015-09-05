@@ -1,8 +1,22 @@
+var hiDpi = (window.devicePixelRatio || 1) > 1;
+if (hiDpi) {
+	var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true, premultipliedAlpha: true});
+	var bgRenderer = new THREE.WebGLRenderer({antialias: false});
+	document.body.appendChild(bgRenderer.domElement);
+	document.body.appendChild(renderer.domElement);
+	bgRenderer.setPixelRatio(0.5 * (window.devicePixelRatio || 1));
+	bgRenderer.setSize(window.innerWidth, window.innerHeight);
 
-var renderer = new THREE.WebGLRenderer({antialias: true});
-document.body.appendChild(renderer.domElement);
+	renderer.setPixelRatio(window.devicePixelRatio || 1);
+
+} else {
+	var renderer = new THREE.WebGLRenderer({antialias: true});
+	var bgRenderer = renderer;
+	document.body.appendChild(renderer.domElement);
+}
+
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0xffffff);
+renderer.setClearColor(0xffffff, 0.0);
 
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 35, renderer.domElement.width / renderer.domElement.height, 1, 10000 );
@@ -41,7 +55,7 @@ var shaderMat = new THREE.ShaderMaterial({
 	attributes: {},
 	uniforms: {
 		ufGlobalTime: { type: "f", value: 0 },
-		uv2Resolution: { type: "v2", value: new THREE.Vector2(renderer.domElement.width, renderer.domElement.height) },
+		uv2Resolution: { type: "v2", value: new THREE.Vector2(bgRenderer.domElement.width, bgRenderer.domElement.height) },
 		um4CameraMatrix: { type: "m4", value: new THREE.Matrix4() },
 		uv3CameraPosition: { type: "v3", value: new THREE.Vector3() },
 		ufSunPosition: { type: "f", value: 0 },
@@ -69,22 +83,12 @@ scene.add(rainMesh);
 scene.add(birds);
 
 window.onresize = function() {
+	bgRenderer.setSize(window.innerWidth, window.innerHeight);
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	camera.aspect = renderer.domElement.width / renderer.domElement.height;
 	camera.updateProjectionMatrix();
-	shaderMat.uniforms.uv2Resolution.value.x = renderer.domElement.width;
-	shaderMat.uniforms.uv2Resolution.value.y = renderer.domElement.height;
-};
-
-window.onmousemove = function(ev) {
-	var x,y,w,h;
-	x = ev.pageX;
-	y = ev.pageY;
-	w = window.innerWidth;
-	h = window.innerHeight;
-	//camera.position.x = (x - w/2) / (w/2) * 20;
-	//camera.position.y = (y - h/2) / (h/2) * 20 + 30;
-	//camera.lookAt(zero);
+	shaderMat.uniforms.uv2Resolution.value.x = bgRenderer.domElement.width;
+	shaderMat.uniforms.uv2Resolution.value.y = bgRenderer.domElement.height;
 };
 
 var clicked = false;
@@ -106,6 +110,7 @@ shaderMat.uniforms.ufRainAmount = rainShaderMat.uniforms.ufRainAmount;
 
 scene.add(particles);
 
+bgRenderer.autoClear = false;
 renderer.autoClear = false;
 
 var animationTime = 0;
@@ -125,8 +130,11 @@ var tick = function() {
 	camera.lookAt(zero);
 
 	animationTime += 0.016;
-	renderer.clear();
-	renderer.render(bgScene, bgCamera);
+	bgRenderer.clear();
+	bgRenderer.render(bgScene, bgCamera);
+	if (bgRenderer !== renderer) {
+		renderer.clear();
+	}
 	renderer.render(scene, camera);
 	requestAnimationFrame(tick, renderer.domElement);
 	clicked = false;

@@ -87,7 +87,7 @@ var addCornMesh = function(mesh, x, y) {
 
 
 onmessage = function() {
-	var r = 25;
+	var r = 12;
 
 	var nmesh = [];
 	var nidx = 0;
@@ -97,7 +97,7 @@ onmessage = function() {
 	for (var i = -r*1.5; i <= r*1.5; i++) {
 		for (var j = -r; j <= r; j++) {
 			var ox = i*4 + Math.random()*4;
-			var oz = -15*1.5 + j*4 + Math.random()*4;
+			var oz = 0*1.5 + j*4 + Math.random()*4;
 			var oy = Math.random() * 0.5 + 0.5;
 			var mesh = [];
 

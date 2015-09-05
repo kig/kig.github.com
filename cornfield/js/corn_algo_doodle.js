@@ -141,3 +141,16 @@ var tick = function() {
 };
 
 tick();
+var fullscreenButton = document.getElementById('fullscreen');
+if (fullscreen) {
+	fullscreen.onclick = function() {
+		var d = document;
+		if (d.fullscreenElement||d.webkitFullscreenElement||d.mozFullScreenElement||d.msFullscreenElement) {
+			(d.exitFullscreen||d.webkitExitFullscreen||d.mozCancelFullScreen||d.msExitFullscreen).call(d);
+		} else {
+			var e = document.body;
+			(e.requestFullscreen||e.webkitRequestFullscreen||e.webkitRequestFullScreen||e.mozRequestFullScreen||e.msRequestFullscreen).call(e);
+		}
+	}	
+}
+

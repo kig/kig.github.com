@@ -30,6 +30,7 @@ scene.add(camera);
 
 var bgVert = document.querySelector('#bg-vert').textContent;
 var bgFrag = document.querySelector('#bg-frag').textContent;
+var cornFragSimple = document.querySelector('#corn-frag-simple').textContent;
 
 var id = new Uint8Array(256*256*4);
 id.width=256;
@@ -81,6 +82,9 @@ var bgPlane = new THREE.Mesh(
 );
 bgScene.add(bgPlane);
 
+simpleCornMat = cornShaderMat.clone();
+simpleCornMat.fragmentShader = cornFragSimple;
+
 scene.add(cornMesh);
 scene.add(rainMesh);
 scene.add(birds);
@@ -103,13 +107,14 @@ window.onclick = function(ev) {
 var matrix = new THREE.Matrix4();
 
 for (var i in shaderMat.uniforms) {
+	simpleCornMat.uniforms[i] =
 	cornShaderMat.uniforms[i] = shaderMat.uniforms[i];
 }
 
-cornShaderMat.uniforms.ufGlobalTime = rainShaderMat.uniforms.ufGlobalTime = shaderMat.uniforms.ufGlobalTime;
+simpleCornMat.uniforms.ufGlobalTime = cornShaderMat.uniforms.ufGlobalTime = rainShaderMat.uniforms.ufGlobalTime = shaderMat.uniforms.ufGlobalTime;
 
-cornShaderMat.uniforms.ufWindDirection = rainShaderMat.uniforms.ufWindDirection;
-cornShaderMat.uniforms.ufWindStrength = rainShaderMat.uniforms.ufWindStrength;
+simpleCornMat.uniforms.ufWindDirection = cornShaderMat.uniforms.ufWindDirection = rainShaderMat.uniforms.ufWindDirection;
+simpleCornMat.uniforms.ufWindStrength = cornShaderMat.uniforms.ufWindStrength = rainShaderMat.uniforms.ufWindStrength;
 shaderMat.uniforms.ufRainAmount = rainShaderMat.uniforms.ufRainAmount;
 
 scene.add(particles);
@@ -119,7 +124,13 @@ bgRenderer.autoClear = false;
 
 var animationTime = 0;
 
+var lastTime = Date.now();
+var frameTimes = [];
+var slow = false;
+var frame = 0;
+
 var tick = function() {
+	frame++;
 	matrix.multiplyMatrices( camera.matrixWorld, matrix.getInverse( camera.projectionMatrix ) );
 
 	shaderMat.uniforms.ufGlobalTime.value = animationTime;
@@ -127,9 +138,17 @@ var tick = function() {
 	shaderMat.uniforms.uv3CameraPosition.value = camera.position;
 
 	setWeather();
-	updateParticles();
-	birdsTick();
+	if (!slow) {
+		updateParticles();
+		birdsTick();
+	}
+	if (cornMesh.children[0]) {
+		cornMesh.children[0].material = slow ? simpleCornMat : cornShaderMat;
+	}
 	impactTick();
+	birds.visible = !slow;
+	// cornMesh.visible = !slow;
+	particles.visible = !slow;
 
 	camera.lookAt(zero);
 
@@ -142,6 +161,23 @@ var tick = function() {
 	renderer.render(scene, camera);
 	requestAnimationFrame(tick);
 	clicked = false;
+
+	if (frame < 200) {
+		var elapsed = Date.now() - lastTime; 
+		lastTime = Date.now();
+		frameTimes.push(elapsed);
+		var fastFrames = 0;
+		var slowFrames = 0;
+		for (var i=0; i<frameTimes.length; i++) {
+			if (frameTimes[i] > 40) {
+				slowFrames++;
+			}
+		}
+		slow = (slowFrames/frameTimes.length > 0.5);
+		if (frameTimes.length > 100) {
+			frameTimes = frameTimes.splice(0,50);
+		}
+	}
 };
 
 tick();

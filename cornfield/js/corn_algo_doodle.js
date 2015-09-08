@@ -1,5 +1,7 @@
 var hiDpi = (window.devicePixelRatio || 1) > 1;
+
 if (hiDpi) {
+
 	var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true, premultipliedAlpha: true});
 	var bgRenderer = new THREE.WebGLRenderer({antialias: false});
 	document.body.appendChild(bgRenderer.domElement);
@@ -110,8 +112,8 @@ shaderMat.uniforms.ufRainAmount = rainShaderMat.uniforms.ufRainAmount;
 
 scene.add(particles);
 
-bgRenderer.autoClear = false;
 renderer.autoClear = false;
+bgRenderer.autoClear = false;
 
 var animationTime = 0;
 
@@ -136,21 +138,25 @@ var tick = function() {
 		renderer.clear();
 	}
 	renderer.render(scene, camera);
-	requestAnimationFrame(tick, renderer.domElement);
+	requestAnimationFrame(tick);
 	clicked = false;
 };
 
 tick();
 var fullscreenButton = document.getElementById('fullscreen');
-if (fullscreen) {
-	fullscreen.onclick = function() {
+if (fullscreenButton && (document.exitFullscreen||document.webkitExitFullscreen||document.webkitExitFullScreen||document.mozCancelFullScreen||document.msExitFullscreen)) {
+	fullscreenButton.onclick = function() {
 		var d = document;
-		if (d.fullscreenElement||d.webkitFullscreenElement||d.mozFullScreenElement||d.msFullscreenElement) {
-			(d.exitFullscreen||d.webkitExitFullscreen||d.mozCancelFullScreen||d.msExitFullscreen).call(d);
+		if (d.fullscreenElement||d.webkitFullscreenElement||d.webkitFullScreenElement||d.mozFullScreenElement||d.msFullscreenElement) {
+			(d.exitFullscreen||d.webkitExitFullscreen||d.webkitExitFullScreen||d.mozCancelFullScreen||d.msExitFullscreen).call(d);
 		} else {
 			var e = document.body;
 			(e.requestFullscreen||e.webkitRequestFullscreen||e.webkitRequestFullScreen||e.mozRequestFullScreen||e.msRequestFullscreen).call(e);
 		}
-	}	
+	}
+	if (window.navigator.standalone === true) {
+		fullscreenButton.style.opacity = '0';
+	}
+} else if (fullscreenButton) {
+	fullscreenButton.style.opacity = '0';
 }
-

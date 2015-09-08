@@ -4,6 +4,8 @@
 		<meta charset="utf-8">
 		<title>Weather</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="mobile-web-app-capable" content="yes">
 		<style>
 			html,
 			body {
@@ -32,12 +34,13 @@
 				z-index: 1;
 				left: 0px;
 				font-family: 'Proxima Nova', Helvetica Neue, Segoe UI, sans-serif;
-				font-weight: 100;
+				font-weight: 300;
 				font-size: 36px;
 				transition: 1s;
 				text-align: center;
 				width: 100%;
 				text-shadow: 0px 0px 30px rgba(0,0,0,0.2);
+				-webkit-text-shadow: 0px 0px 30px rgba(0,0,0,0.2);
 			}
 			#city {
 				font-size: 84px;
@@ -469,7 +472,7 @@ Moscow</textarea><br>
 				float aspect = uv2Resolution.x/uv2Resolution.y;
 				vec3 bgLight = normalize(vec3(
 			        cos(ufSunPosition * 3.14159)*0.2*aspect,
-					-sin(ufSunPosition * 3.14159)*0.25*aspect,
+					-sin(ufSunPosition * 3.14159)*0.2,
 			        1.0
 				));
 				float skyPow = dot(nml, vec3(0.0, -1.0, 0.0));
@@ -516,15 +519,16 @@ Moscow</textarea><br>
 				float aspect = uv2Resolution.x/uv2Resolution.y;
 				vec3 bgLight = normalize(vec3(
 			        cos(ufSunPosition * 3.14159)*0.2*aspect,
-					-sin(ufSunPosition * 3.14159)*0.25*aspect,
+					-sin(ufSunPosition * 3.14159)*0.2,
 			        1.0
 				));
 
 				vec2 uv = (2.0 * (gl_FragCoord.xy / uv2Resolution) - 1.0);
+				uv.x *= aspect;
 				vec3 d = normalize(project(vec3(uv, 1.0), um4CameraMatrix) - uv3CameraPosition);
 				vec3 p = uv3CameraPosition;
 			    vec3 bg = shadeBg(-d);
-			    vec3 col = vec3(1.0) * dot(vnor, vec3(-bgLight.x, -bgLight.y, bgLight.z)) * shadeBg(-reflect(d, vnor)) + abs(1.0-dot(vnor, d))*bg;
+			    vec3 col = dot(vnor, vec3(-bgLight.x, -bgLight.y, bgLight.z)) * shadeBg(-reflect(d, vnor)) + abs(1.0-dot(vnor, d))*bg;
 			    float fade = min(0.9, 0.2*abs(vpos.y));
 			    if (ufGrassHeight < 0.1) {
 			    	fade *= ufGrassHeight / 0.1;
@@ -629,10 +633,9 @@ Moscow</textarea><br>
 			vec3 shadeBg(vec3 nml)
 			{
 				float aspect = uv2Resolution.x/uv2Resolution.y;
-				// vec2 uv = (2.0 * gl_FragCoord.xy / uv2Resolution.xy - 1.0) * vec2(aspect, 1.0);
 				vec3 bgLight = normalize(vec3(
 			        cos(ufSunPosition * 3.14159)*0.2*aspect,
-					-sin(ufSunPosition * 3.14159)*0.25*aspect,
+					-sin(ufSunPosition * 3.14159)*0.6,
 			        1.0
 				));
 				float skyPow = dot(nml, vec3(0.0, -1.0, 0.0));
@@ -640,17 +643,8 @@ Moscow</textarea><br>
 				float sunSize = 0.0006;
 				float sunAA = sunSize / 25.0;
 			    float sunD = sunDot > (1.0-sunSize) ? 1.0 - max(0.0, 1.0/sunAA * (1.0-sunSize+sunAA - sunDot)) : 0.0;
-				// vec3 bgLight = normalize(vec3(
-			 //        cos(ufSunPosition * 3.14159)*1.0,
-				// 	-sin(ufSunPosition * 3.14159)*0.6,
-			 //        1.0
-				// ));
-				// float sunDot = dot(bgLight, nml);
-				// float sunSize = 0.005;
-				// float sunAA = sunSize / 25.0;
-			 //    float sunD = sunDot > (1.0-sunSize) ? 1.0 - max(0.0, 1.0/sunAA * (1.0-sunSize+sunAA - sunDot)) : 0.0;
 				vec3 sun = vec3(6.5, 3.5, 2.0);
-			    float centerPow = 0.0; //-dot(uv,uv);
+			    float centerPow = 0.0;
 			    float horizonPow = pow(1.0-abs(skyPow), 3.0)*(5.0+centerPow);
 				float sunPow = sunDot;
 				float sp = max(sunPow, 0.0);

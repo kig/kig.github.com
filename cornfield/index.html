@@ -456,6 +456,7 @@ Moscow</textarea><br>
 			uniform float ufWindDirection;
 			uniform float ufWindStrength;
 			uniform float ufGrassHeight;
+			uniform float ufPixelRatio;
 
 			uniform sampler2D usRandomTex;
 
@@ -472,7 +473,7 @@ Moscow</textarea><br>
 				float aspect = uv2Resolution.x/uv2Resolution.y;
 				vec3 bgLight = normalize(vec3(
 			        cos(ufSunPosition * 3.14159)*0.2*aspect,
-					-sin(ufSunPosition * 3.14159)*0.2,
+					-sin(ufSunPosition * 3.14159)*0.6,
 			        1.0
 				));
 				float skyPow = dot(nml, vec3(0.0, -1.0, 0.0));
@@ -519,12 +520,11 @@ Moscow</textarea><br>
 				float aspect = uv2Resolution.x/uv2Resolution.y;
 				vec3 bgLight = normalize(vec3(
 			        cos(ufSunPosition * 3.14159)*0.2*aspect,
-					-sin(ufSunPosition * 3.14159)*0.2,
+					-sin(ufSunPosition * 3.14159)*0.6,
 			        1.0
 				));
 
-				vec2 uv = (2.0 * (gl_FragCoord.xy / uv2Resolution) - 1.0);
-				uv.x *= aspect;
+				vec2 uv = (2.0 * (gl_FragCoord.xy*ufPixelRatio / uv2Resolution) - 1.0);
 				vec3 d = normalize(project(vec3(uv, 1.0), um4CameraMatrix) - uv3CameraPosition);
 				vec3 p = uv3CameraPosition;
 			    vec3 bg = shadeBg(-d);

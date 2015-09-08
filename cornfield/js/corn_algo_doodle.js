@@ -64,6 +64,7 @@ var shaderMat = new THREE.ShaderMaterial({
 		ufCloudCover: { type: "f", value: 0 },
 		ufRainAmount: { type: "f", value: 0 },
 		ufWindDirection: { type: "f", value: 0 },
+		ufPixelRatio: { type: "f", value: bgRenderer.domElement.width / renderer.domElement.width },
 		ufWindStrength: { type: "f", value: 0 },
 		usRandomTex: { type: "t", value: tex }
 	},
@@ -91,6 +92,7 @@ window.onresize = function() {
 	camera.updateProjectionMatrix();
 	shaderMat.uniforms.uv2Resolution.value.x = bgRenderer.domElement.width;
 	shaderMat.uniforms.uv2Resolution.value.y = bgRenderer.domElement.height;
+	shaderMat.uniforms.ufPixelRatio.value = bgRenderer.domElement.width / renderer.domElement.width;
 };
 
 var clicked = false;

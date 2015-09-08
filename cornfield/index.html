@@ -9,7 +9,7 @@
 			body {
 				width: 100%;
 				height: 100%;
-				background: black;
+				background: white;
 				overflow:hidden;
 			}
 			* {
@@ -23,8 +23,6 @@
 				position: absolute;
 				left: 0;
 				top: 0;
-				width: 100%;
-				height: 100%;
 			}
 			#weather-data {
 				color: white;
@@ -267,14 +265,41 @@
 			}
 
 			@media (max-width: 800px) {
+				#come-birds, #i-see-you, #fly-away {
+					width: 320px;
+
+					display: none;
+				}
 				#audio {
 					font-size: 10px;
 				}
 				#weather-data {
-					-webkit-transform: scale(0.3);
-					transform: scale(0.3);
-					top: 80px;
-					white-space: nowrap;
+					top: 40px;
+					margin-top: 0;
+				}
+				#loader {
+					width: 120px;
+				}
+				#city {
+					font-size: 24px;
+				}
+				#temperature {
+					font-size: 24px;
+				}
+				#wind-data {
+					font-size: 14px;
+				}
+				#cloud-cover {
+					font-size: 14px;
+				}
+				#weather-desc {
+					font-size: 14px;
+					line-height: 14px;
+				}
+				#wind-direction {
+					transform: scale(0.5);
+					-webkit-transform: scale(0.5);
+					margin: -15px;
 				}
 			}
 		</style>

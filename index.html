@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-		<title>fhtr + building a brighter future</title>
+		<title>fhtr + build a better now</title>
 		<script>
 			window.DEBUG = true;
 			window.startScript = Date.now();
@@ -11,10 +11,11 @@
 			window.mobile = /mobile/i.test(navigator.userAgent);
 			if (mobile) {
 				// Use the simple shaders on mobiles
-				window.shaderURLs = ['chromesea.frag', 'striped_field.frag', 'mandelbrot.frag', 'heart.frag', 'atmosphere_distortion.frag', 'audiophilia.frag', 'spectral.frag'];
+				window.shaderURLs = ['audiophilia.frag', 'chromesea.frag', 'striped_field.frag', 'mandelbrot.frag', 'heart.frag', 'atmosphere_distortion.frag', 'audiophilia.frag', 'spectral.frag'];
 			} else {
 				if (window.windows) {
 					window.shaderURLs = [
+						'audiophilia.frag',
 						'chromesea.frag',
 						'striped_field.frag',
 						'corruptcube.frag',
@@ -26,13 +27,13 @@
 						'emissive.frag',
 						'zardoz_1999.frag',
 						'spectral.frag',
-						'audiophilia.frag',
 						'zardoz_2001.frag',
 						'mblur.frag',
 						'atmosphere_distortion.frag'
 					];
 				} else {
 					window.shaderURLs = [
+						'audiophilia.frag',
 						'chromesea.frag',
 						'striped_field.frag',
 						'corruptcube.frag',
@@ -46,7 +47,6 @@
 						'zardoz_1999.frag',
 						'bling_dx9.frag',
 						'spectral.frag',
-						'audiophilia.frag',
 						'zardoz_2001.frag',
 						'mblur.frag',
 						'atmosphere_distortion.frag',
@@ -266,7 +266,7 @@
 				margin-bottom: 0px;
 			}
 			#music {
-				display: none;
+				/*display: none;*/
 				z-index: 1;
 				opacity: 0;
 				transition: 1s;
@@ -400,6 +400,11 @@
 			<h3>opus</h3>
 		</div>
 		<div id="info">
+			<p>Opus Live Wallpaper for Android</p>
+			<p><a href="https://play.google.com/store/apps/details?id=net.fhtr.android.livewallpaper.opus" target="_blank">
+			  <img alt="Get it on Google Play" width="172" height="60"
+			       src="https://developer.android.com/images/brand/en_generic_rgb_wo_60.png" />
+			</a></p>
 			<p>Hi there! Let's talk!</p>
 			<p><a href="https://twitter.com/ilmarihei">@ilmarihei</a></p>
 			<p><a href="https://plus.google.com/115293744081058969329/">Google+</a></p>
@@ -407,12 +412,6 @@
 		</div>
 		<ul id="shaders">
 		</ul>
-		<div id="play-store">
-			<a href="https://play.google.com/store/apps/details?id=net.fhtr.android.livewallpaper.opus" target="_blank">
-			  <img alt="Get it on Google Play" width="86" height="30"
-			       src="https://developer.android.com/images/brand/en_generic_rgb_wo_60.png" />
-			</a>
-		</div>
 		<div id="music">
 			<div class="music-play">&#9654;</div>
 			<a class="music-author"></a>
@@ -464,15 +463,5 @@
 		</script>
 		<script src="//use.typekit.net/svb7vim.js" async="true"></script>
 		<script type="text/javascript">(function(){var t=function(){try{Typekit.load()}catch(e){setTimeout(t,100)}};t()})()</script>
-		<script type="text/javascript">
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-40828118-1']);
-  _gaq.push(['_trackPageview']);
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-</script>
 	</body>
 </html>

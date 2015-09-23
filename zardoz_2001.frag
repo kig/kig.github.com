@@ -112,10 +112,10 @@ mat3 transpose(in mat3 inMatrix)
 	return outMatrix;
 }
 
-mat3 mp = rotationXY(vec2(0.0, iRot));
-
 float scene(vec3 p)
 {
+	mat3 mp = rotationXY(vec2(0.0, iRot));
+
 	float cube = length(max(abs(mp*p - vec3(0.0, 2.0, 0.0)) - vec3(0.95), 0.0)) - 0.05;
 	cube = min(cube, length(max(abs(p - vec3(0.0, 0.6-iOpen*0.5, 0.0)) - vec3(0.95, 0.25, 0.95), 0.0)) - 0.05);
 	cube = min(cube, length(max(abs(p - vec3(0.0, 3.4+iOpen*0.5, 0.0)) - vec3(0.95, 0.25, 0.95), 0.0)) - 0.05);
@@ -144,23 +144,23 @@ vec3 normal(ray r, float d)
 	return normalize(vec3(dx, dy, dz));
 }
 
-vec3 lightPos_ = vec3(0.5, -1.5, 8.0);
-/*
-vec3 lightPos_ = vec3(
-	cos(iGlobalTime*0.2)*4.0, 
-	sin(iGlobalTime)*3.0 - 4.0, 
-	sin(iGlobalTime*0.2)*8.0
-);
-*/
-vec3 bgLight = normalize(lightPos_);
-vec3 lightPos = bgLight * 9999.0;
-vec3 sun = vec3(2.0)*4.0; //, 3.5, 2.0)*4.0;
-
-vec2 aspect = vec2(iResolution.x/iResolution.y, 1.0);
-vec2 uv = (2.0 * gl_FragCoord.xy / iResolution.xy - 1.0) * aspect;
 
 vec3 shadeBg(vec3 nml)
 {
+	vec3 lightPos_ = vec3(0.5, -1.5, 8.0);
+	/*
+	vec3 lightPos_ = vec3(
+		cos(iGlobalTime*0.2)*4.0, 
+		sin(iGlobalTime)*3.0 - 4.0, 
+		sin(iGlobalTime*0.2)*8.0
+	);
+	*/
+	vec3 bgLight = normalize(lightPos_);
+	vec3 lightPos = bgLight * 9999.0;
+	vec3 sun = vec3(2.0)*4.0; //, 3.5, 2.0)*4.0;
+
+	vec2 aspect = vec2(iResolution.x/iResolution.y, 1.0);
+	vec2 uv = (2.0 * gl_FragCoord.xy / iResolution.xy - 1.0) * aspect;
 	
 	vec3 bgColz = vec3(0.5, 0.2, 0.15);
 	float bgDiff = dot(nml, vec3(0.0, -1.0, 0.0));
@@ -225,7 +225,8 @@ vec3 trace(vec2 uv, vec2 uvD, inout float sceneDist)
 	vec3 op = r.p + 5.0*r.d;
 	r.p = op;
 	float k = 1.0;
-	
+	vec3 sun = vec3(2.0)*4.0; //, 3.5, 2.0)*4.0;
+
 	for (int i=0; i<RAY_STEPS; i++) {
 		if (k > MAX_SAMPLES) break;
 		float dist = scene(r.p);

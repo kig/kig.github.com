@@ -531,6 +531,6 @@ ticker();
 			setTimeout(sctick, 100);
 		}
 	};
-	// sctick();
-})();
+	sctick();
+})// ();
 

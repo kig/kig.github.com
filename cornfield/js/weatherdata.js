@@ -66,7 +66,7 @@ var updateWeather = function(cityName, weatherData) {
 
 var fetchWeather = function(cityName, callback, onerror) {
 	var xhr = new XMLHttpRequest();
-	xhr.open('GET', 'http://api.openweathermap.org/data/2.5/weather?q='+encodeURIComponent(cityName)+'&units=metric', true);
+	xhr.open('GET', 'http://api.openweathermap.org/data/2.5/weather?q='+encodeURIComponent(cityName)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190', true);
 	xhr.onload = function(ev) {
 		var weatherData = JSON.parse(ev.target.responseText);
 		if (callback) {

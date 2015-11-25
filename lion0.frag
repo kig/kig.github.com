@@ -148,11 +148,12 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 	float a = 0.2;
 	vec2 uvR = uv * mat2(cos(a), 0.3+sin(a), -sin(a), cos(a));
 	float uvD = max(abs(uvR.x*2.0), abs(uvR.y*0.3));
-	if (uvD > 0.7) {
-		fragColor = vec4(0.0, 0.0, 0.0, 1.0);
-		return;
-	}
-	float fragAlpha = clamp(1.0 - (uvD - 0.69) / 0.01, 0.0, 1.0);
+//	if (uvD > 0.7 && (uvR.x < 0.0 || fragCoord.y > 50.0)) {
+//		fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+//		return;
+//	}
+
+	float fragAlpha = 1.0; //clamp(1.0 - (uvD - 0.69) / 0.01, 0.0, 1.0);
 	if (uv.y > 0.4) {
 		fragColor = vec4( fragAlpha * (1.0 - exp(-0.3 * shadeBg(-d, fragCoord))), 1.0 );
 		return;
@@ -176,6 +177,6 @@ void main() {
 	vec4 c = vec4(0.0), accum = vec4(0.0);
 	mainImage(c, gl_FragCoord.xy); accum += c;
 	// mainImage(c, gl_FragCoord.xy+vec2(0.5, 0.5)); accum += c;
-	accum.rgb -= 0.1*texture2D(iChannel0, (mod(floor(iGlobalTime*83956.0), 256.0) + gl_FragCoord.xy)/256.0, -100.0).r;
+	accum.rgb -= 0.1*texture2D(iChannel0, vec2(mod(floor(iGlobalTime*83956.0), 256.0) + gl_FragCoord.x, mod(floor(iGlobalTime*91081.0)+c.r*256.0, 257.0) + gl_FragCoord.y)/256.0, -100.0).r;
 	gl_FragColor = vec4(accum.rgb, 1.0);
 }

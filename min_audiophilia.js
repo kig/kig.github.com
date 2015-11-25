@@ -118,8 +118,8 @@ var init = function() {
 		var iResolution = vec3(glc.width, glc.height, 1.0);
 
 		var resize = function() {
-			glc.width = 1024*2;
-			glc.height = 768*2;
+			glc.width = 1920*2;
+			glc.height = 1080*2;
 			iResolution[0] = glc.width;
 			iResolution[1] = glc.height;
 			gl.viewport(0,0, glc.width, glc.height);
@@ -210,8 +210,8 @@ var init = function() {
 		var target = 7;
 		var captureFrame = 0;
 		var tick = function() {
-			var fps = 25;
-			var duration = 1;
+			var fps = 20;
+			var duration = 5;
 			for (var captureFrame = 0; captureFrame < fps*duration; captureFrame++) {
 				t += 1000 / fps;
 				var rot = 0.5+0.5*Math.cos(2*Math.PI*captureFrame/(fps*duration));
@@ -220,7 +220,7 @@ var init = function() {
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 				gl.drawArrays(gl.TRIANGLES, 0, 6);
 				var r = new XMLHttpRequest();
-		        r.open('POST', 'http://localhost:1337/' + captureFrame, false);
+		        r.open('POST', 'http://localhost:3999/' + captureFrame, false);
 		        var blob = dataURItoBlob(glc.toDataURL());
 		        r.send(blob);
 			}

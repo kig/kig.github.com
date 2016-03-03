@@ -26,6 +26,15 @@ float map(vec3 p) {
     vec3 q = p + 0.2*vec3(3.0, 0.3, 5.0)*mod(iGlobalTime,3600.0)*2.0;
     float n = 0.0, f = 0.5;
     n += f*noise(q); q *= 3.001; f *= 0.333;
+    n += f*noise(q); //q *= 3.002; f *= 0.332;
+    //n += f*noise(q);
+    return n;
+}
+
+float map3(vec3 p) {
+    vec3 q = p + 0.2*vec3(3.0, 0.3, 5.0)*mod(iGlobalTime,3600.0)*2.0;
+    float n = 0.0, f = 0.5;
+    n += f*noise(q); q *= 3.001; f *= 0.333;
     n += f*noise(q); q *= 3.002; f *= 0.332;
     n += f*noise(q);
     return n;
@@ -57,7 +66,7 @@ vec3 shadeBg(vec3 nml)
     vec2 uv = (2.0 * gl_FragCoord.xy / iResolution.xy - 1.0) * aspect;
     vec3 bgLight = normalize(vec3(
         sin(iGlobalTime*0.5)*0.1,
-        cos(iGlobalTime*0.1)*0.4-0.2,
+        cos(iGlobalTime*0.1)*0.9,
         -1.0
     ));
     float sunD = dot(bgLight, nml) > 0.995 ? 1.0 : 0.0;
@@ -102,8 +111,8 @@ vec3 shadeBg(vec3 nml)
     float cloud = 0.0;
     cloud += min(1.0, (1.0-smoothstep(0.0, cc, map(nml/nml.y)))) * 0.4;
     cloud += min(1.0, (1.0-smoothstep(0.0, cc, map(nml*1.1/nml.y)))) * 0.4;
-    cloud += min(1.0, (1.0-smoothstep(0.0, cc, map(nml*3.0/nml.y)))) * 0.3;
-    bgCol += cloudFac*cloud;
+    cloud += min(1.0, (1.0-smoothstep(0.0, cc, map3(nml*3.0/nml.y)))) * 0.3;
+    bgCol *= 1.0 + cloudFac*cloud;
 
     return pow(max(vec3(0.0), bgCol), vec3(2.6));
 }

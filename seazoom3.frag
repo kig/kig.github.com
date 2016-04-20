@@ -65,13 +65,14 @@ vec3 shadeBg(vec3 nml)
     vec2 aspect = vec2(iResolution.x/iResolution.y, 1.0);
     vec2 uv = (2.0 * gl_FragCoord.xy / iResolution.xy - 1.0) * aspect;
     vec3 bgLight = normalize(vec3(
-        sin(iGlobalTime*0.5)*0.1,
-        cos(iGlobalTime*0.1)*0.9,
+        sin(iGlobalTime*0.05)*0.1,
+        cos(1.0+iGlobalTime*0.1)*0.9,
         -1.0
     ));
+    float skyPow = dot(nml, vec3(0.0, -1.0, 0.0));
     float sunD = dot(bgLight, nml) > 0.995 ? 1.0 : 0.0;
     vec3 sun = vec3(6.5, 3.5, 2.0);
-    float skyPow = dot(nml, vec3(0.0, -1.0, 0.0));
+    sun = mix(sun, vec3(0.7, 0.0, 0.0), pow(1.0-skyPow, 0.5));
     float centerPow = 0.0; //-dot(uv,uv);
     float horizonPow = pow(1.0-abs(skyPow), 3.0)*(5.0+centerPow);
     float sunPow = dot(nml, bgLight);
@@ -79,9 +80,9 @@ vec3 shadeBg(vec3 nml)
     float scattering = clamp(1.0 - abs(2.0*(-bgLight.y)), 0.0, 1.0);
     vec3 bgCol = max(0.0, skyPow)*2.0*vec3(0.8);
     bgCol += 0.5*vec3(0.8)*(horizonPow);
-    bgCol += sun*(sunD+pow( sp, max(128.0, abs(bgLight.y)*512.0) ));
-    bgCol += vec3(0.4,0.2,0.15)*(pow( sp, 8.0) + pow( sp, max(8.0, abs(bgLight.y)*128.0) ));
-    bgCol *= mix(vec3(0.7, 0.85, 0.95), vec3(1.0, 0.45, 0.1), scattering);
+    bgCol += sun*(sunD+pow( sp, 128.0 )); //max(128.0, abs(bgLight.y)*512.0) ));
+    bgCol += (sun/10.0)*(pow( sp, 8.0) + pow( sp, max(8.0, abs(bgLight.y)*128.0) ));
+    bgCol *= mix(vec3(0.7, 0.85, 0.95), vec3(1.0, 0.4, 0.1), scattering);
     bgCol *= 1.0 - clamp(bgLight.y*3.0, 0.0, 0.6);
     float cloudFac = pow(abs(skyPow), 0.8)*1.0;
     //bgCol += cloudFac*map(nml*2.0/nml.y);

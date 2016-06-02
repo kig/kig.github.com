@@ -13,7 +13,7 @@ var weatherUpdateTriggered = false;
 var setWeather = function() {
 	weatherTimer += 16;
 	var fade = 0;
-	if (weatherTimer > showCityDuration) {
+	if (weatherTimer > showCityDuration && cityNames.length > 1) {
 		weatherTimer = 0;
 		currentCityIndex = (currentCityIndex + 1) % cityNames.length;
 		weatherUpdateTriggered = true;
@@ -41,7 +41,7 @@ var setWeather = function() {
 		}
 	}
 
-	if (weatherTimer > showCityDuration-cityChangeDuration) {
+	if (weatherTimer > showCityDuration-cityChangeDuration && cityNames.length > 1) {
 		fade = (weatherTimer-(showCityDuration-cityChangeDuration)) / cityChangeDuration;
 		fade = 0.5 - 0.5*Math.cos(fade*Math.PI);
 		document.getElementById('weather-data').classList.add('fade-out');

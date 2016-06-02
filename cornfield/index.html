@@ -58,6 +58,41 @@
 				margin-left: 8px;
 			}
 
+			#weather-data {
+				/*display: none;*/
+				color: white;
+				position: absolute;
+				top: 20px;
+				margin-top: 0;
+				left: 0px;
+				font-family: 'Proxima Nova', Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: 100;
+				font-size: 16px;
+				text-align: right;
+				box-sizing: border-box;
+				padding: 20px;
+				transition: 0.5s;
+				width: 100%;
+				text-shadow: 0px 0px 30px rgba(0,0,0,0.2);
+			}
+			#city {
+				font-size: 48px;
+				margin-bottom: 0px;
+			}
+			#temperature {
+				font-size: 36px;
+			}
+			.fade-out {
+				opacity: 0;
+			}
+			#wind-direction {
+				display: inline-block;
+				vertical-align: middle;
+				margin-left: -12px;
+				transform: scale(0.5);
+				margin: -12px;
+			}
+
 			#come-birds,
 			#fly-away,
 			#i-see-you
@@ -84,6 +119,7 @@
 			}
 
 			#cities {
+				display: none;
 				position: absolute;
 				top: 10px;
 				left: 10px;
@@ -821,6 +857,7 @@ Moscow</textarea><br>
 		<script src="js/corn.js"></script>
 		<script src="js/rain.js"></script>
 		<script src="js/weatherdata.js"></script>
+		<script src="https://freegeoip.net/json/?callback=fetchCities"></script>
 		<script src="js/weathertick.js"></script>
 		<script src="js/particles.js"></script>
 		<script src="js/birds.js"></script>

@@ -1,3 +1,68 @@
+/*
+
+To set up a weather visualisation, you create a W3.Visualiser object and feed it weather data using
+W3.Visualiser#setWeatherForLocation.
+
+If you want to cycle through multiple locations, use W3.Visualiser#setLocation whenever
+you wish to change the location. If you haven't set the weather for the set location yet,
+you'll get blank weather with a loading screen. When you set the weather for the current location,
+the visualiser animates to the newly set weather data.
+
+If you don't call setLocation, the weather visualiser will display the weather for the location
+specified in the first call to W3.Visualiser#setWeatherForLocation.
+
+
+For convenience, the W3.WeatherSource class implements a handy way to load and periodically update
+weather data for a given list of locations.
+
+
+The W3.Visualiser comes with a number of plugins for adding graphics effects to the visualiser
+and for controlling the visualisation.
+
+
+The bundled graphics plugins are:
+
+	- W3.LakeBackground, the default background that's set on a placid lake with sun and clouds driven by weather data.
+	- W3.Cornfield, a randomly-generated field of corn growing out of the lake. The corn sways with the wind. The height and density of the corn can be controlled.
+	- W3.Birds, a flock of birds flying around when the weather is fine. The birds can be scared away or attracted to the screen.
+	- W3.Rain, a rain particle field that reacts to the rain and wind data.
+	- W3.Stars, a star particle field that appears on fine nights.
+	- W3.Fluff, a particle field of flying fluff that appears on fine days.
+
+
+The bundled controller plugins are:
+
+	- W3.Kinect, implements a couple of Kinect-driven gestures for controlling the visualiser.
+	- W3.Microphone, implements a simple Web Audio API -based microphone control to monitor the ambient volume.
+	- W3.Keyboard, simple keyboard controls.
+	- W3.Touch, touch controls.
+
+
+
+var vis = new WeatherVisualiser(document.body);
+var weatherSource = new WeatherSource();
+
+var locations = [currentLocation].concat(cities);
+
+locations.forEach(l => weatherSource.addLocation(l));
+vis.setLocation(currentLocation);
+
+weatherSource.addEventListener('load', function(ev) {
+	vis.setWeatherForLocation(ev.data.location, ev.data.weather);
+});
+
+weatherSource.updateFrequency = 15 * 60 * 1000;
+weatherSource.startUpdating();
+
+var locationDuration = 30 * 1000;
+
+setInterval(function() {
+	locationIndex = (locationIndex + 1) % locations.length;
+	vis.setLocation(locations[locationIndex]);
+}, locationDuration);
+
+*/
+
 var cityNames = [];
 
 var cities = {};
@@ -65,8 +130,13 @@ var updateWeather = function(cityName, weatherData) {
 };
 
 var fetchWeather = function(cityName, callback, onerror) {
+	if (cityName.latitude) {
+		var queryURL = 'http://api.openweathermap.org/data/2.5/weather?lat='+encodeURIComponent(cityName.latitude)+'&lon='+encodeURIComponent(cityName.longitude)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
+	} else {
+		var queryURL = 'http://api.openweathermap.org/data/2.5/weather?q='+encodeURIComponent(cityName)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
+	}
 	var xhr = new XMLHttpRequest();
-	xhr.open('GET', 'http://api.openweathermap.org/data/2.5/weather?q='+encodeURIComponent(cityName)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190', true);
+	xhr.open('GET', queryURL, true);
 	xhr.onload = function(ev) {
 		var weatherData = JSON.parse(ev.target.responseText);
 		if (callback) {
@@ -77,7 +147,46 @@ var fetchWeather = function(cityName, callback, onerror) {
 	xhr.send(null);
 };
 
-var fetchCities = function() {
+var getLocation = function(callback, onerror) {
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', 'http://freegeoip.net/json');
+	xhr.onload = function(ev) {
+		var geoData = JSON.parse(ev.target.responseText);
+		if (callback) callback(geoData);
+	};
+	xhr.onerror = onerror;
+	xhr.send(null);
+};
+
+window.currentLocation = false;
+
+var fetchCities = function(location) {
+	console.log('fetchCities', location);
+	if (location) {
+		window.currentLocation = location;
+	}
+	if (!document.body.classList.contains('loaded')) {
+	
+		fetchWeather(currentLocation, function(location, weatherData) {
+			cityNames = [weatherData.name];
+			updateWeather(weatherData.name, weatherData);
+			document.body.classList.add('loaded');
+			setTimeout(function() {
+				weatherUpdateTriggered = true;
+			}, 800);
+		});
+
+	} else {
+	
+		fetchWeather(currentLocation, function(location, weatherData) {
+			updateWeather(location.city + ', ' + location.country, weatherData);
+			weatherUpdateTriggered = true;
+		});
+	
+	}
+	
+	return;
+
 	var loadCount = cityNames.length;
 	for (var i = 0; i < cityNames.length; i++) {
 		fetchWeather(cityNames[i], function(cityName, weatherData) {
@@ -107,34 +216,36 @@ var fetchCities = function() {
 
 setInterval(fetchCities, 15*60*1000);
 
-var getCityNames = function() {
-	return document.getElementById('city-names').value
-			.split('\n')
-			.map(function(c) { return c.replace(/^\s+|\s+$/g, ''); })
-			.filter(function(c) { return c !== ''; });	
-};
+// fetchCities();
 
-var updateCityNames = function() {
-	cityNames = getCityNames() || ['London'];
-	if (window.localStorage) {
-		localStorage.setItem('cityNames', JSON.stringify(cityNames));
-	}
-	fetchCities();
-};
+// var getCityNames = function() {
+// 	return document.getElementById('city-names').value
+// 			.split('\n')
+// 			.map(function(c) { return c.replace(/^\s+|\s+$/g, ''); })
+// 			.filter(function(c) { return c !== ''; });	
+// };
 
-var initializeCityNames = function() {
-	try {
-		cityNames = JSON.parse(localStorage.getItem('cityNames'));
-		if (cityNames.length === 0) {
-			cityNames = getCityNames();
-			localStorage.setItem('cityNames', JSON.stringify(cityNames));
-		}
-		document.getElementById('city-names').value = cityNames.join("\n");
-	} catch(e) {
-		cityNames = getCityNames();
-	}
-	fetchCities();
-};
+// var updateCityNames = function() {
+// 	cityNames = getCityNames() || ['London'];
+// 	if (window.localStorage) {
+// 		localStorage.setItem('cityNames', JSON.stringify(cityNames));
+// 	}
+// 	fetchCities();
+// };
 
-initializeCityNames();
-document.getElementById('city-names').onchange = updateCityNames;
+// var initializeCityNames = function() {
+// 	try {
+// 		cityNames = JSON.parse(localStorage.getItem('cityNames'));
+// 		if (cityNames.length === 0) {
+// 			cityNames = getCityNames();
+// 			localStorage.setItem('cityNames', JSON.stringify(cityNames));
+// 		}
+// 		document.getElementById('city-names').value = cityNames.join("\n");
+// 	} catch(e) {
+// 		cityNames = getCityNames();
+// 	}
+// 	fetchCities();
+// };
+
+// initializeCityNames();
+// document.getElementById('city-names').onchange = updateCityNames;

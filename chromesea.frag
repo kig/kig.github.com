@@ -85,7 +85,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 	}
 	vec2 uv = (2.0 * fragCoord.xy / iResolution.xy - 1.0) * aspect;
 	vec3 d = normalize(vec3(uv, 1.0));
-	vec3 p = vec3(uv*-2.0, -6.5) + d*1.6;
+	vec3 p = vec3(uv*-2.0, -6.5) + d*3.2;
 	if ((uv.y > 0.0 && abs(uv.x) > 0.2) || uv.y > 0.4) {
 		fragColor = vec4( 1.0 - exp(-1.3 * shadeBg(-d, fragCoord)), 1.0 );
 		return;

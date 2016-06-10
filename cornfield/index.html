@@ -26,72 +26,61 @@
 				left: 0;
 				top: 0;
 			}
-			#weather-data {
-				color: white;
-				position: absolute;
-				top: 50%;
-				margin-top: -164px;
-				z-index: 1;
-				left: 0px;
-				font-family: 'Proxima Nova', Helvetica Neue, Segoe UI, sans-serif;
-				font-weight: 300;
-				font-size: 36px;
-				transition: 1s;
-				text-align: center;
-				width: 100%;
-				text-shadow: 0px 0px 30px rgba(0,0,0,0.2);
-				-webkit-text-shadow: 0px 0px 30px rgba(0,0,0,0.2);
-			}
-			#city {
-				font-size: 84px;
-				margin-bottom: 8px;
-			}
-			#temperature {
-				font-size: 48px;
-			}
-			.fade-out {
-				opacity: 0;
-			}
-			#wind-direction {
-				display: inline-block;
-				vertical-align: middle;
-				margin-left: 8px;
-			}
+
 
 			#weather-data {
-				/*display: none;*/
 				color: white;
 				position: absolute;
-				top: 20px;
+				top: 18px;
 				margin-top: 0;
-				left: 0px;
-				font-family: 'Proxima Nova', Helvetica Neue, Segoe UI, sans-serif;
+				right: 19px;
+				font-family: 'Roboto Condensed', Helvetica Neue, Segoe UI, sans-serif;
 				font-weight: 100;
-				font-size: 16px;
+				font-size: 15px;
 				text-align: right;
 				box-sizing: border-box;
 				padding: 20px;
 				transition: 0.5s;
-				width: 100%;
-				text-shadow: 0px 0px 30px rgba(0,0,0,0.2);
-			}
-			#city {
-				font-size: 48px;
-				margin-bottom: 0px;
-			}
-			#temperature {
-				font-size: 36px;
+				/*text-shadow: 0px 0px 30px rgba(0,0,0,0.2);*/
+				z-index: 15;
 			}
 			.fade-out {
 				opacity: 0;
 			}
+
+			#city {
+				text-transform: uppercase;
+			}
+
+			#temperature {
+				font-size: 72px;
+				font-family: 'Proxima Nova', Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: bold;
+				margin-bottom: -17px;
+				margin-top: -3px;
+			}
+
+			#wind-data {
+				margin-top: 6px;
+				margin-bottom: 15px;
+			}
+
 			#wind-direction {
 				display: inline-block;
 				vertical-align: middle;
-				margin-left: -12px;
-				transform: scale(0.5);
-				margin: -12px;
+				margin-left: 3px;
 			}
+
+			hr {
+				height: 1px;
+				border: 0;
+				background: rgba(255,255,255, 0.5);
+				margin-top: 11px;
+				margin-bottom: 11px;
+				margin-left: 2px;
+				margin-right: 2px;
+			}
+
 
 			#come-birds,
 			#fly-away,
@@ -316,34 +305,6 @@
 				#audio {
 					font-size: 10px;
 				}
-				#weather-data {
-					top: 40px;
-					margin-top: 0;
-				}
-				#loader {
-					width: 120px;
-				}
-				#city {
-					font-size: 24px;
-				}
-				#temperature {
-					font-size: 24px;
-				}
-				#wind-data {
-					font-size: 14px;
-				}
-				#cloud-cover {
-					font-size: 14px;
-				}
-				#weather-desc {
-					font-size: 14px;
-					line-height: 14px;
-				}
-				#wind-direction {
-					transform: scale(0.5);
-					-webkit-transform: scale(0.5);
-					margin: -15px;
-				}
 			}
 		</style>
 	</head>
@@ -381,9 +342,10 @@ Moscow</textarea><br>
 		<div id="weather-data" class="fade-out">
 			<div id="city">London</div>
 			<div id="temperature">7 °C</div>
-			<div id="wind-data"><span id="wind-speed">wind 2.1 m/s</span> from <span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='60' width='60'><g id='wind-direction-arrow' transform='rotate(220 30 30)'><line x1='30' y1='30' x2='60' y2='30' style='stroke:white;stroke-width:2;'/><circle cx='54' cy='30' r='6' style='fill:white;'/></g><circle cx='30' cy='30' r='25' style='stroke:white;stroke-width:2;fill:none;'/></svg></span></div>
-			<div id="cloud-cover">cloud cover 0%</div>
-			<div id="weather-desc"></div>
+			<hr>
+			<div><span id="weather-desc"></span>, <span id="cloud-cover">cloud cover 0%</span></div>
+			<div id="wind-data"><span id="wind-speed">wind 2.1 m/s</span> from <span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='15' width='15'><g id='wind-direction-arrow' transform='rotate(220 7.5 7.5)'><polygon points="0.2,7.4 14.8,11.1 11.4,7.4 14.8,3.7 " fill="white"/></g></svg></span></div>
+			<hr>
 		</div>
 		<div id="fullscreen"></div>
 		<div id="audio">

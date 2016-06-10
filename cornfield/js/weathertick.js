@@ -22,10 +22,10 @@ var setWeather = function() {
 		weatherUpdateTriggered = false;
 		var c = cities[cityNames[currentCityIndex]] || zeroCity;
 		document.getElementById('city').textContent = cityNames[currentCityIndex].split(",")[0];
-		document.getElementById('temperature').textContent = Math.floor(c.temperature*10)/10 + '°C';
-		document.getElementById('cloud-cover').textContent = 'cloud cover ' + Math.floor(c.cloudCover*100) + '%';
+		document.getElementById('temperature').textContent = Math.round(c.temperature) + '°C';
+		document.getElementById('cloud-cover').textContent = 'clouds ' + Math.floor(c.cloudCover*100) + '%';
 		document.getElementById('wind-speed').textContent = 'wind ' + Math.floor(c.windStrength*10)/10 + ' m/s';
-		document.getElementById('wind-direction-arrow').transform.baseVal.getItem(0).setRotate(c.windDirection, 30, 30);
+		document.getElementById('wind-direction-arrow').transform.baseVal.getItem(0).setRotate(c.windDirection, 7.5, 7.5);
 		document.getElementById('weather-desc').textContent = c.weatherData.weather.map(function(wd) {
 			return wd.description;
 		}).join(", ");
@@ -78,7 +78,7 @@ var setWeather = function() {
 	// Add ground effect noise to wind for the rain & grass.
 	rainShaderMat.uniforms.ufWindDirection.value = Math.PI + windDirection / 180 * Math.PI + wdOff;
 	rainShaderMat.uniforms.ufWindStrength.value = windStrength / 20 * 0.4 + wsOff;
-	document.getElementById('wind-direction-arrow').transform.baseVal.getItem(0).setRotate(windDirection, 30, 30);
+	document.getElementById('wind-direction-arrow').transform.baseVal.getItem(0).setRotate(windDirection, 7.5, 7.5);
 
 	cornShaderMat.uniforms.ufImpulse.value = 0.00; // Math.max(-1, -0.5*Math.cos(Math.PI*((2*timeOfDay / 86400) % 2)) - 0.5);
 };

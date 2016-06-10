@@ -1,4 +1,4 @@
-var hiDpi = (window.devicePixelRatio || 1) > 1;
+var hiDpi = true || ((window.devicePixelRatio || 1) > 1);
 
 if (hiDpi) {
 

@@ -219,13 +219,13 @@
 				cursor: pointer;
 				margin-top: -1px;
 				vertical-align: top;
-				margin-left: 8px;
+				margin-right: 8px;
 			}
 
 			#audio {
 				position: absolute;
 				z-index: 4;
-				right: 10px;
+				left: 10px;
 				top: 10px;
 				font-size: 14px;
 				font-family: 'Proxima Nova', Helvetica Neue, Segoe UI, sans-serif;
@@ -349,9 +349,9 @@ Moscow</textarea><br>
 		</div>
 		<div id="fullscreen"></div>
 		<div id="audio">
-			<div class="audio-info">Weather Wall for <a href="http://cm-studio.co.uk/" target="_blank">CM-(S)</a> by <a href="http://twitter.com/ilmarihei" target="_blank">FHTR</a> &mdash; Audio <span class="cn">美好的一天</span> by <a href="http://ftjelly.com" target="_blank">Lu Sisi</a></div>
 			<div id="audio-toggle" class="audio-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 75 75" fill="#fff" stroke="#fff"><polygon points="39.389,13.769 22.235,28.606 6,28.606 6,47.699 21.989,47.699 39.389,62.75 39.389,13.769" style="stroke-width:5;stroke-linejoin:round;"/><path class="vol" d="M 48.128,49.03 C 50.057,45.934 51.19,42.291 51.19,38.377 C 51.19,34.399 50.026,30.703 48.043,27.577" style="fill:none;stroke-width:5;stroke-linecap:round"/><path class="vol" d="M 55.082,20.537 C 58.777,25.523 60.966,31.694 60.966,38.377 C 60.966,44.998 58.815,51.115 55.178,56.076" style="fill:none;stroke-width:5;stroke-linecap:round"/><path class="vol" id="path1" d="M 61.71,62.611 C 66.977,55.945 70.128,47.531 70.128,38.378 C 70.128,29.161 66.936,20.696 61.609,14.01" style="fill:none;stroke-width:5;stroke-linecap:round"/></svg></div>
 			<audio id="audio-player" src="music_1.m4a" loop="true" autoplay="true"></audio>
+			<div class="audio-info">Weather Wall for <a href="http://cm-studio.co.uk/" target="_blank">CM-(S)</a> by <a href="http://twitter.com/ilmarihei" target="_blank">FHTR</a> &mdash; Audio <span class="cn">美好的一天</span> by <a href="http://ftjelly.com" target="_blank">Lu Sisi</a></div>
 			<script>
 				(function() {
 					var toggle = document.getElementById('audio-toggle');

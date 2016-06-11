@@ -48,6 +48,26 @@
 
 			#city {
 				text-transform: uppercase;
+				background: transparent;
+				border: 0;
+				padding: 0;
+				color: white;
+				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: 100;
+				font-size: 15px;
+				text-align: right;
+				transition: 0.5s;
+				outline: 0;
+				border-bottom: 1px solid transparent;
+				margin-bottom: -1px;
+				width: 100%;
+			}
+
+			#city:hover {
+				border-bottom: 1px solid white;
+			}
+			#city::selection {
+				background: #113366;
 			}
 
 			#temperature {
@@ -338,7 +358,7 @@ Moscow</textarea><br>
 			I see you...
 		</div>
 		<div id="weather-data" class="fade-out">
-			<div id="city">London</div>
+			<input id="city" value="London"></input>
 			<div id="temperature">7 °C</div>
 			<hr>
 			<div><span id="weather-desc"></span>, <span id="cloud-cover">cloud cover 0%</span></div>

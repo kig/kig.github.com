@@ -21,7 +21,7 @@ var setWeather = function() {
 	if (weatherUpdateTriggered) {
 		weatherUpdateTriggered = false;
 		var c = cities[cityNames[currentCityIndex]] || zeroCity;
-		document.getElementById('city').textContent = cityNames[currentCityIndex].split(",")[0];
+		document.getElementById('city').value = cityNames[currentCityIndex].split(",")[0];
 		document.getElementById('temperature').textContent = Math.round(c.temperature) + '°C';
 		document.getElementById('cloud-cover').textContent = 'clouds ' + Math.floor(c.cloudCover*100) + '%';
 		document.getElementById('wind-speed').textContent = 'wind ' + Math.floor(c.windStrength*10)/10 + ' m/s';

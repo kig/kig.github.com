@@ -216,6 +216,15 @@ var fetchCities = function(location) {
 
 setInterval(fetchCities, 15*60*1000);
 
+document.getElementById('city').onchange = function(ev) {
+	var cityName = ev.target.value;
+	cityNames.push(cityName);
+	fetchWeather(cityName, function(location, weatherData) {
+		updateWeather(cityName, weatherData);
+		weatherTimer = 27000;
+	});
+};
+
 // fetchCities();
 
 // var getCityNames = function() {

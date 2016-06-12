@@ -217,12 +217,19 @@ var fetchCities = function(location) {
 setInterval(fetchCities, 15*60*1000);
 
 document.getElementById('city').onchange = function(ev) {
+	ev.target.blur();
 	var cityName = ev.target.value;
+	var idx = cityNames.length;
 	cityNames.push(cityName);
 	fetchWeather(cityName, function(location, weatherData) {
 		updateWeather(cityName, weatherData);
-		weatherTimer = 27000;
+		targetCityIndex = idx;
+		weatherTimer = 0;
 	});
+};
+
+document.getElementById('city').onfocus = function(ev) {
+	ev.target.select();
 };
 
 // fetchCities();

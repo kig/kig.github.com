@@ -6,16 +6,17 @@ var wsOffTarget = 0;
 var windDirection = 0, windStrength = 0;
 var weatherTimer = 0;
 
-var showCityDuration = 30000;
+var targetCityIndex = 0;
+
 var cityChangeDuration = 3000;
 var weatherUpdateTriggered = false;
 
 var setWeather = function() {
 	weatherTimer += 16;
 	var fade = 0;
-	if (weatherTimer > showCityDuration && cityNames.length > 1) {
+	if (weatherTimer > cityChangeDuration && currentCityIndex !== targetCityIndex) {
 		weatherTimer = 0;
-		currentCityIndex = (currentCityIndex + 1) % cityNames.length;
+		currentCityIndex = targetCityIndex;
 		weatherUpdateTriggered = true;
 	}
 	if (weatherUpdateTriggered) {
@@ -41,14 +42,14 @@ var setWeather = function() {
 		}
 	}
 
-	if (weatherTimer > showCityDuration-cityChangeDuration && cityNames.length > 1) {
-		fade = (weatherTimer-(showCityDuration-cityChangeDuration)) / cityChangeDuration;
+	if (weatherTimer <= cityChangeDuration && currentCityIndex !== targetCityIndex) {
+		fade = weatherTimer / cityChangeDuration;
 		fade = 0.5 - 0.5*Math.cos(fade*Math.PI);
 		document.getElementById('weather-data').classList.add('fade-out');
 	}
 
 	var c0 = cities[cityNames[currentCityIndex]] || zeroCity;
-	var c1 = cities[cityNames[(currentCityIndex+1) % cityNames.length]] || c0;
+	var c1 = cities[cityNames[targetCityIndex]] || c0;
 
 	shaderMat.uniforms.ufCloudCover.value = c1.cloudCover * fade + c0.cloudCover * (1-fade);
 	rainShaderMat.uniforms.ufRainAmount.value = c1.rainAmount * fade + c0.rainAmount * (1-fade);

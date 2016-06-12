@@ -203,7 +203,7 @@ var fetchCities = function(location) {
 	}
 };
 
-setInterval(fetchCities, 15*60*1000);
+// setInterval(fetchCities, 15*60*1000);
 
 document.getElementById('city').onchange = function(ev) {
 	ev.target.blur();
@@ -226,16 +226,42 @@ document.getElementById('my-location').onclick = function(ev) {
 	ev.preventDefault();
 	document.getElementById('my-location').blur();
 	document.getElementById('my-location').classList.add('locating');
-	navigator.geolocation.getCurrentPosition(function(pos) {
+	if (navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(
+			function(pos) {
+				document.getElementById('my-location').classList.remove('locating');
+				document.body.classList.add('current-location');
+				fetchWeather(pos.coords, function(location, weatherData) {
+					targetCityIndex = cityNames.length;
+					weatherTimer = 0;
+					cityNames.push(weatherData.name);
+					updateWeather(weatherData.name, weatherData);
+				});
+			},
+			function(error) {
+				// Couldn't get location from geolocation, let's go back to geoip.
+				document.getElementById('my-location').classList.remove('locating');
+				document.body.classList.add('current-location');
+				fetchWeather(window.currentLocation, function(location, weatherData) {
+					updateWeather(location.city + ', ' + location.country, weatherData);
+					targetCityIndex = 0;
+					weatherTimer = 0;
+				});
+			},
+			{
+				enableHighAccuracy: true, timeout: 5000
+			}
+		);
+	} else {
+		// Couldn't get location from geolocation, let's go back to geoip.
 		document.getElementById('my-location').classList.remove('locating');
 		document.body.classList.add('current-location');
-		fetchWeather(pos.coords, function(location, weatherData) {
-			targetCityIndex = cityNames.length;
+		fetchWeather(window.currentLocation, function(location, weatherData) {
+			updateWeather(location.city + ', ' + location.country, weatherData);
+			targetCityIndex = 0;
 			weatherTimer = 0;
-			cityNames.push(weatherData.name);
-			updateWeather(weatherData.name, weatherData);
-		});
-	});
+		});		
+	}
 };
 
 // fetchCities();

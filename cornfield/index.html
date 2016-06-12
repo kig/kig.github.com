@@ -30,19 +30,19 @@
 			.daytime #weather-data,
 			.daytime #city
 			{
-				color: #c5bcc3;
+				color: #635e62;
 			}
 
 			.daytime #city:hover {
-				border-color: #c5bcc3;
+				border-color: #635e62;
 			}
 
 			.daytime hr {
-				background: #c5bcc3;
+				background: #635e62;
 			}
 
 			.daytime #wind-direction-arrow polygon {
-				fill: #c5bcc3;
+				fill: #635e62;
 			}
 
 
@@ -755,7 +755,7 @@ Moscow</textarea><br>
 				float skyPow = dot(nml, vec3(0.0, -1.0, 0.0));
 				float sunDot = dot(bgLight, nml) * (skyPow > 0.0 ? 1.0 : smoothstep(-0.6, 0.0, skyPow));
 				float sunSize = 0.0006;
-				float sunAA = sunSize / 25.0;
+				float sunAA = sunSize / 3.0;
 			    float sunD = sunDot > (1.0-sunSize) ? 1.0 - max(0.0, 1.0/sunAA * (1.0-sunSize+sunAA - sunDot)) : 0.0;
 				vec3 sun = vec3(6.5, 3.5, 2.0);
 			    float centerPow = 0.0;

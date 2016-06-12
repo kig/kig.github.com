@@ -769,7 +769,7 @@ Moscow</textarea><br>
 				bgCol += vec3(0.4,0.2,0.15)*(pow( sp, 16.0) + pow( sp, max(16.0, abs(bgLight.y)*256.0) ));
 			    bgCol *= mix(vec3(0.7, 0.85, 0.95), vec3(1.0, 0.45, 0.1), scattering);
 
-			    if (nml.y < 0.0) {
+/*			    if (nml.y < 0.0) {
 				    float cc = 0.0;
 				    if (ufCloudCover < 0.1) {
 				        cc = 0.0 + 0.2 * (ufCloudCover - 0.0)/0.1;
@@ -790,7 +790,7 @@ Moscow</textarea><br>
 				    cloud *= pow(abs(nml.y), 1.0);
 				    bgCol = mix(bgCol, vec3(0.95-0.4*ufRainAmount), cloud);
 				    bgCol *= 1.0+cloud;
-			    } else {
+			    } else */ {
 				    bgCol = mix(bgCol, vec3(0.95-0.4*ufRainAmount), ufCloudCover);
 			    }
 
@@ -810,16 +810,17 @@ Moscow</textarea><br>
 
 			float scene(vec3 p)
 			{
-				return p.y-(-2.0)-map(p)*0.001;
+				return p.y-(-2.0); //-map(p)*0.001;
 			}
 
 			vec3 normal(vec3 p, float d)
 			{
-				float e = 0.05;
-				float dx = scene(vec3(e, 0.0, 0.0) + p) - d;
-				float dy = scene(vec3(0.0, e, 0.0) + p) - d;
-				float dz = scene(vec3(0.0, 0.0, e) + p) - d;
-				return normalize(vec3(dx, dy, dz));
+			return vec3(0.0, 1.0, 0.0);
+//				float e = 0.05;
+//				float dx = scene(vec3(e, 0.0, 0.0) + p) - d;
+//				float dy = scene(vec3(0.0, e, 0.0) + p) - d;
+//				float dz = scene(vec3(0.0, 0.0, e) + p) - d;
+//				return normalize(vec3(dx, dy, dz));
 			}
 
 			void main(void)

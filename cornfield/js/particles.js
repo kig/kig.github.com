@@ -1,5 +1,5 @@
 var particles = new THREE.Object3D();
-for (var i=0; i<300; i++) {
+for (var i=0; i<0; i++) {
 	var particle = new THREE.Mesh(
 		new THREE.BoxGeometry(0.2, 0.2, 0.2),
 		new THREE.MeshBasicMaterial({color: 0xffffff, opacity: 0.3, transparent: true, blending: THREE.AdditiveBlending})

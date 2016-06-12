@@ -161,7 +161,7 @@ var getLocation = function(callback, onerror) {
 window.currentLocation = false;
 
 var fetchCities = function(location) {
-	console.log('fetchCities', location);
+	// console.log('fetchCities', location);
 	if (location) {
 		window.currentLocation = location;
 	}

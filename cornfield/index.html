@@ -27,6 +27,24 @@
 				top: 0;
 			}
 
+			.daytime #weather-data,
+			.daytime #city
+			{
+				color: #c5bcc3;
+			}
+
+			.daytime #city:hover {
+				border-color: #c5bcc3;
+			}
+
+			.daytime hr {
+				background: #c5bcc3;
+			}
+
+			.daytime #wind-direction-arrow polygon {
+				fill: #c5bcc3;
+			}
+
 
 			#weather-data {
 				color: white;
@@ -41,9 +59,10 @@
 				transition: 0.5s;
 				/*text-shadow: 0px 0px 30px rgba(0,0,0,0.2);*/
 				z-index: 15;
+				opacity: 0.8;
 			}
 			.fade-out {
-				opacity: 0;
+				opacity: 0 !important;
 			}
 
 			#city {
@@ -67,7 +86,8 @@
 				border-bottom: 1px solid white;
 			}
 			#city::selection {
-				background: #113366;
+				background: #4489f1;
+				color: white;
 			}
 
 			#temperature {
@@ -155,19 +175,13 @@
 				position: absolute;
 				top: 50%;
 				left: 50%;
-				width: 400px;
-				height: 140px;
-				margin-left: -50px;
-				margin-top: -40px;
-				background: url('data:image/svg+xml;utf8,<svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" stroke="#fff"><g fill="none" fill-rule="evenodd"><g transform="translate(1 1)" stroke-width="2"><circle stroke-opacity=".5" cx="18" cy="18" r="18"/><path d="M36 18c0-9.94-8.06-18-18-18"><animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/></path></g></g></svg>') 28px 14px / 50px no-repeat;
+				width: 50px;
+				height: 50px;
+				margin-left: -25px;
+				margin-top: -25px;
+				background: url('data:image/svg+xml;utf8,<svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" stroke="#fff"><g fill="none" fill-rule="evenodd"><g transform="translate(1 1)" stroke-width="2"><circle stroke-opacity=".5" cx="18" cy="18" r="18"/><path d="M36 18c0-9.94-8.06-18-18-18"><animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/></path></g></g></svg>') 0 0 / 50px no-repeat;
 				opacity: 0;
 				transition: 0.5s;
-				text-align: left;
-				text-indent: 108px;
-				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
-				color: white;
-				font-size: 52px;
-				font-weight: 100;
 				-webkit-animation: loader-intro 1s 1 ease-in-out;
 				-webkit-animation-fill-mode: both;
 				z-index: 3;
@@ -181,8 +195,7 @@
 			@-webkit-keyframes loader-intro {
 				0% {
 					opacity: 0;
-					background-size: 0px;
-					background-position: 53px 39px;
+					transform: scale(0.01);
 					color: rgba(255,255,255,0);
 				}
 				50% {
@@ -190,8 +203,7 @@
 				}
 				100% {
 					opacity: 1;
-					background-size: 50px;
-					background-position: 28px 14px;
+					transform: scale(1);
 					color: rgba(255,255,255,1);
 				}
 			}
@@ -199,13 +211,11 @@
 			@-webkit-keyframes loader-outro {
 				0% {
 					opacity: 1;
-					background-size: 50px;
-					background-position: 28px 14px;
+					transform: scale(1);
 				}
 				100% {
 					opacity: 0;
-					background-size: 0px; 
-					background-position: 53px 39px;
+					transform: scale(0.01);
 				}
 			}
 

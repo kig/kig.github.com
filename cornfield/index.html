@@ -45,6 +45,17 @@
 				fill: #635e62;
 			}
 
+			.daytime #my-location rect,
+			.daytime #my-location #center
+			{
+				fill: #635e62;
+			}
+
+			.daytime #my-location #surround
+			{
+				stroke: #635e62;
+			}
+
 
 			#weather-data {
 				color: white;
@@ -88,6 +99,34 @@
 			#city::selection {
 				background: #4489f1;
 				color: white;
+			}
+
+			#my-location {
+				position: absolute;
+				right: -22px;
+				top: 0px;
+				transition: 0.5s;
+				opacity: 0.5;
+				cursor: pointer;
+			}
+			#my-location:hover,
+			.current-location #my-location
+			{
+				opacity: 1;
+			}
+			#my-location.locating {
+				transform: scale(0.01);
+			}
+
+			#my-location rect,
+			#my-location #center
+			{
+				fill: white;
+			}
+
+			#my-location #surround
+			{
+				stroke: white;
 			}
 
 			#temperature {
@@ -368,7 +407,9 @@ Moscow</textarea><br>
 			I see you...
 		</div>
 		<div id="weather-data" class="fade-out">
-			<input id="city" value="London"></input>
+			<div><input id="city" value="London"></input><span id="my-location"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><circle id="surround" fill="none" stroke="#000000" stroke-miterlimit="10" cx="7.6" cy="7.5" r="5.4"/><rect x="7" width="1" height="1.9"/><rect x="7" y="13.1" width="1" height="1.9"/><rect x="13.1" y="7" width="1.9" height="1"/><rect x="0" y="7" width="1.9" height="1"/><circle id="center" cx="7.6" cy="7.5" r="3.5"/></svg></span></div>
+				
+
 			<div id="temperature">7 °C</div>
 			<hr>
 			<div><span id="weather-desc"></span>, <span id="cloud-cover">cloud cover 0%</span></div>

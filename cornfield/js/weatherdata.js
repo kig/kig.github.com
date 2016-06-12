@@ -147,17 +147,6 @@ var fetchWeather = function(cityName, callback, onerror) {
 	xhr.send(null);
 };
 
-var getLocation = function(callback, onerror) {
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', 'http://freegeoip.net/json');
-	xhr.onload = function(ev) {
-		var geoData = JSON.parse(ev.target.responseText);
-		if (callback) callback(geoData);
-	};
-	xhr.onerror = onerror;
-	xhr.send(null);
-};
-
 window.currentLocation = false;
 
 var fetchCities = function(location) {
@@ -221,6 +210,7 @@ document.getElementById('city').onchange = function(ev) {
 	var cityName = ev.target.value;
 	var idx = cityNames.length;
 	cityNames.push(cityName);
+	document.body.classList.remove('current-location');
 	fetchWeather(cityName, function(location, weatherData) {
 		updateWeather(cityName, weatherData);
 		targetCityIndex = idx;
@@ -230,6 +220,22 @@ document.getElementById('city').onchange = function(ev) {
 
 document.getElementById('city').onfocus = function(ev) {
 	ev.target.select();
+};
+
+document.getElementById('my-location').onclick = function(ev) {
+	ev.preventDefault();
+	document.getElementById('my-location').blur();
+	document.getElementById('my-location').classList.add('locating');
+	navigator.geolocation.getCurrentPosition(function(pos) {
+		document.getElementById('my-location').classList.remove('locating');
+		document.body.classList.add('current-location');
+		fetchWeather(pos.coords, function(location, weatherData) {
+			targetCityIndex = cityNames.length;
+			weatherTimer = 0;
+			cityNames.push(weatherData.name);
+			updateWeather(weatherData.name, weatherData);
+		});
+	});
 };
 
 // fetchCities();

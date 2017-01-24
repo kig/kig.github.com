@@ -3,14 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-		<title>fhtr + the world is not ready yet</title>
-<!-- Begin Cookie Consent plugin by Silktide - http://silktide.com/cookieconsent -->
-<script type="text/javascript">
-    window.cookieconsent_options = {"message":"This website uses cookies for Google Analytics to see how many people visit it.","dismiss":"Got it!","learnMore":"More info","link":null,"theme":"light-top"};
-</script>
-
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/1.0.9/cookieconsent.min.js"></script>
-<!-- End Cookie Consent plugin -->
+		<title>fhtr + that which is not alive can never die</title>
 		<script>
 			window.DEBUG = true;
 			window.startScript = Date.now();
@@ -22,16 +15,16 @@
 			} else {
 				if (window.windows) {
 					window.shaderURLs = [
+						'seazoom3.frag',
 						'chromesea.frag',
 						'audiophilia.frag',
-						'seazoom3.frag',
-						// 'lion0.frag',
+						'lion0.frag',
 						'striped_field.frag',
 						'corruptcube.frag',
 						'spectral.frag',
-						// 'signalfield.frag',
+						'signalfield.frag',
 						// 'beat.frag',
-						// 'heart.frag',
+						'heart.frag',
 						'mandelbrot.frag',
 						'mblur.frag',
 						'emissive.frag',
@@ -44,13 +37,13 @@
 						'seazoom3.frag',
 						'chromesea.frag',
 						'audiophilia.frag',
-						// 'lion0.frag',
+						'lion0.frag',
 						'striped_field.frag',
 						'corruptcube.frag',
 						'spectral.frag',
-						// 'signalfield.frag',
+						'signalfield.frag',
 						// 'beat.frag',
-						// 'heart.frag',
+						'heart.frag',
 						'mandelbrot.frag',
 						'spinners.frag',
 						'mblur.frag',
@@ -180,6 +173,8 @@
 				text-align: center;
 				color: black;
 				cursor: pointer;
+				user-select: none;
+				-webkit-user-select: none;
 			}
 			#info {
 				position: absolute;
@@ -353,6 +348,7 @@
 				}
 				#title {
 					top: 0px;
+					display: none;
 				}
 				h1 {
 					position: relative;
@@ -401,7 +397,6 @@
 		</style>
 	</head>
 	<body>
-		<a href="http://www.thefwa.com/adobe/tcea" id="award"><img src="images/fwa_tcea_potw_TopRight.png" width="100" height="100"></a>
 		<div id="title">
 			<h1>fhtr</h1>
 			<hr>
@@ -413,10 +408,10 @@
 			  <img alt="Get it on Google Play" width="172" height="51"
 			       src="en-play-badge.png" />
 			</a></p>
-			<p>Hi there! Let's talk!</p>
+			<p>Contact</p>
 			<p><a href="https://twitter.com/ilmarihei">@ilmarihei</a></p>
 			<p><a href="https://plus.google.com/115293744081058969329/">Google+</a></p>
-			<p><a href="mailto:contact@fhtr.org">contact@fhtr.org</a></p>
+			<p><a href="mailto:ilmari@fhtr.org">ilmari@fhtr.org</a></p>
 			<p class="android-legal"><small><copyright>Android, Google Play and the Google Play logo are trademarks of Google Inc.</copyright></small>
 		</div>
 		<ul id="shaders">

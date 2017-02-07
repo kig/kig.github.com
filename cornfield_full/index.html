@@ -1,0 +1,903 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Weather</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="mobile-web-app-capable" content="yes">
+		<style>
+			html,
+			body {
+				width: 100%;
+				height: 100%;
+				background: white;
+				overflow:hidden;
+			}
+			* {
+			  margin: 0;
+			}
+			body {
+				background: #988F95;
+				background: linear-gradient(#988F95, #E2F1FC);
+			}
+			body > canvas {
+				position: absolute;
+				left: 0;
+				top: 0;
+			}
+
+			.daytime #weather-data,
+			.daytime #city
+			{
+				color: #635e62;
+			}
+
+			.daytime #city:hover {
+				border-color: #635e62;
+			}
+
+			.daytime hr {
+				background: #635e62;
+			}
+
+			.daytime #wind-direction-arrow polygon {
+				fill: #635e62;
+			}
+
+			.daytime #my-location rect,
+			.daytime #my-location #center
+			{
+				fill: #635e62;
+			}
+
+			.daytime #my-location #surround
+			{
+				stroke: #635e62;
+			}
+
+
+			#weather-data {
+				color: white;
+				position: absolute;
+				top: 38px;
+				right: 39px;
+				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: 100;
+				font-size: 15px;
+				text-align: right;
+				box-sizing: border-box;
+				transition: 0.5s;
+				/*text-shadow: 0px 0px 30px rgba(0,0,0,0.2);*/
+				z-index: 15;
+				opacity: 0.8;
+			}
+			.fade-out {
+				opacity: 0 !important;
+			}
+
+			#city {
+				text-transform: uppercase;
+				background: transparent;
+				border: 0;
+				padding: 0;
+				color: white;
+				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: 100;
+				font-size: 15px;
+				text-align: right;
+				transition: 0.5s;
+				outline: 0;
+				border-bottom: 1px solid transparent;
+				margin-bottom: -1px;
+				width: 100%;
+			}
+
+			#city:hover {
+				border-bottom: 1px solid white;
+			}
+			#city::selection {
+				background: #4489f1;
+				color: white;
+			}
+
+			#my-location {
+				position: absolute;
+				right: -22px;
+				top: 1px;
+				transition: 0.5s;
+				opacity: 0.5;
+				cursor: pointer;
+			}
+			#my-location:hover,
+			.current-location #my-location
+			{
+				opacity: 1;
+			}
+			#my-location.locating {
+				transform: scale(0.01);
+			}
+
+			#my-location rect,
+			#my-location #center
+			{
+				fill: white;
+			}
+
+			#my-location #surround
+			{
+				stroke: white;
+			}
+
+			#temperature {
+				font-size: 72px;
+				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: bold;
+				margin-bottom: -17px;
+				margin-top: -3px;
+			}
+
+			#wind-data {
+				margin-top: 6px;
+				margin-bottom: 15px;
+			}
+
+			#wind-direction {
+				display: inline-block;
+				vertical-align: middle;
+				margin-left: 3px;
+			}
+
+			hr {
+				height: 1px;
+				border: 0;
+				background: rgba(255,255,255, 0.5);
+				margin-top: 11px;
+				margin-bottom: 11px;
+				margin-left: 2px;
+				margin-right: 2px;
+			}
+
+
+			#come-birds,
+			#fly-away,
+			#i-see-you
+			{
+				position: absolute;
+				text-align: center;
+				left: 50%;
+				top: 100px;
+				width: 1000px;
+				margin-left: -500px;
+				font-size: 84px;
+				color: white;
+				text-shadow: 0px 0px 30px rgba(0,0,0,0.2);
+				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: 100;
+				transition: 0.5s;
+				z-index: 2;
+			}
+
+			#i-see-you
+			{
+				top: 10px;
+				font-size: 36px;
+			}
+
+			#cities {
+				display: none;
+				position: absolute;
+				top: 10px;
+				left: 10px;
+				opacity: 0;
+				transition: 1s;
+				color: white;
+				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: 200;
+				font-size: 14px;
+				z-index: 3;
+			}
+
+			#cities:hover {
+				opacity: 1;
+			}
+
+			#city-names {
+				width: 200px;
+				height: 200px;
+			}
+			.weather #weather-data {
+				display: none;
+			}
+
+			#loader {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				width: 50px;
+				height: 50px;
+				margin-left: -25px;
+				margin-top: -25px;
+				background: url('data:image/svg+xml;utf8,<svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" stroke="#fff"><g fill="none" fill-rule="evenodd"><g transform="translate(1 1)" stroke-width="2"><circle stroke-opacity=".5" cx="18" cy="18" r="18"/><path d="M36 18c0-9.94-8.06-18-18-18"><animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/></path></g></g></svg>') 0 0 / 50px no-repeat;
+				opacity: 0;
+				transition: 0.5s;
+				-webkit-animation: loader-intro 1s 1 ease-in-out;
+				-webkit-animation-fill-mode: both;
+				z-index: 3;
+			}
+
+			.loaded #loader {
+				-webkit-animation: loader-outro 0.5s 1 ease-in-out;
+				-webkit-animation-fill-mode: both;
+			}
+
+			@-webkit-keyframes loader-intro {
+				0% {
+					opacity: 0;
+					transform: scale(0.01);
+					color: rgba(255,255,255,0);
+				}
+				50% {
+					color: rgba(255,255,255,0);
+				}
+				100% {
+					opacity: 1;
+					transform: scale(1);
+					color: rgba(255,255,255,1);
+				}
+			}
+
+			@-webkit-keyframes loader-outro {
+				0% {
+					opacity: 1;
+					transform: scale(1);
+				}
+				100% {
+					opacity: 0;
+					transform: scale(0.01);
+				}
+			}
+
+			.audio-icon svg {
+				width: 100%;
+				height: 100%;
+			}
+
+			#fullscreen {
+				position: absolute;
+				z-index: 4;
+				right: 43px;
+				bottom: 21px;
+				width: 15px;
+				height: 15px;
+				cursor: pointer;
+				background: url('data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="white"><path d="M73.143,329.143H0V512h182.857v-73.143H73.143V329.143z M0,182.857h73.143V73.143h109.715V0H0V182.857z M438.857,438.857H329.143V512H512V329.143h-73.143V438.857z M329.143,0v73.143h109.715v109.715H512V0H329.143z"/></svg>') 0 0 / 100% no-repeat;
+				transition: 0.5s;
+				opacity: 0.5;
+			}
+			#fullscreen:hover {
+				opacity: 1 !important;
+			}
+
+			#audio-toggle {
+				display: inline-block;
+				width: 20px;
+				height: 20px;
+				cursor: pointer;
+				margin-top: -1px;
+				vertical-align: top;
+				margin-left: 8px;
+			}
+
+			#audio {
+				position: absolute;
+				z-index: 4;
+				right: 68px;
+				bottom: 19px;
+				font-size: 14px;
+				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: 100;
+				color: white;
+				opacity: 0.5;
+				white-space: nowrap;
+			}
+			#audio .vol {
+				transition: 0.5s;
+			}
+			#audio .vol:nth-child(3) {
+				transition-delay: 0.1s;
+			}
+			#audio .vol:nth-child(4) {
+				transition-delay: 0.2s;
+			}
+			#audio.paused .vol {
+				opacity: 0;
+			}
+			#audio:hover {
+				opacity: 0.6;
+			}
+			.audio-info {
+				opacity: 0;
+				display: inline-block;
+				transition: 0.5s;
+			}
+			#audio:hover .audio-info {
+				opacity: 1;
+			}
+			#audio a {
+				color: white;
+			}
+			#settings-toggle,
+			#info-toggle
+			{
+				display: none;
+				position: absolute;
+				z-index: 2;
+				right: 10px;
+				opacity: 0.3;
+				width: 20px;
+				height: 20px;
+				transition: 0.5s;
+				cursor: pointer;
+				color: white;
+			}
+			#settings-toggle:hover,
+			#info-toggle:hover
+			{
+				opacity: 0.6;
+			}
+			#settings-toggle svg,
+			#info-toggle svg
+			{
+				width: 100%;
+				height: 100%;
+			}
+			#settings-toggle {
+				top: 40px;
+			}
+			#info-toggle {
+				top: 70px;
+			}
+
+			.cn {
+				font-family: Lantinghei SC, sans-serif;
+			}
+
+			@media (max-width: 800px) {
+				#come-birds, #i-see-you, #fly-away {
+					width: 320px;
+
+					display: none;
+				}
+				#audio {
+					font-size: 10px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div id="loader"></div>
+		<div id="settings-toggle">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -256 1792 1792" fill="#fff"><g transform="matrix(1,0,0,-1,121.49153,1285.4237)"><path d="m 1024,640 q 0,106 -75,181 -75,75 -181,75 -106,0 -181,-75 -75,-75 -75,-181 0,-106 75,-181 75,-75 181,-75 106,0 181,75 75,75 75,181 z m 512,109 V 527 q 0,-12 -8,-23 -8,-11 -20,-13 l -185,-28 q -19,-54 -39,-91 35,-50 107,-138 10,-12 10,-25 0,-13 -9,-23 -27,-37 -99,-108 -72,-71 -94,-71 -12,0 -26,9 l -138,108 q -44,-23 -91,-38 -16,-136 -29,-186 -7,-28 -36,-28 H 657 q -14,0 -24.5,8.5 Q 622,-111 621,-98 L 593,86 q -49,16 -90,37 L 362,16 Q 352,7 337,7 323,7 312,18 186,132 147,186 q -7,10 -7,23 0,12 8,23 15,21 51,66.5 36,45.5 54,70.5 -27,50 -41,99 L 29,495 Q 16,497 8,507.5 0,518 0,531 v 222 q 0,12 8,23 8,11 19,13 l 186,28 q 14,46 39,92 -40,57 -107,138 -10,12 -10,24 0,10 9,23 26,36 98.5,107.5 72.5,71.5 94.5,71.5 13,0 26,-10 l 138,-107 q 44,23 91,38 16,136 29,186 7,28 36,28 h 222 q 14,0 24.5,-8.5 Q 914,1391 915,1378 l 28,-184 q 49,-16 90,-37 l 142,107 q 9,9 24,9 13,0 25,-10 129,-119 165,-170 7,-8 7,-22 0,-12 -8,-23 -15,-21 -51,-66.5 -36,-45.5 -54,-70.5 26,-50 41,-98 l 183,-28 q 13,-2 21,-12.5 8,-10.5 8,-23.5 z"/></g></svg>
+		</div>
+		<div id="info-toggle">
+			<svg viewBox="-50 150 920 713" xmlns="http://www.w3.org/2000/svg" fill="#fff"><path d="M468.75 772.25l0 -348.75l-121.25 0l0 348.75l121.25 0zm-61.25 -410c40 0 71.25 -31.25 71.25 -72.5 0 -38.75 -31.25 -70 -71.25 -70s-71.25 31.25 -71.25 70c0 40 31.25 72.5 71.25 72.5zm-1.25 -268.75c223.75 0 406.25 181.25 406.25 406.25 0 223.75 -182.5 406.25 -406.25 406.25 -225 0 -406.25 -182.5 -406.25 -406.25 0 -225 181.25 -406.25 406.25 -406.25z"/></svg>
+		</div>
+		<div id="cities">
+<textarea id="city-names">London
+New York
+Shanghai
+Mumbai
+Tokyo
+Paris
+San Francisco
+Berlin
+Rio de Janeiro
+Moscow</textarea><br>
+			<input type="checkbox" id="show-weather" checked onclick="document.body.classList.toggle('weather')"> <label for="show-weather">Show weather text</label><br>
+
+		</div>
+		<div id="come-birds" class="fade-out">
+			Birdy birdy come come...
+		</div>
+		<div id="fly-away" class="fade-out">
+			Fly away!
+		</div>
+		<div id="i-see-you" class="fade-out">
+			I see you...
+		</div>
+		<div id="weather-data" class="fade-out">
+			<div><input id="city" value="London"></input><span id="my-location"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><circle id="surround" fill="none" stroke="#000000" stroke-miterlimit="10" cx="7.6" cy="7.5" r="5.4"/><rect x="7" width="1" height="1.9"/><rect x="7" y="13.1" width="1" height="1.9"/><rect x="13.1" y="7" width="1.9" height="1"/><rect x="0" y="7" width="1.9" height="1"/><circle id="center" cx="7.6" cy="7.5" r="3.5"/></svg></span></div>
+				
+
+			<div id="temperature">7 °C</div>
+			<hr>
+			<div><span id="weather-desc"></span>, <span id="cloud-cover">cloud cover 0%</span></div>
+			<div id="wind-data"><span id="wind-speed">wind 2.1 m/s</span> from <span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='15' width='15'><g id='wind-direction-arrow' transform='rotate(220 7.5 7.5)'><polygon points="0.2,7.4 14.8,11.1 11.4,7.4 14.8,3.7 " fill="white"/></g></svg></span></div>
+			<hr>
+		</div>
+		<div id="fullscreen"></div>
+		<div id="audio">
+			<div class="audio-info">Weather Wall for <a href="http://cm-studio.co.uk/" target="_blank">CM-(S)</a> by <a href="http://twitter.com/ilmarihei" target="_blank">FHTR</a> &mdash; Audio <span class="cn">美好的一天</span> by <a href="http://ftjelly.com" target="_blank">Lu Sisi</a></div>
+			<div id="audio-toggle" class="audio-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 75 75" fill="#fff" stroke="#fff"><polygon points="39.389,13.769 22.235,28.606 6,28.606 6,47.699 21.989,47.699 39.389,62.75 39.389,13.769" style="stroke-width:5;stroke-linejoin:round;"/><path class="vol" d="M 48.128,49.03 C 50.057,45.934 51.19,42.291 51.19,38.377 C 51.19,34.399 50.026,30.703 48.043,27.577" style="fill:none;stroke-width:5;stroke-linecap:round"/><path class="vol" d="M 55.082,20.537 C 58.777,25.523 60.966,31.694 60.966,38.377 C 60.966,44.998 58.815,51.115 55.178,56.076" style="fill:none;stroke-width:5;stroke-linecap:round"/><path class="vol" id="path1" d="M 61.71,62.611 C 66.977,55.945 70.128,47.531 70.128,38.378 C 70.128,29.161 66.936,20.696 61.609,14.01" style="fill:none;stroke-width:5;stroke-linecap:round"/></svg></div>
+			<audio id="audio-player" src="music_1.m4a" loop="true" autoplay="true"></audio>
+			<script>
+				(function() {
+					var toggle = document.getElementById('audio-toggle');
+					var container = document.getElementById('audio');
+					var player = document.getElementById('audio-player');
+					var targetVolume = 1;
+					var paused = false;
+
+					var play = function() {
+						targetVolume = 1;
+						player.play();
+						paused = false;
+						volumeTick();
+					};
+					var pause = function() {
+						targetVolume = 0;
+						paused = true;
+						volumeTick();
+					};
+					var volumeTick = function() {
+						var newVol = (targetVolume - player.volume) * 0.05 + player.volume;
+						if (Math.abs(newVol - targetVolume) < 0.01) {
+							newVol = targetVolume;
+							if (newVol === 0) {
+								player.pause();
+							}
+						}
+						player.volume = newVol;
+						if (newVol !== targetVolume) {
+							setTimeout(volumeTick, 10);
+						}
+					};
+
+					toggle.addEventListener('click', function(ev) {
+						ev.preventDefault();
+						paused ? play() : pause();
+						container.className = paused ? 'paused' : '';
+						if (window.localStorage) {
+							window.localStorage.audioEnabled = !paused;
+						}
+					}, false);
+					if (window.localStorage && window.localStorage.audioEnabled === 'false') {
+						container.className = 'paused';
+						player.removeAttribute('autoplay');
+						player.pause();
+						pause();
+					}
+				})();
+			</script>
+		</div>
+		<script type="text/glsl-vertex" id="corn-vert">
+			attribute float afStalkIndex;
+			
+			uniform float ufGlobalTime;
+			uniform float ufWindDirection;
+			uniform float ufWindStrength;
+
+			uniform float ufImpulse;
+			uniform float ufGrassHeight;
+
+			varying vec3 vpos;
+			varying vec3 vnor;
+
+			void main() {
+				vec4 p = vec4(position, 1.0);
+				vpos = position;
+				vnor = normal;
+				float a = 0.009*afStalkIndex+ufGlobalTime;
+				float r = 0.5*pow(p.y/8.0, 2.0);
+				float mag = (sin(afStalkIndex+ufGlobalTime*0.1) + r * (1.0-0.2*cos(a*4.0))) * 10.0 * ufWindStrength;
+				float dir = ufWindDirection;
+
+				float impulse = ufImpulse;
+				p.x += mag * impulse * 16.0 * (normalize(position).x);
+				p.y *= 1.0 + impulse * mag;
+				p.z += mag * impulse * 16.0 * 1.0;
+
+				p.y *= ufGrassHeight;
+				if (ufGrassHeight < 0.01) {
+					p.x = p.z = p.y = 0.0;
+				}
+
+				p.x += mag * cos(dir);
+				p.z += mag * sin(dir);
+
+
+				//p.y += r * cos(a);
+
+				gl_Position = projectionMatrix * modelViewMatrix * p;
+			}
+		</script>
+		<script type="text/glsl-fragment" id="corn-frag">
+			precision highp float;
+			precision mediump int;
+
+			uniform float ufGlobalTime;
+			uniform vec2 uv2Resolution;
+			uniform mat4 um4CameraMatrix;
+			uniform vec3 uv3CameraPosition;
+
+			uniform float ufCloudCover;
+			uniform float ufRainAmount;
+			uniform float ufSunPosition;
+			uniform float ufWindDirection;
+			uniform float ufWindStrength;
+			uniform float ufGrassHeight;
+			uniform float ufPixelRatio;
+
+			uniform sampler2D usRandomTex;
+
+			varying vec3 vpos;
+			varying vec3 vnor;
+
+			float scene(vec3 p)
+			{
+				return p.y-(-2.0);
+			}
+
+			vec3 shadeBg(vec3 nml)
+			{
+				float aspect = uv2Resolution.x/uv2Resolution.y;
+				vec3 bgLight = normalize(vec3(
+			        -cos(ufSunPosition * 3.14159)*0.2*aspect,
+					-sin(ufSunPosition * 3.14159)*0.6,
+			        1.0
+				));
+				float skyPow = dot(nml, vec3(0.0, -1.0, 0.0));
+				float sunDot = dot(bgLight, nml) * (skyPow > 0.0 ? 1.0 : smoothstep(-0.6, 0.0, skyPow));
+				float sunSize = 0.0006;
+				float sunAA = sunSize / 25.0;
+			    float sunD = sunDot > (1.0-sunSize) ? 1.0 - max(0.0, 1.0/sunAA * (1.0-sunSize+sunAA - sunDot)) : 0.0;
+				vec3 sun = vec3(6.5, 3.5, 2.0);
+			    float centerPow = 0.0; //-dot(uv,uv);
+			    float horizonPow = pow(1.0-abs(skyPow), 3.0)*(5.0+centerPow);
+				float sunPow = sunDot;
+				float sp = max(sunPow, 0.0);
+			    float scattering = clamp(1.0 - abs(2.0*(-bgLight.y)), 0.0, 1.0);
+				vec3 bgCol = max(0.0, skyPow)*2.0*vec3(0.8, 0.85, 0.9);
+				bgCol += vec3(0.5,0.4,0.3)*(horizonPow);
+				bgCol += sun*(sunD+pow( sp, max(256.0, abs(bgLight.y)*1024.0) ));
+				bgCol += vec3(0.4,0.2,0.15)*(pow( sp, 16.0) + pow( sp, max(16.0, abs(bgLight.y)*256.0) ));
+			    bgCol *= mix(vec3(0.7, 0.85, 0.95), vec3(1.0, 0.45, 0.1), scattering);
+
+			    if (nml.y < 0.0) {
+				    float cloud = 0.0;
+				    bgCol = mix(bgCol, vec3(0.95-0.4*ufRainAmount), ufCloudCover*(1.0-cloud));
+				    bgCol *= 1.0-cloud*ufCloudCover;
+			    } else {
+				    bgCol = mix(bgCol, vec3(0.95-0.4*ufRainAmount), ufCloudCover);
+			    }
+
+			    bgCol *= 1.0 - clamp(bgLight.y*3.0, 0.0, 0.6);
+				return pow(max(vec3(0.0), bgCol), vec3(2.6));
+			}
+
+			vec3 project(vec3 v, mat4 e)
+			{
+				float d = 1.0 / ( e[0][ 3 ] * v.x + e[1][ 3 ] * v.y + e[2][ 3 ] * v.z + e[3][ 3 ] );
+				return vec3(
+					( e[ 0 ][0] * v.x + e[ 1 ][0] * v.y + e[ 2 ][0]  * v.z + e[ 3 ][0] ) * d,
+					( e[ 0 ][1] * v.x + e[ 1 ][1] * v.y + e[ 2 ][1]  * v.z + e[ 3 ][1] ) * d,
+					( e[ 0 ][2] * v.x + e[ 1 ][2] * v.y + e[ 2 ][2] * v.z + e[ 3 ][2] ) * d
+				);
+			}
+
+			void main(void)
+			{
+				float aspect = uv2Resolution.x/uv2Resolution.y;
+				vec3 bgLight = normalize(vec3(
+			        -cos(ufSunPosition * 3.14159)*0.2*aspect,
+					-sin(ufSunPosition * 3.14159)*0.6,
+			        1.0
+				));
+
+				vec2 uv = (2.0 * (gl_FragCoord.xy*ufPixelRatio / uv2Resolution) - 1.0);
+				vec3 d = normalize(project(vec3(uv, 1.0), um4CameraMatrix) - uv3CameraPosition);
+				vec3 p = uv3CameraPosition;
+			    vec3 bg = shadeBg(-d);
+			    vec3 col = dot(vnor, vec3(-bgLight.x, -bgLight.y, bgLight.z)) * shadeBg(-reflect(d, vnor)) + abs(1.0-dot(vnor, d))*bg;
+			    float fade = min(0.9, 0.2*abs(vpos.y));
+			    if (ufGrassHeight < 0.1) {
+			    	fade *= ufGrassHeight / 0.1;
+			    }
+				gl_FragColor = vec4( ( (1.0 - exp(-1.3 * col)) ), fade );
+			}
+		</script>
+		<script type="text/glsl-fragment" id="corn-frag-simple">
+			precision highp float;
+			precision mediump int;
+
+			uniform float ufGlobalTime;
+			uniform vec2 uv2Resolution;
+			uniform mat4 um4CameraMatrix;
+			uniform vec3 uv3CameraPosition;
+
+			uniform float ufCloudCover;
+			uniform float ufRainAmount;
+			uniform float ufSunPosition;
+			uniform float ufWindDirection;
+			uniform float ufWindStrength;
+			uniform float ufGrassHeight;
+			uniform float ufPixelRatio;
+
+			uniform sampler2D usRandomTex;
+
+			varying vec3 vpos;
+			varying vec3 vnor;
+
+			float scene(vec3 p)
+			{
+				return p.y-(-2.0);
+			}
+
+			vec3 shadeBg(vec3 nml)
+			{
+				float aspect = uv2Resolution.x/uv2Resolution.y;
+				vec3 bgLight = normalize(vec3(
+			        -cos(ufSunPosition * 3.14159)*0.2*aspect,
+					-sin(ufSunPosition * 3.14159)*0.6,
+			        1.0
+				));
+				vec3 sun = vec3(6.5, 3.5, 2.0);
+				float skyPow = dot(nml, vec3(0.0, -1.0, 0.0));
+			    float scattering = clamp(1.0 - abs(2.0*(-bgLight.y)), 0.0, 1.0);
+				vec3 bgCol = max(0.0, skyPow)*2.0*vec3(0.8, 0.85, 0.9);
+			    bgCol = mix(vec3(0.7, 0.85, 0.95), vec3(1.0, 0.45, 0.1), scattering);
+
+			    if (nml.y < 0.0) {
+				    float cloud = 0.0;
+				    bgCol = mix(bgCol, vec3(0.95-0.4*ufRainAmount), ufCloudCover*(1.0-cloud));
+				    bgCol *= 1.0-cloud*ufCloudCover;
+			    } else {
+				    bgCol = mix(bgCol, vec3(0.95-0.4*ufRainAmount), ufCloudCover);
+			    }
+
+			    bgCol *= 1.0 - clamp(bgLight.y*3.0, 0.0, 0.6);
+				return pow(max(vec3(0.0), bgCol), vec3(2.6));
+			}
+
+			vec3 project(vec3 v, mat4 e)
+			{
+				float d = 1.0 / ( e[0][ 3 ] * v.x + e[1][ 3 ] * v.y + e[2][ 3 ] * v.z + e[3][ 3 ] );
+				return vec3(
+					( e[ 0 ][0] * v.x + e[ 1 ][0] * v.y + e[ 2 ][0]  * v.z + e[ 3 ][0] ) * d,
+					( e[ 0 ][1] * v.x + e[ 1 ][1] * v.y + e[ 2 ][1]  * v.z + e[ 3 ][1] ) * d,
+					( e[ 0 ][2] * v.x + e[ 1 ][2] * v.y + e[ 2 ][2] * v.z + e[ 3 ][2] ) * d
+				);
+			}
+
+			void main(void)
+			{
+				float aspect = uv2Resolution.x/uv2Resolution.y;
+				vec3 bgLight = normalize(vec3(
+			        -cos(ufSunPosition * 3.14159)*0.2*aspect,
+					-sin(ufSunPosition * 3.14159)*0.6,
+			        1.0
+				));
+
+				vec2 uv = (2.0 * (gl_FragCoord.xy*ufPixelRatio / uv2Resolution) - 1.0);
+				vec3 d = normalize(project(vec3(uv, 1.0), um4CameraMatrix) - uv3CameraPosition);
+				vec3 p = uv3CameraPosition;
+			    vec3 bg = shadeBg(-d);
+			    vec3 col = dot(vnor, vec3(-bgLight.x, -bgLight.y, bgLight.z)) * shadeBg(-reflect(d, vnor)) + abs(1.0-dot(vnor, d))*bg;
+			    float fade = min(0.9, 0.2*abs(vpos.y));
+			    if (ufGrassHeight < 0.1) {
+			    	fade *= ufGrassHeight / 0.1;
+			    }
+				gl_FragColor = vec4( ( (1.0 - exp(-1.3 * col)) ), fade );
+			}
+		</script>
+		<script type="text/glsl-vertex" id="rain-vert">
+			attribute float afDropIndex;
+
+			uniform float ufGlobalTime;
+			uniform float ufWindDirection;
+			uniform float ufRainAmount;
+			uniform float ufWindStrength;
+
+			varying float opacity;
+			varying float rainY;
+
+			vec3 hash3( float n )
+			{
+			    return fract(sin(vec3(n,n+1.0,n+2.0))*vec3(43758.5453123,22578.1459123,19642.3490423));
+			}
+
+			void main() {
+				vec4 p = vec4(position, 1.0);
+				rainY = p.y;
+				opacity = (ufRainAmount > 0.0 ? 0.5+0.5*ufRainAmount : 0.0);
+				vec3 h = (hash3(afDropIndex)-vec3(0.5)) * 2000.0;
+				float fallDisplacement = mod(sin(h.y+0.001*ufGlobalTime)*120.0 - 300.0*ufGlobalTime, 150.0+(h.x)/123.456);
+				vec3 velocityVec = vec3(-ufWindStrength*2.0 * cos(ufWindDirection), 1.0, -ufWindStrength*2.0 * sin(ufWindDirection)) * fallDisplacement;
+				float xoff = 8.0 * sin(h.x+0.001*ufGlobalTime) * 120.0;
+				float yoff = -30.0;
+				float zoff = abs(cos(h.z+0.001*ufGlobalTime)) * 120.0 - 100.0;
+				p.xy *= 0.1;
+				float yf = 40.0 + 150.0 * ufRainAmount;
+				p.y *= yf;
+				p.y += yoff;
+				p.x += xoff + velocityVec.x * p.y * (1.75/150.0);
+				p.z += zoff + velocityVec.z * p.y * (1.75/150.0);
+				p.xyz += velocityVec;
+				// gl_Position = p;
+				gl_Position = projectionMatrix * modelViewMatrix * p;
+			}
+		</script>
+		<script type="text/glsl-fragment" id="rain-frag">
+			precision highp float;
+			precision mediump int;
+
+			uniform float ufGlobalTime;
+			varying float opacity;
+			varying float rainY;
+
+			void main(void)
+			{
+			    vec3 col = vec3(1.0);
+				gl_FragColor = vec4(clamp((0.5*gl_FragCoord.z), 0.0, 1.0)*col, (1.0 - abs(2.0*(0.5-rainY))) * 0.2 * opacity );
+			}
+		</script>
+		<script type="text/glsl-vertex" id="bg-vert">
+			void main() {
+				gl_Position = vec4(position, 1.0);
+			}
+		</script>
+		<script type="text/glsl-fragment" id="bg-frag">
+			precision highp float;
+			precision mediump int;
+
+			uniform float ufGlobalTime;
+			uniform vec2 uv2Resolution;
+			uniform mat4 um4CameraMatrix;
+			uniform vec3 uv3CameraPosition;
+
+			uniform float ufCloudCover;
+			uniform float ufRainAmount;
+			uniform float ufSunPosition;
+			uniform float ufWindDirection;
+			uniform float ufWindStrength;
+
+			uniform sampler2D usRandomTex;
+
+			float noise( vec3 x )
+			{
+			    vec3 p = floor(x);
+			    vec3 f = fract(x);
+				f = f*f*(3.0-2.0*f);
+				
+				vec2 uv = (p.xy+vec2(37.0,17.0)*p.z) + f.xy;
+				vec2 rg = texture2D( usRandomTex, (uv + 0.5)/256.0, -16.0 ).yx;
+				return mix( rg.x, rg.y, f.z );
+			}
+
+			float map(vec3 p) {
+			    vec3 q = vec3(0.2)*p + vec3(-cos(ufWindDirection), -0.2, -sin(ufWindDirection))*(ufGlobalTime*10.0*ufWindStrength);
+			    float n = 0.0, f = 0.5;
+			    n += f*noise(q); q *= 3.001; f *= 0.333;
+			    n += f*noise(q); q *= 3.002; f *= 0.332;
+			    n += f*noise(q); q *= 3.003; f *= 0.331;
+				n += f*noise(q);
+			    return n;
+			}
+
+			vec3 shadeBg(vec3 nml)
+			{
+				float aspect = uv2Resolution.x/uv2Resolution.y;
+				vec3 bgLight = normalize(vec3(
+			        -cos(ufSunPosition * 3.14159)*0.2*aspect,
+					-sin(ufSunPosition * 3.14159)*0.6,
+			        1.0
+				));
+				float skyPow = dot(nml, vec3(0.0, -1.0, 0.0));
+				float sunDot = dot(bgLight, nml) * (skyPow > 0.0 ? 1.0 : smoothstep(-0.6, 0.0, skyPow));
+				float sunSize = 0.0006;
+				float sunAA = sunSize / 3.0;
+			    float sunD = sunDot > (1.0-sunSize) ? 1.0 - max(0.0, 1.0/sunAA * (1.0-sunSize+sunAA - sunDot)) : 0.0;
+				vec3 sun = vec3(6.5, 3.5, 2.0);
+			    float centerPow = 0.0;
+			    float horizonPow = pow(1.0-abs(skyPow), 3.0)*(5.0+centerPow);
+				float sunPow = sunDot;
+				float sp = max(sunPow, 0.0);
+			    float scattering = clamp(1.0 - abs(2.0*(-bgLight.y)), 0.0, 1.0);
+				vec3 bgCol = max(0.0, skyPow)*2.0*vec3(0.8, 0.85, 0.9);
+				bgCol += vec3(0.3,0.4,0.5)*(horizonPow);
+				bgCol += sun*(sunD+pow( sp, max(256.0, abs(bgLight.y)*1024.0) ));
+				bgCol += vec3(0.4,0.2,0.15)*(pow( sp, 16.0) + pow( sp, max(16.0, abs(bgLight.y)*256.0) ));
+			    bgCol *= mix(vec3(0.7, 0.85, 0.95), vec3(1.0, 0.45, 0.1), scattering);
+
+			    if (nml.y < 0.0) {
+				    float cc = 0.0;
+				    if (ufCloudCover < 0.1) {
+				        cc = 0.0 + 0.2 * (ufCloudCover - 0.0)/0.1;
+				    } else if (ufCloudCover < 0.2) {
+				        cc = 0.2 + 0.1 * (ufCloudCover - 0.1)/0.1;
+				    } else if (ufCloudCover < 0.3) {
+				        cc = 0.3 + 0.1 * (ufCloudCover - 0.2)/0.1;
+				    } else if (ufCloudCover < 0.5) {
+				        cc = 0.4 + 0.1 * (ufCloudCover - 0.3)/0.3;
+				    } else if (ufCloudCover < 0.75) {
+				        cc = 0.5 + 0.2 * pow((ufCloudCover - 0.5)/0.25, 2.0);
+				    } else {
+				        cc = 0.7 + 0.75 * pow((ufCloudCover - 0.75)/0.25, 2.0);
+				    }
+				    float cloud = 0.0;
+				    cloud += min(1.0, (1.0-smoothstep(0.0, cc, map(nml*5.0/nml.y)))) * 0.8;
+				    cloud += min(1.0, (1.0-smoothstep(0.0, cc, map(nml*15.0/nml.y)))) * 0.3;
+				    cloud *= pow(abs(nml.y), 1.0);
+				    bgCol = mix(bgCol, vec3(0.95-0.4*ufRainAmount), cloud);
+				    bgCol *= 1.0+cloud;
+			    } else {
+				    bgCol = mix(bgCol, vec3(0.95-0.4*ufRainAmount), ufCloudCover);
+			    }
+
+			    bgCol *= 1.0 - clamp(bgLight.y*3.0, 0.0, 0.6);
+				return pow(max(vec3(0.0), bgCol), vec3(2.6));
+			}
+
+			vec3 project(vec3 v, mat4 e)
+			{
+				float d = 1.0 / ( e[0][ 3 ] * v.x + e[1][ 3 ] * v.y + e[2][ 3 ] * v.z + e[3][ 3 ] );
+				return vec3(
+					( e[ 0 ][0] * v.x + e[ 1 ][0] * v.y + e[ 2 ][0]  * v.z + e[ 3 ][0] ) * d,
+					( e[ 0 ][1] * v.x + e[ 1 ][1] * v.y + e[ 2 ][1]  * v.z + e[ 3 ][1] ) * d,
+					( e[ 0 ][2] * v.x + e[ 1 ][2] * v.y + e[ 2 ][2] * v.z + e[ 3 ][2] ) * d
+				);
+			}
+
+			float scene(vec3 p)
+			{
+				return p.y-(-2.0); //-map(p)*0.001;
+			}
+
+			vec3 normal(vec3 p, float d)
+			{
+			return vec3(0.0, 1.0, 0.0);
+//				float e = 0.05;
+//				float dx = scene(vec3(e, 0.0, 0.0) + p) - d;
+//				float dy = scene(vec3(0.0, e, 0.0) + p) - d;
+//				float dz = scene(vec3(0.0, 0.0, e) + p) - d;
+//				return normalize(vec3(dx, dy, dz));
+			}
+
+			void main(void)
+			{
+				vec2 uv = (2.0 * (gl_FragCoord.xy / uv2Resolution) - 1.0);
+				vec3 d = normalize(project(vec3(uv, 1.0), um4CameraMatrix) - uv3CameraPosition);
+				vec3 p = uv3CameraPosition;
+			    vec3 tr = vec3(1.0);
+			    if (d.y < 0.0) {
+			        float dist = -2.0 / d.y - p.y / d.y; // p.y + d.y * dist = -2.0;
+			        p += d * dist;
+			        vec3 nml = normal(p, 0.0);
+			        float f = pow(1.0-dot(d, -vec3(0.0, 1.0, 0.0)), 5.0);
+			        nml = mix(nml, vec3(0.0, 1.0, 0.0), f);
+			        d = reflect(d, nml);
+			        tr *= mix(0.5*vec3(0.5, 0.9, 0.75), vec3(1.0), f);
+			    }
+			    vec3 col = tr * shadeBg(-d);
+			    vec4 noise = (texture2D(usRandomTex, mod(gl_FragCoord.xy/256.0, 1.0))-0.5) / 64.0;
+				gl_FragColor = vec4(noise.rgb + (1.0 - exp(-1.3 * col)), 1.0 );
+			}
+		</script>
+		<script src="js/lib/three.js"></script>
+		<script src="js/corngeneration.js"></script>
+		<script src="js/corn.js"></script>
+		<script src="js/rain.js"></script>
+		<script src="js/weatherdata.js"></script>
+		<!-- <script src="https://freegeoip.io/json/?callback=fetchCities"></script> -->
+		<script src="js/weathertick.js"></script>
+		<script src="js/particles.js"></script>
+		<script src="js/birds.js"></script>
+		<script src="js/impacts.js"></script>
+		<!-- <script src="js/kinect-ws.js"></script> -->
+		<!-- <script src="js/microphone.js"></script> -->
+		<script src="js/corn_algo_doodle.js"></script>
+		<script src="//use.typekit.net/svb7vim.js" async="true"></script>
+		<script type="text/javascript">(function(){var t=function(){try{Typekit.load()}catch(e){setTimeout(t,100)}};t()})()</script>
+	</body>
+</html>

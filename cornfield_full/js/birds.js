@@ -162,14 +162,15 @@ var birdsTick = function() {
 
 		bird.position.add(birdsTickTmpV);
 
-		if (bird.position.y < 4) {
+		if (bird.position.y < 12) {
 			bird.velocity.y += 0.005;
 			bird.velocity.multiplyScalar(0.97);
 		}
-		if (bird.position.y < 0) {
-			bird.position.y = 0;
-			bird.velocity.multiplyScalar(-0.1);
+		if (bird.position.y < 4) {
+			bird.position.y = 4;
+			bird.velocity.multiplyScalar(-1);
 		}
+
 		bird.phase += (bird.velocity.length()/0.01)/60;
 
 		bird.position.x = Math.max(Math.min(bird.position.x, 400), -400);

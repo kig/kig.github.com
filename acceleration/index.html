@@ -1,0 +1,634 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+		<title>create</title>
+		<script>
+			window.DEBUG = true;
+			window.startScript = Date.now();
+			window.windows = /windows/i.test(navigator.userAgent);
+			window.mobile = /mobile/i.test(navigator.userAgent);
+			window.shaderURLs = ['mblur.frag'];
+			window.Loader = {
+				cache: {},
+				get: function(files, callback) {
+					var results = [];
+					var count = 0;
+					var ondone = function(i){
+						return function(data) {
+							results[i] = data;
+							count++;
+							if (count === files.length) {
+								if (callback) {
+									callback.apply(null, results);
+								}
+							}
+						}
+					};
+					var self = this;
+					for (var i=0; i<files.length; i++) {
+						var f = this.cache[files[i]];
+						if (f) {
+							if (f.listeners !== undefined) {
+								f.listeners.push(ondone(i));
+							} else {
+								ondone(i)(f);
+							}
+						} else {
+							f = this.cache[files[i]] = {listeners: [ondone(i)]};
+							(function(i){
+								var xhr = new XMLHttpRequest();
+								xhr.open('GET', files[i], true);
+								xhr.onload = function(ev) {
+									var l = self.cache[files[i]].listeners;
+									var f = self.cache[files[i]] = this.responseText;
+									for (var j=0; j<l.length; j++) {
+										l[j](f);
+									}
+								};
+								xhr.send(null);
+							})(i);
+						}
+					}
+				}
+			};
+			Loader.get(shaderURLs);
+		</script>
+		<style>
+			html,body {
+				margin: 0;
+				padding: 0;
+				overflow: hidden;
+				font-family: 'futura-pt', sans-serif;
+				font-weight: 100;
+				text-align: center;
+				-webkit-perspective: 1200px;
+				width: 100%;
+				height: 100%;
+				background-color: white;
+			}
+
+			#glcanvas {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				width: 100%;
+				height: 100%;
+			}
+
+			#title {
+				z-index: 2;
+				position: absolute;
+				left: 0px;
+				top: 0px;
+				font-size: 80px;
+				font-family: 'futura-pt',sans-serif;
+				font-weight: 100;
+				width: 100%;
+				text-align: center;
+				color: black;
+				cursor: default;
+				pointer-events:none;
+				opacity: 0;
+				transition: 1s ease-in opacity, 1s ease-out transform;
+				transform: translateY(-15px);
+			}
+			.wf-futurapt-n3-active.wf-active #title {
+				opacity: 1;
+				transform: translateY(0px);
+			}
+
+			h1,h3,hr {
+				display: inline-block;
+				margin: 0;
+				padding: 0;
+			}
+			
+			h1 {
+				font-weight: 100;
+				margin: 0;
+				font-size:  40px;
+				position: relative;
+				top: -10px;
+			}
+			
+			h3 {
+				font-weight: 100;
+				margin: 0;
+				text-transform: uppercase;
+				letter-spacing: 10px;
+				margin-left: 10px;
+				font-size: 10px;
+				position: relative;
+				top: -16px;
+			}
+			
+			hr {
+				background: black;
+				border: 0px;
+				opacity: 0.2;
+				width: 1px;
+				height: 40px;
+				margin-left: 10px;
+				margin-right: 10px;
+			}
+
+			a {
+				text-decoration: none;
+				color: #000;
+				pointer-events: normal;
+			}
+
+			.content-3d {
+				position: absolute;
+				transform-style: preserve-3d;
+				perspective: 800px;
+				pointer-events: none;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+				z-index: 1;
+			}
+
+			.content-3d > div {
+				position: absolute;
+				background: rgba(255,255,255,0.8);
+				border-radius: 10px;
+				padding: 10px;
+			}
+
+			.content-3d h3 {
+				top: 0;
+			}
+
+			.timeline {
+				position: absolute;
+				bottom: 0px;
+				left: 0px;
+				height: 200px;
+				background: #444;
+				box-sizing: border-box;
+				width: 100%;
+				z-index: 10;
+				padding: 10px;
+			    font-family: BlinkMacSystemFont, sans-serif;
+			    font-size: 11px;
+			}
+
+			.timestrip {
+				right: 8px;
+				height: 20px;
+				top: 36px;
+				left: 120px;
+				width: auto;
+				position: absolute;
+				border-radius: 2px;
+
+				overflow-y: hidden;
+				overflow-x: auto;
+
+				z-index: 1;
+
+				border: 1px solid #888;
+				background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 8 20"><g><rect fill="#666" x="0" y="0" width="1" height="20"/></g></svg>') -1px 0 / 8px 20px;
+			}
+
+			.active-time {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				width: 10px;
+				height: 20px;
+				margin-right: 200px;
+
+				background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 8 20"><g><rect fill="#666" x="0" y="0" width="1" height="20"/></g></svg>') -1px 0 / 8px 20px, #333;
+			}
+
+			.active-time:after {
+				position: absolute;
+				right: -400px;
+				content: "";
+				display: block;
+				width: 400px;
+				height: 100%;
+				pointer-events: none;
+			}
+
+			.keyframes {
+				position: absolute;
+				z-index: 1;
+				top: 0;
+				left: 0;
+			}
+
+			.object-select {
+				position: absolute;
+				left: 10px;
+				top: 10px;
+				bottom: 8px;
+				height: auto;
+				width: 104px;
+			}
+
+			.object-select select {
+				width: 100%;
+				height: 100%;
+				vertical-align: top;				
+			}
+
+			.timeline select {
+				background: #444;
+				border: 1px solid #888;
+				color: #888;
+				margin: 0;
+				padding: 0;
+				border-radius: 2px;
+			}
+
+			.playback-controls {
+				position: absolute;
+				left: 120px;
+				top: 10px;
+				height: 20px;
+				width: 160px;
+				text-align: left;
+				margin: 0;
+			}
+
+			.playback-controls button {
+				width: 20px;
+				height: 20px;
+				margin: 0;
+				margin-right: 2px;
+			}
+
+			.playback-controls .rewind {
+				background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 18 18"><g><polygon fill="#888" transform="translate(-2, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/><polygon fill="#888" transform="translate(2, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/></g></svg>') 50% 50% / 80% no-repeat, #444;
+			}
+
+			.playback-controls .previous-keyframe {
+				background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 18 18"><g><polygon fill="#888" transform="translate(-2, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/><polygon fill="#888" transform="translate(2, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/></g></svg>') 50% 50% / 80% no-repeat, #444;
+			}
+
+			.playback-controls .previous-frame {
+				background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 18 18"><g><polygon fill="#888" transform="translate(-2, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/><polygon fill="#888" transform="translate(2, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/></g></svg>') 50% 50% / 80% no-repeat, #444;
+			}
+
+			.playback-controls .fast-forward {
+				background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 18 18"><g><polygon fill="#888" transform="scale(-1, 1) translate(-16, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/><polygon fill="#888" transform="scale(-1, 1) translate(-20, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/></g></svg>') 50% 50% / 80% no-repeat, #444;
+			}
+
+			.playback-controls .next-frame {
+				background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 18 18"><g><polygon fill="#888" transform="scale(-1, 1) translate(-16, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/><polygon fill="#888" transform="scale(-1, 1) translate(-20, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/></g></svg>') 50% 50% / 80% no-repeat, #444;
+			}
+
+			.playback-controls .next-keyframe {
+				background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 18 18"><g><polygon fill="#888" transform="scale(-1, 1) translate(-16, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/><polygon fill="#888" transform="scale(-1, 1) translate(-20, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/></g></svg>') 50% 50% / 80% no-repeat, #444;
+			}
+
+			.playback-controls .play {
+				background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 18 18"><g><polygon fill="#888" transform="scale(-1, 1) translate(-18, 0)" points="12.1,4.1 11,3 6.1,7.9 5,9 6.1,10.1 11,15 12.1,13.9 12.1,9"/></g></svg>') 50% 50% / 90% no-repeat, #444;
+			}
+
+			.keyframe {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 6px;
+				height: 18px;
+				cursor: pointer;
+				background: #8c8;
+				border: 1px solid #8f8;
+				border-radius: 1px;
+				opacity: 0.5;
+			}
+
+			.keyframe.selected {
+				opacity: 1;
+			}
+
+			.playhead {
+				position: absolute;
+				top: 37px;
+				left: 0;
+				width: 1px;
+				height: 154px;
+				margin-left: 124px;
+				cursor: pointer;
+				background: #f00; 
+				/*rgba(200, 127, 127, 0.5);*/
+				/*border: 1px solid #f88;*/
+				/*border-radius: 1px;*/
+				z-index: 2;
+				pointer-events: none;
+			}
+
+			.end-of-time {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 13px;
+				height: 18px;
+				cursor: pointer;
+				border: 1px solid #888;
+				border-radius: 1px;
+				z-index: 5;
+				background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 18"><g><polygon fill="#888" transform="scale(1, 1) translate(-5, 0)"  points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/><polygon fill="#888" transform="scale(-1, 1) translate(-26, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/></g></svg>') 50% 50% / 70% no-repeat, #444;
+			}
+
+			.timestrip-scroll {
+				right: 10px;
+				height: 20px;
+				top: 40px;
+				left: 120px;
+				width: auto;
+				position: absolute;
+				border-radius: 4px;
+				background: #333;
+			}
+
+			.left-arrow {
+				position: absolute;
+				left: 0;
+				top: 0;
+				height: 18px;
+				width: 18px;
+				border: 1px solid #888;
+				border-radius: 3px;
+				background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 18 18"><g><polygon fill="#888" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/></g></svg>') 50% 50% / 90% no-repeat, #444;
+			}
+
+			.right-arrow {
+				position: absolute;
+				right: 0;
+				top: 0;
+				height: 18px;
+				width: 18px;
+				border: 1px solid #888;
+				border-radius: 3px;
+				background: #444;
+				background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 18 18"><g><polygon fill="#888" transform="scale(-1, 1) translate(-18, 0)" points="12.1,4.1 11,3 6.1,7.9 6.1,7.9 5,9 5,9 5,9 6.1,10.1 6.1,10.1 11,15 12.1,13.9 7.3,9"/></g></svg>') 50% 50% / 90% no-repeat, #444;
+			}
+
+			.scroll-bar {
+				position: absolute;
+				left: 22px;
+				top: 0;
+				height: 18px;
+				width: 180px;
+				border: 1px solid #888;
+				border-radius: 3px;
+				background: #444;
+			}
+
+			.object-details {
+				position: absolute;
+				text-align: left;
+				top: 70px;
+				bottom: 10px;
+				left: 10px;
+				width: 360px;
+				height: auto;
+				color: #888;
+				font-weight: 400;
+				display: none;
+			}
+
+			.object-details.part-2 {
+				left: 355px;
+				border-left: 1px solid #666;
+				padding-left: 20px;
+			}
+
+			.timeline p > span {
+				display: inline-block;
+				width: 80px;
+			}
+
+			.timeline p {
+				margin: 0;
+				margin-top: 2px;
+				margin-bottom: 2px;
+			}
+
+			.timeline input,
+			.timeline button {
+				border: 1px solid #888;
+				border-radius: 3px;
+				background: #444;
+				color: #888;
+				margin-left: 10px;
+				margin-right: 10px;
+			}
+
+			.timeline input {
+				width: 50px;
+			}
+
+			.timeline input[type="number"] {
+				width: 30px;
+			}
+
+			.timeline button {
+				margin-left: 0;
+				margin-right: 0;
+			}
+
+			.keyframe-buttons {
+				position: absolute;
+				text-align: left;
+				top: 10px;
+				left: 270px;
+				width: auto;
+				height: auto;
+				color: #888;
+				font-weight: 400;
+				padding-left: 20px;
+			}
+
+			.keyframe-editor {
+				position: absolute;
+				text-align: left;
+				top: 64px;
+				bottom: 10px;
+				left: 120px;
+				right: 10px;
+				width: auto;
+				height: auto;
+				color: #888;
+				font-weight: 400;
+			}
+
+			.keyframe-editor p {
+				pointer-events: none;
+			}
+
+			.curve-editor {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				width: 100%;
+				height: 100%;
+
+				border: 1px solid #888;
+				border-radius: 2px;
+
+			}
+
+			.curve-editor svg {
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: 2;
+				width: 100%;
+				height: 100%;
+			}
+
+			.curve-editor:before {
+				position: absolute;
+				z-index: 1;
+				content: "";
+				width: 100%;
+				top: 50%;
+				left: 0px;
+				height: 1px;
+				background: #666;
+				display: block;
+			}
+
+		</style>
+	</head>
+	<body>
+		<div id="title">
+			<h1>create</h1>
+			<hr>
+			<h3>shapes</h3>
+		</div>
+		<div class="content-3d">
+		</div>
+		<div class="timeline">
+			<div class="object-select">
+				<select multiple title="Selected object">
+					<option>Camera</option>
+					<option>Sky</option>
+					<option>Sphere 0</option>
+					<option>Sphere 1</option>
+					<option>Sphere 2</option>
+					<option>Sphere 3</option>
+					<option>Sphere 4</option>
+					<option>Sphere 5</option>
+					<option>Sphere 6</option>
+					<option>Sphere 7</option>
+					<option>Sphere 8</option>
+				</select>
+			</div>
+			<div class="playhead"></div>
+			<div class="timestrip">
+				<div class="keyframes"></div>
+				<div class="active-time">
+					<div class="start-time"></div>
+					<div class="end-time"></div>
+					<div class="end-of-time" title="Adjust length of animation"></div>
+				</div>
+			</div>
+<!-- 			<div class="timestrip-scroll">
+				<div class="left-arrow"></div>
+				<div class="right-arrow"></div>
+				<div class="scroll-bar"></div>
+			</div>
+ -->
+ 			<div class="playback-controls">
+				<button class="rewind" title="Go to start of animation [shift-Z]"></button>
+				<button class="previous-keyframe" title="Go to previous keyframe [alt-Z]"></button>
+				<button class="previous-frame" title="Go to previous frame [Z]"></button>
+				<button class="play" title="Play/pause animation [space]"></button>
+				<button class="next-frame" title="Go to next frame [X]"></button>
+				<button class="next-keyframe" title="Go to next keyframe [alt-X]"></button>
+				<button class="fast-forward" title="Go to end of animation [shift-X]"></button>
+			</div>
+			<div class="object-details">
+				<p><span>Position</span> X<input value="0.00 m"/> Y<input value="0.00 m"/> Z<input value="-13.00 m"/></p>
+				<p><span>Target</span> X<input value="0.00 m"/> Y<input value="0.00 m"/> Z<input value="-12.00 m"/></p>
+				<p><span>Roll</span> <label style="opacity: 0; pointer-events: none;">X</label><input value="0 deg"/></p>
+				<p><span>Focus Distance</span> <label style="opacity: 0; pointer-events: none;">X</label><input value="10.00 m"/></p>
+			</div>
+			<div class="object-details part-2">
+				<p><span>Focal Length</span> <input value="35 mm"/></p>
+				<p><span>ISO</span> <input value="200"/></p>
+				<p><span>Shutter Speed</span> <input value="1/120 s"/></p>
+				<p><span>Aperture Size</span> <input value="f/4"/></p>
+				<p><span>White Balance</span> <input value="6500K"/></p>
+			</div>
+			<div class="keyframe-buttons">
+				<button class="new-keyframe" title="Create / Edit keyframe at playhead [c]">New Keyframe</button>
+				<button class="delete-keyframe" title="Delete selected keyframe">Delete Keyframe</button>
+				<button class="delete-all-keyframes" title="Delete all keyframes on object timeline">Delete All Keyframes</button>
+			</div>
+			<div class="keyframe-editor">
+				<div class="curve-editor" title="Animation Curve">
+					<svg class="curveEditorCanvas">
+						<g class="tween-curve-container" style="display:none;" transform="translate(10 10)">
+							<path class="pc1" d="M 0 0" stroke="#666666" fill="none" />
+							<path class="pc2" d="M 0 0" stroke="#666666" fill="none" />
+							<path class="curve" d="M 0 100 L 0 100 C 25 75 75 25 100 0 L 100 0" stroke-width="2" stroke="#888888" fill="none" />
+							<circle class="p1" cx="0" cy="100" r="5" stroke="#888888" fill="#444444" />
+							<circle class="p2" cx="100" cy="0" r="5" stroke="#888888" fill="#444444" />
+							<rect class="c1" x="20" y="70" width="11" height="11" stroke="#888888" fill="#444444" />
+							<rect class="c2" x="70" y="20" width="11" height="11" stroke="#888888" fill="#444444" />
+						</g>
+						<g class="f-curve-container">
+							<g class="f-curves" stroke-width="1" stroke="#888888" fill="none" />
+							<g class="f-curve-dots" fill="none" stroke-width="1" stroke="rgba(255,192,0,0.5)" />
+						</g>
+					</svg>
+				</div>
+			</div>
+		</div>
+		<ul id="shaders"></ul>
+		<script src="zardoz.js" async="true"></script>
+		<script>
+			(function() {
+				// Overlap random texture creation with loading network assets.
+				var t0 = Date.now();
+				var canvas = document.createElement('canvas');
+				var id = new Uint8Array(256*256*4);
+				id.width=256;
+				id.height=256;
+				for (var y=0; y<256; y++) {
+					for (var x=0; x<256; x++) {
+						var off = (y*256 + x) | 0;
+						var off2 = (((y+17) % 256)*256 + ((x+37) % 256)) | 0;
+						var v = (256 * Math.random()) | 0;
+						id[off*4] = id[off2*4+1] = v;
+						id[off*4+2] = (256 * Math.random()) | 0;
+						id[off*4+3] = (256 * Math.random()) | 0;
+					}
+				}
+				window.randomTex = id;
+				if (DEBUG) console.log('Create random texture: '+(Date.now()-t0)+' ms'); t0 = Date.now();
+				var glc = document.createElement('canvas');
+				glc.id = 'glcanvas';
+				var gl;
+				try {
+					gl = glc.getContext('webgl');
+					if (!gl) { gl = glc.getContext('experimental-webgl'); }
+				} catch (e) {
+					gl = glc.getContext('experimental-webgl');
+				}
+				if (!gl) {
+					return; // no WebGL.
+				}
+				window.gl = gl;
+				window.glc = glc;
+				gl.clearColor(1,1,1,1);
+				var ext = gl.getExtension('OES_texture_float');
+				if (DEBUG) console.log('WebGL context creation: '+(Date.now()-t0)+' ms'); t0 = Date.now();
+			})();
+		</script>
+		<script src="//use.typekit.net/svb7vim.js" async="true"></script>
+		<script type="text/javascript">(function(){var t=function(){try{Typekit.load()}catch(e){setTimeout(t,100)}};t()})()</script>
+	</body>
+</html>

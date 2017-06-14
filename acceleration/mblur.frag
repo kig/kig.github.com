@@ -15,13 +15,15 @@ uniform vec4 iCameraTargetV;
 
 uniform vec3 iLightPos;
 
+uniform bool iUseFourView;
+
 uniform float iShutterSpeed;
 uniform float iISO;
 uniform float iExposureCompensation;
 
 #define SHADOWS
 #define SAILS
-#define MBLUR_SAMPLES 2.0
+#define MBLUR_SAMPLES 4.0
 
 #define FOG_D 80.0
 
@@ -126,6 +128,14 @@ float rayIntersectsDisk(vec3 ro, vec3 rd, vec3 p, vec3 pnml, float r1, float r2,
 		nml = tmp;
 		return dist;
 	}
+	if (sign(dot(pnml, p-ro)) != sign(dot(pnml, p-(ro+0.1)))) {
+		dist = rayIntersectsSphere(ro, rd, p, max(r1, r2), closestHit);
+		float planeD = abs(dot(p-(ro+rd*dist), pnml));
+		if (dist < closestHit && planeD < 0.05) {
+			nml = normalize(p - (ro+rd*dist));
+			return dist;
+		}
+	}
 	return closestHit;
 }
 
@@ -201,12 +211,8 @@ vec3 getEye(float time)
 	return (iCamera.xyz+dt*iCameraV.xyz);
 }
 
-vec3 getDir(float time, vec2 fragCoord)
+vec3 getDir(float time, vec2 uv)
 {
-	vec2 pixelAspect = vec2(iResolution.x / iResolution.y, 1.0);
-	vec2 pixelRatio = vec2(2.0) / iResolution.xy;
-	vec2 uv = (fragCoord*pixelRatio - 1.0)*pixelAspect;
-
 	float dt = (time-iGlobalTime);
 	
 	vec3 up = vec3(sin(iCamera.w+dt*iCameraV.w), cos(iCamera.w+dt*iCameraV.w), 0.0);
@@ -255,38 +261,105 @@ vec3 doReflections(float time, vec3 ray, vec3 dir, inout vec4 tex, inout float d
 	return light;
 }
 
-void main(void)
+vec3 doPrimary(float time, vec3 ray, vec3 dir, float picked)
 {
-	float xOff = 0.0;
-	
-	vec3 nml = vec3(0.0);
-	vec3 col = vec3(0.0);
-	
-	tSphere sphere;
-	
+	vec3 light = vec3(0.2666666);
+	vec3 nml;
+	tSphere sphere, sphere2;
+	float target = -1.0;
+	float dist = intersect(time, ray, dir, nml, sphere, target);
+	if (sphere.radius > 0.0) {
+		light = (picked == target) ? vec3(0.75) : vec3(0.35 + 0.25*exp(-(dist - 90.0)*0.1));
+	}
+	return light;
+}
+
+vec4 perspectiveView(vec2 fragCoord, vec2 pixelRatio, vec2 pixelAspect, float picked) {
 	vec4 tex = texture2D(iChannel0, gl_FragCoord.xy/256.0);
 	vec4 tex2 = tex;
 	float k = 0.0;
-	
-	float picked = iPick;
-	const float mblur_sample_count = float(MBLUR_SAMPLES);
-	float box_size = ceil(sqrt(mblur_sample_count));
+	vec3 col = vec3(0.0);
+
+	float box_size = ceil(sqrt(MBLUR_SAMPLES));
 	for (float dt = 0.0; dt < MBLUR_SAMPLES; dt++) {
-		float tx = floor(dt/box_size);
-		float ty = dt - tx*box_size;
-		float time = (iGlobalTime - (tex.r*2.0-dt/mblur_sample_count)*iShutterSpeed);
+		float ty = floor(dt/box_size);
+		float tx = dt - ty*box_size;
+		float time = (iGlobalTime - (tex.r*2.0-dt/MBLUR_SAMPLES)*iShutterSpeed);
 		tex = tex.yzwx;
 
 		vec3 ray = getEye(time);
-		vec3 dir = getDir(time, gl_FragCoord.xy+(vec2(tx,ty)/box_size));
+		vec3 dir = getDir(time, ((fragCoord+vec2(tx,ty)/box_size)*pixelRatio - 1.0)*pixelAspect);
 
-		float doAA;
-		col += doReflections(time, ray, dir, tex2, doAA, picked);
+		float rayAA;
+		col += doReflections(time, ray, dir, tex2, rayAA, picked);
 		k++;
-		if (doAA == 0.0) {
-			break;
-		}
 	}
 	col = 1.0 - exp(-col/k * iISO * iShutterSpeed * pow(2.0, iExposureCompensation));
-	gl_FragColor = vec4( col, 1.0 );
+	return vec4( col, 1.0 );
+}
+
+vec4 modelingView(vec3 ray, vec3 dir, float picked) {
+	vec3 col = doPrimary(iGlobalTime, ray, dir, picked);
+	return vec4( col, 1.0 );
+}
+
+vec4 topView(vec2 fragCoord, vec2 pixelRatio, vec2 pixelAspect, float picked) {
+	vec2 uv = (fragCoord*pixelRatio - 1.0)*pixelAspect;
+
+	vec3 ray = vec3(uv.x*10.0, 100.0, uv.y*10.0);
+	vec3 dir = vec3(0.0, -1.0, 0.0);
+	return modelingView(ray, dir, picked);
+}
+
+vec4 frontView(vec2 fragCoord, vec2 pixelRatio, vec2 pixelAspect, float picked) {
+	vec2 uv = (fragCoord*pixelRatio - 1.0)*pixelAspect;
+	vec3 ray = vec3(uv.x*10.0, uv.y*10.0, -100.0);
+	vec3 dir = vec3(0.0, 0.0, 1.0);
+	return modelingView(ray, dir, picked);
+}
+
+vec4 rightView(vec2 fragCoord, vec2 pixelRatio, vec2 pixelAspect, float picked) {
+	vec2 uv = (fragCoord*pixelRatio - 1.0)*pixelAspect;
+	vec3 ray = vec3(100.0, uv.y*10.0, uv.x*10.0);
+	vec3 dir = vec3(-1.0, 0.0, 0.0);
+	return modelingView(ray, dir, picked);
+}
+
+
+void main(void)
+{
+	float xOff = 0.0;
+
+	vec2 fragCoord = gl_FragCoord.xy;
+	
+	vec2 pixelAspect = vec2(iResolution.x / iResolution.y, 1.0);
+	vec2 pixelRatio = vec2(2.0) / iResolution.xy;
+	vec2 uv = (fragCoord*pixelRatio - 1.0)*pixelAspect;
+	
+	float picked = iPick;
+
+	vec2 uvBR = ((fragCoord+vec2(1.0))*pixelRatio - 1.0)*pixelAspect;
+	// if (iUseFourView && length(sign(uv) - sign(uvBR)) > 0.0) { // border pixel
+	// 	gl_FragColor = vec4(0.75, 0.75, 0.75, 1.0);
+	// 	return;
+	// }
+
+	//if (!iUseFourView || (uv.x < 0.0 && uv.y > 0.0)) {
+	//	if (iUseFourView) {
+	//		fragCoord *= 2.0;
+	//		fragCoord.y -= iResolution.y;
+	//	}
+		gl_FragColor = perspectiveView(fragCoord, pixelRatio, pixelAspect, picked);
+	// } else if (uv.x > 0.0 && uv.y > 0.0) { // top view
+	// 	fragCoord *= 2.0;
+	// 	fragCoord -= iResolution.xy;
+	// 	gl_FragColor = topView(fragCoord, pixelRatio, pixelAspect, picked);
+	// } else if (uv.x < 0.0 && uv.y < 0.0) { // front view
+	// 	fragCoord *= 2.0;
+	// 	gl_FragColor = frontView(fragCoord, pixelRatio, pixelAspect, picked);
+	// } else { // right view
+	// 	fragCoord *= 2.0;
+	// 	fragCoord.x -= iResolution.x;
+	// 	gl_FragColor = rightView(fragCoord, pixelRatio, pixelAspect, picked);
+	// }
 }

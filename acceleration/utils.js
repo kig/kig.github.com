@@ -331,3 +331,129 @@ var getDir = function(useFourView, iResolution, cameraPos, cameraTarget, fragCoo
 	}
 	return dir;
 };
+
+
+var Stack = function() {
+	this.top = null;
+	this.bottom = null;
+	this.length = 0;
+};
+
+Stack.prototype.push = function(value) {
+	var node = {previous: this.top, next: null, value: value};
+	if (this.top !== null) {
+		this.top.next = node;
+	} 
+	this.top = node;
+	if (this.bottom === null) {
+		this.bottom = this.top;
+	}
+	this.length++;
+	return this.length;
+};
+
+Stack.prototype.unshift = function(value) {
+	var node = {previous: null, next: this.bottom, value: value};
+	if (this.bottom !== null) {
+		this.bottom.previous = node;
+	} 
+	this.bottom = node;
+	if (this.top === null) {
+		this.top = this.bottom;
+	}
+	this.length++;
+	return this.length;
+};
+
+Stack.prototype.pop = function() {
+	if (this.top) {
+		var top = this.top;
+		this.top = top.previous;
+		if (this.top === null) {
+			this.bottom = null;
+		} else {
+			this.top.next = null;
+		}
+		this.length--;
+		return top.value;
+	}
+};
+
+Stack.prototype.shift = function() {
+	if (this.bottom) {
+		var bottom = this.bottom;
+		this.bottom = bottom.next;
+		if (this.bottom === null) {
+			this.top = null;
+		} else {
+			this.bottom.previous = null;
+		}
+		this.length--;
+		return bottom.value;
+	}
+};
+
+var testStack = function() {
+	var a = [];
+	var s = new Stack();
+	var methods = ['pop', 'push', 'unshift', 'shift'];
+	for (var i=0; i<10000; i++) {
+		var method = methods[(Math.random()*methods.length) | 0];
+		var arg = Math.random();
+		var ar = a[method](arg);
+		var sr = s[method](arg);
+		if (ar !== sr) {
+			console.log("screwed up", a, s, method, arg, ar, sr);
+			throw ":(";
+		}
+		if (a.length !== s.length) {
+			console.log("screwed up length", a, s, method, arg, a.length, s.length);
+			throw ":(";
+		}
+	}
+	console.log("finito");
+};
+
+var UndoStack = function(apply, getState) {
+	this.maximumStackByteSize = 100e6;
+	this.stackByteSize = 0;
+	this.undoStack = new Stack();
+	this.redoStack = new Stack();
+	this.apply = apply;
+	this.getState = getState;
+	this.state = this.getState();
+	this.stackByteSize += this.state.length;
+};
+
+UndoStack.prototype.addState = function() {
+	if (this.redoStack.length > 0) {
+		this.redoStack = [];
+	}
+	this.undoStack.push(this.state);
+	this.state = this.getState();
+	this.stackByteSize += this.state.length;
+	while (this.stackByteSize > this.maximumStackByteSize && this.undoStack.length > 1) {
+		var state = this.undoStack.shift();
+		this.stackByteSize -= state.length;
+	}
+};
+
+UndoStack.prototype.undo = function() {
+	if (this.undoStack.length > 0) {
+		this.redoStack.push(this.state);
+		this.stackByteSize -= this.state.length;
+		this.state = this.undoStack.pop();
+		this.apply(this.state);
+	}
+};
+
+UndoStack.prototype.redo = function() {
+	if (this.redoStack.length > 0) {
+		this.undoStack.push(this.state);
+		this.state = this.redoStack.pop();
+		this.stackByteSize += this.state.length;
+		this.apply(this.state);
+	}
+};
+
+

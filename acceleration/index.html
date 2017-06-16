@@ -122,6 +122,11 @@
 				<button class="new-keyframe" title="Create / Edit keyframe at playhead [c]">New Keyframe</button>
 				<button class="delete-keyframe" title="Delete selected keyframe">Delete Keyframe</button>
 				<button class="delete-all-keyframes" title="Delete all keyframes on object timeline">Delete All Keyframes</button>
+				<button class="save-animation" title="Save timeline as JSON">Save JSON</button>
+				<button class="load-animation" title="Load timeline JSON">Load JSON</button>
+			</div>
+			<div class="editor-toggle">
+				<button class="hide-editor" title="Hide editor"></button>
 			</div>
 			<div class="keyframe-editor">
 				<div class="curve-editor" title="Animation Curve">
@@ -142,6 +147,10 @@
 					</svg>
 				</div>
 			</div>
+		</div>
+		<div class="show-editor-controls">
+			<button class="play" title="Play/pause animation [space]"></button>
+			<button class="show-editor" title="Show editor"></button>
 		</div>
 		<ul id="shaders"></ul>
 		<script src="utils.js" async="true"></script>
@@ -170,19 +179,25 @@
 				glc.id = 'glcanvas';
 				var gl;
 				try {
-					gl = glc.getContext('webgl');
-					if (!gl) { gl = glc.getContext('experimental-webgl'); }
+					gl = glc.getContext('webgl2');
+					if (!gl) { gl = glc.getContext('webgl'); }
 				} catch (e) {
-					gl = glc.getContext('experimental-webgl');
+					gl = glc.getContext('webgl');
 				}
 				if (!gl) {
+					alert("no webgl")
 					return; // no WebGL.
 				}
 				window.gl = gl;
 				window.glc = glc;
 				gl.clearColor(1,1,1,1);
-				gl.getExtension('OES_texture_float');
-				if (DEBUG) console.log('WebGL context creation: '+(Date.now()-t0)+' ms'); t0 = Date.now();
+				if (gl instanceof WebGLRenderingContext) {
+					gl.floatTexture = gl.getExtension('OES_texture_float');
+				}
+				if (DEBUG) {
+					console.log('WebGL context creation: '+(Date.now()-t0)+' ms');
+					t0 = Date.now();
+				}
 			})();
 		</script>
 		<script src="//use.typekit.net/svb7vim.js" async="true"></script>

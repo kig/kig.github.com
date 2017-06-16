@@ -13,6 +13,9 @@ uniform vec4 iCameraTarget;
 uniform vec4 iCameraV;
 uniform vec4 iCameraTargetV;
 
+uniform vec4 iObject[16];
+uniform vec4 iObjectV[16];
+
 uniform vec3 iLightPos;
 
 uniform bool iUseFourView;
@@ -151,14 +154,15 @@ float intersect(float time, vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sp
 	float dt = (time-iGlobalTime);
 
 	for (int i=0; i<9; i++) {
-		vec4 pr = texture2D(iChannel1, vec2(float(i)/16.0, 0.0));
-		pr += dt*texture2D(iChannel1, vec2(float(i)/16.0, 0.5));
+		float fi = float(i);
+		vec4 pr = iObject[i]; //texture2D(iChannel1, vec2(i/16.0 + 0.5/16.0, 0.25));
+		pr += dt * iObjectV[i]; //texture2D(iChannel1, vec2(i/16.0 + 0.5/16.0, 0.75));
 		vec3 cen = pr.xyz;
 		float r = pr.w;
 		float t;
 
 #ifdef SAILS
-		float a = 8.0*time*(1.0+mod(float(i), 2.5));
+		float a = 8.0*time*(1.0+mod(fi, 2.5));
 		t = rayIntersectsDisk(ray, dir, cen, vec3(0.0, 0.0, 1.0), r*1.25, r*2.5, a, nml, dist);
 		if (t < dist) {
 			dist = t;
@@ -166,7 +170,7 @@ float intersect(float time, vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sp
 			sphere.center = cen;
 			sphere.spec = 16.0;
 			sphere.color = vec3(0.5, 0.1, 0.05);
-			pick = float(i);
+			pick = fi;
 		}
 #endif
 
@@ -176,12 +180,12 @@ float intersect(float time, vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sp
 			sphere.radius = r;
 			sphere.center = cen;
 			nml = normalize(sphere.center - ray - dist*dir);
-			float odd = mod(float(i), 2.0);
+			float odd = mod(fi, 2.0);
 			float ay = abs(nml.y);
 			float fy = float(ay < 0.05 || (ay > 0.75 && ay < 0.78));
 			sphere.color = mix(vec3(0.1), mix(vec3(0.95, 0.8, 0.7), vec3(0.2), fy), odd);
 			sphere.spec = mix(64.0, 16.0, odd);
-			pick = float(i);
+			pick = fi;
 		}
 	}
 	

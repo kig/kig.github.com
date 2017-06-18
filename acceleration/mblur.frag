@@ -153,13 +153,16 @@ float intersect(float time, vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sp
 	pick = -1.0;
 	float dt = (time-iGlobalTime);
 
-	for (int i=0; i<9; i++) {
-		float fi = float(i);
+	for (int i=0; i<16; i++) {
 		vec4 pr = iObject[i]; //texture2D(iChannel1, vec2(i/16.0 + 0.5/16.0, 0.25));
 		pr += dt * iObjectV[i]; //texture2D(iChannel1, vec2(i/16.0 + 0.5/16.0, 0.75));
+		if (pr.w == 0.0) {
+			continue;
+		}
 		vec3 cen = pr.xyz;
 		float r = pr.w;
 		float t;
+		float fi = float(i);
 
 #ifdef SAILS
 		float a = 8.0*time*(1.0+mod(fi, 2.5));

@@ -79,7 +79,7 @@ var init = function() {
 			objectPositions[i] = (i/4-8)*2;
 			objectPositions[i+1] = (i/4-8)*2;
 			objectPositions[i+2] = (i/4-8)*2;
-			objectPositions[i+3] = Math.max(1, i/4);
+			objectPositions[i+3] = i > 8 ? 0 : Math.max(1, i/4);
 		}
 		// var pTex = createTexture(gl, objectPositions, 1);
 		if (DEBUG) console.log('Set up WebGL: '+(Date.now()-t0)+' ms');
@@ -226,7 +226,7 @@ var init = function() {
 		var downMask = {};
 
 		window.onkeydown = function(ev) {
-			if (ev.ctrlKey) {
+			if (ev.ctrlKey || ev.metaKey) {
 				if (ev.code === 'KeyZ') {
 					if (ev.shiftKey) {
 						redo();

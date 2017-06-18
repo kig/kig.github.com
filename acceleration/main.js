@@ -65,6 +65,10 @@ var init = function() {
 
 	Loader.get(shaderURLs, function(mblurFrag) {
 
+		if (gl.floatTexture) {
+			mblurFrag = "#define OES_TEXTURE_FLOAT\n" + mblurFrag;
+		}
+
 		staticShader = mblurFrag.replace("#define MBLUR_SAMPLES 4.0", "#define MBLUR_SAMPLES 16.0");
 		animShader = mblurFrag.replace("#define MBLUR_SAMPLES 4.0", "#define MBLUR_SAMPLES 2.0");
 
@@ -73,15 +77,15 @@ var init = function() {
 		var t0 = Date.now();
 		var buf = createBuffer(gl);
 		var rTex = createTexture(gl, randomTex, 0);
-		var objectPositions = new Float32Array(4*16);
-		var objectVelocities = new Float32Array(4*16);
-		for (var i=0; i<objectPositions.length; i+=4) {
-			objectPositions[i] = (i/4-8)*2;
-			objectPositions[i+1] = (i/4-8)*2;
-			objectPositions[i+2] = (i/4-8)*2;
-			objectPositions[i+3] = i > 8 ? 0 : Math.max(1, i/4);
+		var objectBuf = new Float32Array(4*16*2);
+		var objectPositions = new Float32Array(objectBuf.buffer, 0, 4*16);
+		var objectVelocities = new Float32Array(objectBuf.buffer, 4*16*4, 4*16);
+		objectBuf.width = 16;
+		objectBuf.height = 2;
+		var pTex;
+		if (gl.floatTexture) {
+			pTex = createTexture(gl, objectBuf, 1);
 		}
-		// var pTex = createTexture(gl, objectPositions, 1);
 		if (DEBUG) console.log('Set up WebGL: '+(Date.now()-t0)+' ms');
 
 		var resize = function() {
@@ -1329,8 +1333,12 @@ var init = function() {
 				u4fv(gl, p, 'iCameraV', cameraPosV);
 				u4fv(gl, p, 'iCameraTargetV', cameraTargetV);
 
-				u4fv(gl, p, 'iObject', objectPositions);
-				u4fv(gl, p, 'iObjectV', objectVelocities);
+				if (gl.floatTexture) {
+					updateTexture(gl, pTex, objectBuf, 1);
+				} else {
+					u4fv(gl, p, 'iObject', objectPositions);
+					u4fv(gl, p, 'iObjectV', objectVelocities);
+				}
 
 				u3fv(gl, p, 'iLightPos', lightPos);
 

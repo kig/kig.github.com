@@ -190,21 +190,17 @@
 				glc.id = 'glcanvas';
 				var gl;
 				try {
-					gl = glc.getContext('webgl2');
-					if (!gl) { gl = glc.getContext('webgl'); }
-				} catch (e) {
 					gl = glc.getContext('webgl');
+				} catch (e) {
 				}
 				if (!gl) {
-					alert("no webgl")
+					alert("No WebGL")
 					return; // no WebGL.
 				}
 				window.gl = gl;
 				window.glc = glc;
 				gl.clearColor(1,1,1,1);
-				if (gl instanceof WebGLRenderingContext) {
-					gl.floatTexture = gl.getExtension('OES_texture_float');
-				}
+				gl.floatTexture = gl.getExtension('OES_texture_float');
 				if (DEBUG) {
 					console.log('WebGL context creation: '+(Date.now()-t0)+' ms');
 					t0 = Date.now();

@@ -39,6 +39,15 @@ html,body {
 	transform: translateY(0px);
 }
 
+#title ul,
+#title li
+{
+	list-style: none;
+	font-size: 20px;
+	margin: 0;
+	padding: 0;
+}
+
 h1,h3,hr {
 	display: inline-block;
 	margin: 0;

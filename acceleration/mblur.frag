@@ -238,12 +238,13 @@ vec3 getDir(float time, vec2 uv)
 	return m*normalize(vec3(uv*(iCameraTarget.w+dt*iCameraTargetV.w), 1.0));
 }
 
-vec3 doReflections(float time, vec3 ray, vec3 dir, inout vec4 tex, inout float doAA, float picked)
+vec3 doReflections(float time, vec3 ray, vec3 dir, inout float doAA, float picked)
 {
 	vec3 light = vec3(0.0);
 	vec3 transmit = vec3(1.0);
+	bool earlyTermination = true;
 	doAA = 0.0;
-	for (int i=0; i<6; i++) {
+	for (int i=0; i<3; i++) {
 		vec3 nml;
 		tSphere sphere;
 		float target = -1.0;
@@ -261,14 +262,18 @@ vec3 doReflections(float time, vec3 ray, vec3 dir, inout vec4 tex, inout float d
 			}
 			transmit *= sphere.color;
 			ray += dist*dir;
-			vec3 v = sign(tex.xyz-0.5)*pow(tex.xyz, vec3(2.0));
+			//vec3 v = sign(tex.xyz-0.5)*pow(tex.xyz, vec3(2.0));
 			nml = normalize(nml);// + v/(1.0+sphere.spec));
-			tex = tex.yzwx;
+			//tex = tex.yzwx;
 			dir = reflect(dir, nml);
 			ray += dir*0.01;
 		} else {
-			break;		
+			earlyTermination = false;
+			break;
 		}
+	}
+	if (earlyTermination) {
+		light += transmit * shadeBg(dir);
 	}
 	return light;
 }
@@ -288,7 +293,6 @@ vec3 doPrimary(float time, vec3 ray, vec3 dir, float picked)
 
 vec4 perspectiveView(vec2 fragCoord, vec2 pixelRatio, vec2 pixelAspect, float picked) {
 	vec4 tex = texture2D(iChannel0, gl_FragCoord.xy/256.0);
-	vec4 tex2 = tex;
 	float k = 0.0;
 	vec3 col = vec3(0.0);
 
@@ -303,7 +307,7 @@ vec4 perspectiveView(vec2 fragCoord, vec2 pixelRatio, vec2 pixelAspect, float pi
 		vec3 dir = getDir(time, ((fragCoord+vec2(tx,ty)/box_size)*pixelRatio - 1.0)*pixelAspect);
 
 		float rayAA;
-		col += doReflections(time, ray, dir, tex2, rayAA, picked);
+		col += doReflections(time, ray, dir, rayAA, picked);
 		k++;
 	}
 	col = 1.0 - exp(-col/k * iISO * iShutterSpeed * pow(2.0, iExposureCompensation));

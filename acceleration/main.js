@@ -69,8 +69,8 @@ var init = function() {
 			mblurFrag = "#define OES_TEXTURE_FLOAT\n" + mblurFrag;
 		}
 
-		staticShader = mblurFrag.replace("#define MBLUR_SAMPLES 4.0", "#define MBLUR_SAMPLES 16.0");
-		animShader = mblurFrag.replace("#define MBLUR_SAMPLES 4.0", "#define MBLUR_SAMPLES 2.0");
+		staticShader = mblurFrag.replace("#define MBLUR_SAMPLES 4.0", "#define MBLUR_SAMPLES 4.0");
+		animShader = mblurFrag.replace("#define MBLUR_SAMPLES 4.0", "#define MBLUR_SAMPLES 1.0");
 
 		var forceRedraw = false;
 		var t1 = Date.now();

@@ -153,7 +153,7 @@ float intersect(float time, vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sp
 	pick = -1.0;
 	float dt = (time-iGlobalTime);
 
-	for (int i=0; i<9; i++) {
+	for (int i=0; i<16; i++) {
 		float fi = float(i);
 		#ifdef OES_TEXTURE_FLOAT
 		vec4 pr = texture2D(iChannel1, vec2(fi/16.0 + 0.5/16.0, 0.25));
@@ -164,6 +164,9 @@ float intersect(float time, vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sp
 		#endif
 		if (pr.w == 0.0) {
 			continue;
+		}
+		if (pr.w < 0.0) {
+			break;
 		}
 		vec3 cen = pr.xyz;
 		float r = pr.w;

@@ -201,13 +201,14 @@ var trace = function(ro, rd, posTex) {
 		dist: 1e7,
 		pick: -2
 	};
-	for (var i=0; i<9; i++) {
-		var off = i*4;
-		traceTmp[0] = posTex[off];
-		traceTmp[1] = posTex[off+1];
-		traceTmp[2] = posTex[off+2];
-		var r = posTex[off+3];
-		raySphere(ro, rd, traceTmp, r, i, hit);
+	for (var i=0; i<posTex.length; i+=4) {
+		var r = posTex[i+3];
+		if (r > 0) {
+			traceTmp[0] = posTex[i];
+			traceTmp[1] = posTex[i+1];
+			traceTmp[2] = posTex[i+2];
+			raySphere(ro, rd, traceTmp, r, i/4, hit);
+		}
 	}
 	return hit;
 };

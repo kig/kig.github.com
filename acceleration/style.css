@@ -135,6 +135,13 @@ a {
 	pointer-events: all;
 }
 
+.object-edit {
+	position: absolute;
+	left: 8px;
+	top: 8px;
+	height: 20px;
+	white-space: nowrap;	
+}
 
 .timestrip {
 	right: 8px;
@@ -228,7 +235,7 @@ a {
 	left: 120px;
 	top: 10px;
 	height: 20px;
-	width: 160px;
+	width: 204px;
 	text-align: left;
 	margin: 0;
 }
@@ -238,6 +245,7 @@ a {
 	height: 20px;
 	margin: 0;
 	margin-right: 2px;
+	background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 18 18"><g></g></svg>') 50% 50% / 80% no-repeat, #444;
 }
 
 .playback-controls .rewind {
@@ -479,13 +487,15 @@ button:active {
 .timeline button {
 	margin-left: 0;
 	margin-right: 0;
+	vertical-align: top;
+	height: 20px;
 }
 
 .keyframe-buttons {
 	position: absolute;
 	text-align: left;
 	top: 10px;
-	left: 270px;
+	left: 312px;
 	width: auto;
 	height: auto;
 	color: #888;

@@ -57,13 +57,12 @@
 		</script>
 		<link rel="stylesheet" href="style.css">
 	</head>
-	<body>
+	<body class="editor">
 		<div id="title">
 			<h1>create</h1>
 			<hr>
 			<h3>shapes</h3>
 			<ul>
-				<li>Add/delete objects</li>
 				<li>Event handling editor</li>
 				<li>Change object color</li>
 				<li>Change sky color</li>
@@ -99,13 +98,9 @@
 					<div class="end-of-time" title="Adjust length of animation"></div>
 				</div>
 			</div>
-<!-- 			<div class="timestrip-scroll">
-				<div class="left-arrow"></div>
-				<div class="right-arrow"></div>
-				<div class="scroll-bar"></div>
-			</div>
- -->
  			<div class="playback-controls">
+				<button class="create-object">+</button>
+				<button class="delete-object">-</button>
 				<button class="rewind" title="Go to start of animation [shift-Z]"></button>
 				<button class="previous-keyframe" title="Go to previous keyframe [alt-Z]"></button>
 				<button class="previous-frame" title="Go to previous frame [Z]"></button>

@@ -458,11 +458,6 @@ UndoStack.prototype.redo = function() {
 };
 
 
-Math.clamp = function(v, min, max) {
-  return (v > max ? max : (v < min ? min : v));
-};
-
-
 window.ColorUtils = {
 
   colorToStyle : function(c) {
@@ -887,7 +882,7 @@ ColorMixer.prototype = {
     container.appendChild(this.widget);
 
     this.canvas = document.createElement('canvas');
-    this.canvas.width = (width-8-20-8) * pixelRatio;
+    this.canvas.width = (width-8) * pixelRatio;
     this.canvas.height = (height-8) * pixelRatio;
     this.canvas.style.width = (width-8) + 'px';
     this.canvas.style.height = (height-8) + 'px';
@@ -934,11 +929,8 @@ ColorMixer.prototype = {
         var xy = {x: ev.clientX-bbox.left, y: ev.clientY-bbox.top};
         var x = Math.clamp(xy.x, 0, width-9);
         var y = Math.clamp(xy.y, 0, height-9);
-        self.saturation = x/(width-9);
-        self.value = 1-(y/(height-9));
-
-        self.signalChange();
-        self.requestRedraw();
+        self.setSaturation(x/(width-9), false);
+        self.setValue(1-(y/(height-9)), true);
       }
     };
 
@@ -989,8 +981,9 @@ ColorMixer.prototype = {
     );
     if (!eq) {
       var hsv = this.rgb2hsv(c[0], c[1], c[2]);
-      if (hsv[2] > 0 && hsv[1] > 0)
+      if (hsv[2] > 0 && hsv[1] > 0) {
         this.setHue(hsv[0], false);
+      }
       this.setSaturation(hsv[1], false);
       this.setValue(hsv[2], false);
       this.currentColor = this.colorVec(c[0],c[1],c[2], 1);
@@ -1003,6 +996,7 @@ ColorMixer.prototype = {
 
   setSaturation : function(s, signal) {
     this.saturation = s;
+    this.requestRedraw();
     if (signal) {
       this.currentColor = this.hsv2rgb(this.hue, this.saturation, this.value);
       this.signalChange();
@@ -1011,6 +1005,7 @@ ColorMixer.prototype = {
 
   setValue : function(s, signal) {
     this.value = s;
+    this.requestRedraw();
     if (signal) {
       this.currentColor = this.hsv2rgb(this.hue, this.saturation, this.value);
       this.signalChange();
@@ -1029,8 +1024,8 @@ ColorMixer.prototype = {
 
   hueAtMouseCoords : function(xy) {
     var h = this.hueCanvas.height / this.pixelRatio;
-    var r = xy.y / h;
-    return r * 360;
+    var r = Math.clamp(xy.y / h, 0, 1);
+    return (1-r) * 360;
   },
 
   requestRedraw : function() {
@@ -1060,8 +1055,9 @@ ColorMixer.prototype = {
     var nearestHueD = 1/0;
     hc.clearRect(0,0,w,h);
     for (var y=0; y<h; y++) {
-      var rgb = this.hsv2rgb(y/h * 360, 1,1);
-      var hueD = Math.abs((y/h*360) - this.hue);
+      var hue = (1 - y/h) * 360;
+      var rgb = this.hsv2rgb(hue, 1,1);
+      var hueD = Math.abs(hue - this.hue);
       if (hueD < nearestHueD) {
       	nearestHue = y;
       	nearestHueD = hueD;

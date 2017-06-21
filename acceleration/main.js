@@ -1194,7 +1194,7 @@ var init = function() {
 				// Only 16 objects supported, sorry not sorry
 				return;
 			}
-			var c = (j % 2 * 0.9) + 0.05;
+			var c = (j % 2 * 0.8) + 0.15;
 			transmit = transmit || new Float32Array([c,c,c]);
 			emission = emission || new Float32Array([0,0,0]);
 			specular = specular === undefined ? [16] : specular;
@@ -1203,7 +1203,7 @@ var init = function() {
 				transmit: transmit,
 				specular: specular,
 				emission: emission,
-				rotorTransmit: new Float32Array([0.95, 0.25, 0.1]),
+				rotorTransmit: new Float32Array([0.95, 0.15, 0.1]),
 				rotorSpecular: [16],
 				rotorEmission: new Float32Array([0,0,0]),
 				name: name,
@@ -1317,12 +1317,12 @@ var init = function() {
 		var scene = {};
 		scene.Sky = {id: -2, 
 			position: lightPos,
-			transmit: [0,0.5,1],
+			transmit: [1,0.5,0.2],
 			emission: [0,1,1],
 			rotorTransmit: [1,1,1],
 			rotorEmission: [1,0,0],
 			rotorSpecular: [128],
-			specular: [128]
+			specular: [192]
 		};
 		scene.Camera = {id: -2, position: cameraPos, target: cameraTarget};
 

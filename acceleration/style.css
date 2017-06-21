@@ -113,7 +113,7 @@ a {
 	top: 0;
 }
 
-.timeline {
+.scene-editor {
 	position: absolute;
 	bottom: 0px;
 	left: 0px;
@@ -130,7 +130,7 @@ a {
     transition: 0.5s;
 }
 
-.editor .timeline {
+.editor .scene-editor {
 	opacity: 1;
 	pointer-events: all;
 }
@@ -147,7 +147,7 @@ a {
 	right: 8px;
 	height: 20px;
 	top: 36px;
-	left: 120px;
+	left: 140px;
 	width: auto;
 	position: absolute;
 	border-radius: 2px;
@@ -163,16 +163,17 @@ a {
 	background: url('data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 8 20"><g><rect fill="%23666" x="0" y="0" width="1" height="20"/></g></svg>') -1px 0 / 8px 20px;
 }
 
-.timestrip:hover::-webkit-scrollbar {
+:hover::-webkit-scrollbar {
     height: 2px;
+    width: 2px;
 }
 
-.timestrip::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
     background: #ccc;
 }
 
-.timestrip::-webkit-scrollbar {
-    width: 0;
+::-webkit-scrollbar {
+    width: 0px;
     height: 0px;
     background: #666;
     transition: 0.3s;
@@ -221,7 +222,7 @@ a {
 	vertical-align: top;
 }
 
-.timeline select {
+.scene-editor select {
 	background: #444;
 	border: 1px solid #888;
 	color: #888;
@@ -232,12 +233,63 @@ a {
 
 .playback-controls {
 	position: absolute;
-	left: 120px;
+	left: 140px;
 	top: 10px;
 	height: 20px;
-	width: 204px;
+	width: 214px;
 	text-align: left;
 	margin: 0;
+	white-space: nowrap;
+}
+
+.mode-selector {
+    position: absolute;
+    left: 133px;
+    bottom: 0px;
+    text-align: right;
+    transform: rotate(-90deg);
+    white-space: nowrap;
+    color: #888;
+    font-size: 10px;
+    text-transform: uppercase;
+    transform-origin: 0 100%;
+    width: 200px;
+    box-sizing: border-box;
+    padding-right: 11px;
+    padding-left: 11px;
+    cursor: default;
+}
+
+.mode-selector div {
+	margin-left: 8px;
+	display: inline-block;
+}
+
+.mode-selector div:hover {
+	color: #ccc;
+}
+
+.scene-editor[data-mode="animation"] .mode-animation,
+.scene-editor[data-mode="material"] .mode-material,
+.scene-editor[data-mode="object"] .mode-object
+{
+	color: white;
+	font-weight: bold;
+	pointer-events: none;
+}
+
+.scene-editor .animation-editor,
+.scene-editor .material-editor,
+.scene-editor .object-editor
+{
+	display: none;
+}
+
+.scene-editor[data-mode="animation"] .animation-editor,
+.scene-editor[data-mode="material"] .material-editor,
+.scene-editor[data-mode="object"] .object-editor
+{
+	display: block;
 }
 
 .playback-controls button {
@@ -297,6 +349,7 @@ a {
 	width: 20px;
 	text-align: right;
 	margin: 0;
+	z-index: 2;
 }
 
 .editor-toggle button {
@@ -362,7 +415,7 @@ a {
 	left: 0;
 	width: 1px;
 	height: 154px;
-	margin-left: 124px;
+	margin-left: 144px;
 	cursor: pointer;
 	background: #f00; 
 	/*rgba(200, 127, 127, 0.5);*/
@@ -430,31 +483,94 @@ a {
 	background: #444;
 }
 
+.object-editor {
+	position: absolute;
+	left: 140px;
+	top: 10px;
+	bottom: 10px;
+	right: 10px;
+	width: auto;
+	height: auto;
+	overflow: auto;
+}
+
 .object-details {
 	position: absolute;
 	text-align: left;
-	top: 70px;
-	bottom: 10px;
-	left: 10px;
+	top: 0px;
+	bottom: 0px;
+	left: 0px;
 	width: 360px;
 	height: auto;
 	color: #888;
 	font-weight: 400;
-	display: none;
-}
-
-.object-details.part-2 {
-	left: 355px;
 	border-left: 1px solid #666;
 	padding-left: 20px;
 }
 
-.timeline p > span {
+.object-details.part-2 {
+	left: 375px;
+	border-left: 1px solid #666;
+	padding-left: 20px;
+}
+
+.material-editor {
+	position: absolute;
+	left: 140px;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	width: auto;
+	height: auto;
+	white-space: nowrap;
+	overflow: auto;
+	overflow-y: hidden;
+	box-sizing: border-box;
+	padding-right: 40px;
+	color: #888;
+	text-align: left;
+}
+
+.material-editor .color-mixer {
+	top: 10px;
+	bottom: 10px;
+	left: 0px;
+	width: 216px;
+	height: 180px;
+	display: block;
+	position: relative;
+	padding-left: 20px;
+	border-left: 1px solid #666;
+	text-align: left;
+	display: inline-block;
+	vertical-align: top;
+}
+
+.material-editor .specular {
+	display: inline-block;
+	vertical-align: top;
+	position: relative;
+	top: 10px;
+	text-align: center;
+}
+
+.material-editor .specular span {
+	display: block;
+}
+
+.material-editor .specular input[type="range"] {
+	width: 8px;
+	height: 160px;
+	writing-mode: bt-lr; /* IE */
+	-webkit-appearance: slider-vertical; /* WebKit */
+}
+
+.scene-editor p > span {
 	display: inline-block;
 	width: 80px;
 }
 
-.timeline p {
+.scene-editor p {
 	margin: 0;
 	margin-top: 2px;
 	margin-bottom: 2px;
@@ -476,15 +592,15 @@ button:active {
 	color: #222;
 }
 
-.timeline input {
+.scene-editor input {
 	width: 50px;
 }
 
-.timeline input[type="number"] {
+.scene-editor input[type="number"] {
 	width: 30px;
 }
 
-.timeline button {
+.scene-editor button {
 	margin-left: 0;
 	margin-right: 0;
 	vertical-align: top;
@@ -495,12 +611,13 @@ button:active {
 	position: absolute;
 	text-align: left;
 	top: 10px;
-	left: 312px;
+	left: 332px;
 	width: auto;
 	height: auto;
 	color: #888;
 	font-weight: 400;
 	padding-left: 20px;
+	white-space: nowrap;
 }
 
 .keyframe-editor {
@@ -508,7 +625,7 @@ button:active {
 	text-align: left;
 	top: 64px;
 	bottom: 10px;
-	left: 120px;
+	left: 140px;
 	right: 10px;
 	width: auto;
 	height: auto;

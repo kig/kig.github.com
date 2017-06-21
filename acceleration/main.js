@@ -27,6 +27,7 @@ var init = function() {
 		u3fv(gl, p, 'iResolution', iResolution);
 		u1i(gl, p, 'iChannel0', 0);
 		u1i(gl, p, 'iChannel1', 1);
+		u1i(gl, p, 'iChannel2', 2);
 		var pos = gl.getAttribLocation(p, 'position');
 		gl.enableVertexAttribArray(pos);
 		gl.vertexAttribPointer(pos, 3, gl.FLOAT, false, 0, 0);
@@ -89,6 +90,12 @@ var init = function() {
 		if (gl.floatTexture) {
 			pTex = createTexture(gl, objectBuf, 1);
 		}
+
+		var objectMaterials = new Uint8Array(4*16*4);
+		objectMaterials.width = 16;
+		objectMaterials.height = 4;
+		var mTex = createTexture(gl, objectMaterials, 2);
+
 		if (DEBUG) console.log('Set up WebGL: '+(Date.now()-t0)+' ms');
 
 		var resize = function() {
@@ -369,7 +376,7 @@ var init = function() {
 			forceRedraw = true;
 		};
 
-		document.querySelector('.timeline .play').addEventListener('click', function(ev) {
+		document.querySelector('.animation-editor .play').addEventListener('click', function(ev) {
 			ev.preventDefault();
 			togglePlay();
 			forceRedraw = true;
@@ -381,37 +388,37 @@ var init = function() {
 			forceRedraw = true;
 		}, false);
 
-		document.querySelector('.timeline .previous-frame').addEventListener('click', function(ev) {
+		document.querySelector('.animation-editor .previous-frame').addEventListener('click', function(ev) {
 			ev.preventDefault();
 			goToPreviousFrame();
 			forceRedraw = true;
 		}, false);
 
-		document.querySelector('.timeline .previous-keyframe').addEventListener('click', function(ev) {
+		document.querySelector('.animation-editor .previous-keyframe').addEventListener('click', function(ev) {
 			ev.preventDefault();
 			goToPreviousKeyframe();
 			forceRedraw = true;
 		}, false);
 
-		document.querySelector('.timeline .rewind').addEventListener('click', function(ev) {
+		document.querySelector('.animation-editor .rewind').addEventListener('click', function(ev) {
 			ev.preventDefault();
 			goToBeginning();
 			forceRedraw = true;
 		}, false);
 
-		document.querySelector('.timeline .next-frame').addEventListener('click', function(ev) {
+		document.querySelector('.animation-editor .next-frame').addEventListener('click', function(ev) {
 			ev.preventDefault();
 			goToNextFrame();
 			forceRedraw = true;
 		}, false);
 		
-		document.querySelector('.timeline .next-keyframe').addEventListener('click', function(ev) {
+		document.querySelector('.animation-editor .next-keyframe').addEventListener('click', function(ev) {
 			ev.preventDefault();
 			goToNextKeyframe();
 			forceRedraw = true;
 		}, false);
 
-		document.querySelector('.timeline .fast-forward').addEventListener('click', function(ev) {
+		document.querySelector('.animation-editor .fast-forward').addEventListener('click', function(ev) {
 			ev.preventDefault();
 			goToEnd();
 			forceRedraw = true;
@@ -629,6 +636,24 @@ var init = function() {
 				deselectKeyframe();
 			}
 			updateKeyframes();
+			if (currentObject.transmit) {
+				mixers[0].set(currentObject.transmit);
+			}
+			if (currentObject.emission) {
+				mixers[1].set(currentObject.emission);
+			}
+			if (currentObject.rotorTransmit) {
+				mixers[2].set(currentObject.rotorTransmit);
+			}
+			if (currentObject.rotorEmission) {
+				mixers[3].set(currentObject.rotorEmission);
+			}
+			if (currentObject.specular) {
+				ranges[0].value = currentObject.specular;
+			}
+			if (currentObject.rotorSpecular) {
+				ranges[1].value = currentObject.rotorSpecular;
+			}
 		};
 
 		var goToBeginning = function() {
@@ -687,7 +712,21 @@ var init = function() {
 				zeroKf.time = 0;
 				recording.unshift(zeroKf);
 			}
-			debugger;
+			for (var i=0; i<recording.length; i++) {
+				var f = recording[i];
+				for (var k in kf) {
+					if (specialKeys[k]) {
+						continue;
+					}
+					if (f[k] === undefined) {
+						f[k] = [].slice.call(kf[k]);
+						f.fCurves[k] = kf[k].map(function(k) {
+							return [-3/framesPerSecond, 0, +3/framesPerSecond, 0];
+						});
+						f.tweenCurves[k] = kf[k].map(function(k) { return [0, 0, 0.25, 0.25, 0.75, 0.75, 1, 1]; });
+					}
+				}
+			}
 			setSelectedKeyframe(kf);
 			smoothKeyframes();
 			updateKeyframes();
@@ -1127,7 +1166,18 @@ var init = function() {
 
 		var rebuildScene = function() {
 			for (var i=0; i<spheres.length; i++) {
-				scene[spheres[i].name] = {id: i, name: spheres[i].name, position: spheres[i].position};
+				var s = spheres[i];
+				scene[s.name] = {
+					id: i, 
+					name: s.name, 
+					position: s.position,
+					transmit: s.transmit,
+					specular: s.specular,
+					emission: s.emission,
+					rotorTransmit: s.rotorTransmit,
+					rotorSpecular: s.rotorSpecular,
+					rotorEmission: s.rotorEmission
+				};
 			}
 			objectSelect.innerHTML = '';
 			for (var name in scene) {
@@ -1138,14 +1188,24 @@ var init = function() {
 			}
 		};
 
-		var createObject = function(name, position) {
+		var createObject = function(name, position, transmit, specular, emission) {
 			var j = spheres.length;
 			if (j > 15 || scene[name]) {
 				// Only 16 objects supported, sorry not sorry
 				return;
 			}
+			var c = (j % 2 * 0.9) + 0.05;
+			transmit = transmit || new Float32Array([c,c,c]);
+			emission = emission || new Float32Array([0,0,0]);
+			specular = specular === undefined ? [16] : specular;
 			spheres[j] = {
 				position: position || new Float32Array([Math.random()*10-5,Math.random()*10-5,Math.random()*10-5,1]),
+				transmit: transmit,
+				specular: specular,
+				emission: emission,
+				rotorTransmit: new Float32Array([0.95, 0.25, 0.1]),
+				rotorSpecular: [16],
+				rotorEmission: new Float32Array([0,0,0]),
 				name: name,
 				html: null
 			};
@@ -1171,6 +1231,10 @@ var init = function() {
 				for (var i=idx*4; i<objectPositions.length-4; i++) {
 					objectPositions[i] = objectPositions[i+4];
 					objectVelocities[i] = objectVelocities[i+4];
+					objectMaterials[i] = objectMaterials[i+4];
+					objectMaterials[i+16*4] = objectMaterials[i+4+16*4];
+					objectMaterials[i+16*4*2] = objectMaterials[i+4+16*4*2];
+					objectMaterials[i+16*4*3] = objectMaterials[i+4+16*4*3];
 				}
 				objectPositions[objectPositions.length-1] = -1;
 				rebuildScene();
@@ -1184,6 +1248,48 @@ var init = function() {
 				deleteObject(currentObject);
 			}
 		};
+
+		var mixers = [];
+		var ranges = [];
+
+		document.querySelectorAll('.color-mixer').forEach(function(el) {
+			var bbox = el.getBoundingClientRect();
+			mixers.push(new ColorMixer(el, 160, 160, function(col) {
+				var id = currentObject.id;
+				if (id >= 0) {
+					var dst = spheres[id][el.dataset.target];
+				} else if (currentObject === scene.Sky) {
+					var dst = scene.Sky[el.dataset.target];
+				}
+				if (dst) {
+					dst[0] = col[0];
+					dst[1] = col[1];
+					dst[2] = col[2];
+					addKeyframe();
+					undoStack.addState();
+					forceRedraw = true;
+				}
+			}));
+		});
+
+		document.querySelectorAll('.specular input').forEach(function(el) {
+			ranges.push(el);
+			el.addEventListener('change', function(ev) {
+				var id = currentObject.id;
+				if (id >= 0) {
+					var dst = spheres[id][el.dataset.target];
+				} else if (currentObject === scene.Sky) {
+					var dst = scene.Sky[el.dataset.target];
+				}
+				if (dst) {
+					dst[0] = parseFloat(this.value);
+					addKeyframe();
+					undoStack.addState();
+					forceRedraw = true;
+				}
+			}, false);
+		});
+
 
 		var lightPos = vec3(-8.5, 3.5, 5.4);
 
@@ -1209,7 +1315,15 @@ var init = function() {
 
 
 		var scene = {};
-		scene.Sky = {id: -2, position: lightPos};
+		scene.Sky = {id: -2, 
+			position: lightPos,
+			transmit: [0,0.5,1],
+			emission: [0,1,1],
+			rotorTransmit: [1,1,1],
+			rotorEmission: [1,0,0],
+			rotorSpecular: [128],
+			specular: [128]
+		};
 		scene.Camera = {id: -2, position: cameraPos, target: cameraTarget};
 
 		var spheres = [];
@@ -1368,22 +1482,37 @@ var init = function() {
 						objectPositions[i+3] = -1;
 						break;
 					}
+					var sphere = spheres[j];
 					x0 = objectPositions[i];
 					y0 = objectPositions[i+1];
 					z0 = objectPositions[i+2];
 					r0 = objectPositions[i+3];
-					objectPositions[i] = spheres[j].position[0];
-					objectPositions[i+1] = spheres[j].position[1];
-					objectPositions[i+2] = spheres[j].position[2];
-					objectPositions[i+3] = spheres[j].position[3];
+					objectPositions[i] = sphere.position[0];
+					objectPositions[i+1] = sphere.position[1];
+					objectPositions[i+2] = sphere.position[2];
+					objectPositions[i+3] = sphere.position[3];
 					//if (updateMotionBlur) {
 						moved |= objectVelocities[i] = (objectPositions[i]-x0)/dt;
 						moved |= objectVelocities[i+1] = (objectPositions[i+1]-y0)/dt;
 						moved |= objectVelocities[i+2] = (objectPositions[i+2]-z0)/dt;
 						moved |= objectVelocities[i+3] = (objectPositions[i+3]-r0)/dt;
 					//}
-					var el = spheres[j].html;
-					trackElement(el, spheres[j].position, cameraPos, cameraTarget);
+					objectMaterials[i] = sphere.transmit[0]*255;
+					objectMaterials[i+1] = sphere.transmit[1]*255;
+					objectMaterials[i+2] = sphere.transmit[2]*255;
+					objectMaterials[i+3] = sphere.specular[0];
+					objectMaterials[i+16*4] = sphere.emission[0]*255;
+					objectMaterials[i+16*4+1] = sphere.emission[1]*255;
+					objectMaterials[i+16*4+2] = sphere.emission[2]*255;
+					objectMaterials[i+16*4*2] = sphere.rotorTransmit[0]*255;
+					objectMaterials[i+16*4*2+1] = sphere.rotorTransmit[1]*255;
+					objectMaterials[i+16*4*2+2] = sphere.rotorTransmit[2]*255;
+					objectMaterials[i+16*4*2+3] = sphere.rotorSpecular[0];
+					objectMaterials[i+16*4*3] = sphere.rotorEmission[0]*255;
+					objectMaterials[i+16*4*3+1] = sphere.rotorEmission[1]*255;
+					objectMaterials[i+16*4*3+2] = sphere.rotorEmission[2]*255;
+					var el = sphere.html;
+					trackElement(el, sphere.position, cameraPos, cameraTarget);
 				}
 
 				//if (updateCameraMotionBlur) {
@@ -1418,8 +1547,15 @@ var init = function() {
 					u4fv(gl, p, 'iObject', objectPositions);
 					u4fv(gl, p, 'iObjectV', objectVelocities);
 				}
+				updateTexture(gl, mTex, objectMaterials, 2);
 
 				u3fv(gl, p, 'iLightPos', lightPos);
+				u3fv(gl, p, 'iSkyColor', scene.Sky.emission);
+				u3fv(gl, p, 'iHorizonColor', scene.Sky.rotorTransmit);
+				u3fv(gl, p, 'iGroundColor', scene.Sky.rotorEmission);
+				u3fv(gl, p, 'iSunColor', scene.Sky.transmit);
+				u1f(gl, p, 'iSunSize', scene.Sky.rotorSpecular[0] / 255 * 8);
+				u1f(gl, p, 'iSunBrightness', scene.Sky.specular[0] / 255 * 8);
 
 				u1i(gl, p, 'iUseFourView', useFourView ? 1 : 0);
 
@@ -1437,6 +1573,7 @@ var init = function() {
 				dt = t-pt;
 				pt = t;
 			}
+			mixers.forEach(function(m) { m.redraw() });
 			requestAnimationFrame(tick, glc);
 		};
 		resize();

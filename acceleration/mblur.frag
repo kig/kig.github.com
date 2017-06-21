@@ -6,6 +6,7 @@ uniform float     iGlobalTime;
 uniform vec4      iMouse;
 uniform sampler2D iChannel0;
 uniform sampler2D iChannel1;
+uniform sampler2D iChannel2;
 uniform float iPick;
 
 uniform vec4 iCamera;
@@ -17,6 +18,12 @@ uniform vec4 iObject[16];
 uniform vec4 iObjectV[16];
 
 uniform vec3 iLightPos;
+uniform vec3 iSunColor;
+uniform vec3 iSkyColor;
+uniform vec3 iGroundColor;
+uniform vec3 iHorizonColor;
+uniform float iSunBrightness;
+uniform float iSunSize;
 
 uniform bool iUseFourView;
 
@@ -34,6 +41,7 @@ struct tSphere {
 	vec3 center;
 	float radius;
 	vec3 color;
+	vec3 emission;
 	float spec;
 };
 
@@ -179,8 +187,11 @@ float intersect(float time, vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sp
 			dist = t;
 			sphere.radius = 100.0;
 			sphere.center = cen;
-			sphere.spec = 16.0;
-			sphere.color = vec3(0.5, 0.1, 0.05);
+			vec4 transmit = texture2D(iChannel2, vec2(fi/16.0 + 0.5/16.0, 0.125 + 0.5));
+			vec4 emission = texture2D(iChannel2, vec2(fi/16.0 + 0.5/16.0, 0.125 + 0.75));
+			sphere.color = transmit.rgb;
+			sphere.spec = transmit.a * 256.0;
+			sphere.emission = emission.rgb;
 			pick = fi;
 		}
 #endif
@@ -191,11 +202,11 @@ float intersect(float time, vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sp
 			sphere.radius = r;
 			sphere.center = cen;
 			nml = normalize(sphere.center - ray - dist*dir);
-			float odd = mod(fi, 2.0);
-			float ay = abs(nml.y);
-			float fy = float(ay < 0.05 || (ay > 0.75 && ay < 0.78));
-			sphere.color = mix(vec3(0.1), mix(vec3(0.95, 0.8, 0.7), vec3(0.2), fy), odd);
-			sphere.spec = mix(64.0, 16.0, odd);
+			vec4 transmit = texture2D(iChannel2, vec2(fi/16.0 + 0.5/16.0, 0.125));
+			vec4 emission = texture2D(iChannel2, vec2(fi/16.0 + 0.5/16.0, 0.125 + 0.25));
+			sphere.color = transmit.rgb;
+			sphere.spec = transmit.a * 256.0;
+			sphere.emission = emission.rgb;
 			pick = fi;
 		}
 	}
@@ -206,17 +217,26 @@ float intersect(float time, vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sp
 
 vec3 shadeBg(vec3 dir)
 {
-	vec3 lightPos_ = iLightPos;
-	vec3 bgLight = normalize(lightPos_);
-	vec3 lightPos = bgLight * 9999.0;
-	vec3 sun = vec3(5.0, 3.5, 2.0)*4.0;
+	vec3 bgLight = normalize(iLightPos);
+	vec3 sun = iSunColor * iSunBrightness;
+
+	// vec3 bgCol = iGroundColor;
+	// float bgDiff = dot(dir, vec3(0.0, 1.0, 0.0));
+	// float sunPow = dot(dir, bgLight);
+	// bgCol += bgDiff * iSkyColor;
+	// bgCol += (1.0-bgDiff) * iHorizonColor;
+	// bgCol += sun*(0.1*pow( max(sunPow, 0.0), 2.0) + pow( max(sunPow, 0.0), abs(bgLight.y)*(1.0-iSunSize)*256.0));
+	// bgCol += bgCol*(2.0*pow( max(-sunPow, 0.0), 2.0)+ pow( max(sunPow, 0.0), abs(bgLight.y)*(1.0-iSunSize)*128.0));
+	// return max(vec3(0.0), bgCol);
 
 	vec3 bgCol = vec3(0.2, 0.15, 0.1);
 	float bgDiff = dot(dir, vec3(0.0, 1.0, 0.0));
 	float sunPow = dot(dir, bgLight);
+	bgCol += 0.1*sun*pow( max(sunPow, 0.0), 2.0);
+	bgCol += 2.0*bgCol*pow( max(-sunPow, 0.0), 2.0);
 	bgCol += bgDiff*vec3(0.25, 0.5, 0.5);
-	bgCol += sun*(0.1*pow( max(sunPow, 0.0), 2.0) + pow( max(sunPow, 0.0), abs(bgLight.y)*256.0));
-	bgCol += bgCol*(2.0*pow( max(-sunPow, 0.0), 2.0)+ pow( max(sunPow, 0.0), abs(bgLight.y)*128.0));
+	bgCol += sun*pow( max(sunPow, 0.0), abs(bgLight.y)*256.0);
+	bgCol += bgCol*pow( max(sunPow, 0.0), abs(bgLight.y)*128.0);
 	return max(vec3(0.0), bgCol);
 }
 
@@ -260,9 +280,10 @@ vec3 doReflections(float time, vec3 ray, vec3 dir, inout float doAA, float picke
 		if (sphere.radius > 0.0) {
 			doAA = 1.0;
 			if (sphere.spec < 0.0) {
-				float a = 1.0 - abs(dot(dir, nml));
+				float a = pow(1.0 - abs(dot(dir, nml)), 5.0);
 				light += transmit * a * vec3(2.5, 1.6, 1.3);
 			}
+			light += transmit * sphere.emission;
 			transmit *= sphere.color;
 			ray += dist*dir;
 			//vec3 v = sign(tex.xyz-0.5)*pow(tex.xyz, vec3(2.0));

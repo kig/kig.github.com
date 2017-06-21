@@ -64,99 +64,129 @@
 			<h3>shapes</h3>
 			<ul>
 				<li>Event handling editor</li>
-				<li>Change object color</li>
-				<li>Change sky color</li>
 				<li>Change camera params</li>
 				<li>Single-param curve editor</li>
 				<li>Show param names</li>
 			</ul>
 		</div>
+
 		<div class="content-3d">
 		</div>
-		<div class="timeline">
-			<div class="object-select">
-				<select multiple title="Selected object">
-					<option>Camera</option>
-					<option>Sky</option>
-					<option>Sphere 0</option>
-					<option>Sphere 1</option>
-					<option>Sphere 2</option>
-					<option>Sphere 3</option>
-					<option>Sphere 4</option>
-					<option>Sphere 5</option>
-					<option>Sphere 6</option>
-					<option>Sphere 7</option>
-					<option>Sphere 8</option>
-				</select>
+
+		<div class="scene-editor" data-mode="animation">
+
+			<div class="mode-selector">
+				<div class="mode-object" onclick="document.querySelector('.scene-editor').dataset.mode='object'">Object</div>
+				<div class="mode-material" onclick="document.querySelector('.scene-editor').dataset.mode='material'">Material</div>
+				<div class="mode-animation" onclick="document.querySelector('.scene-editor').dataset.mode='animation'">Animation</div>
 			</div>
-			<div class="playhead"></div>
-			<div class="timestrip">
-				<div class="keyframes"></div>
-				<div class="active-time">
-					<div class="start-time"></div>
-					<div class="end-time"></div>
-					<div class="end-of-time" title="Adjust length of animation"></div>
-				</div>
-			</div>
- 			<div class="playback-controls">
-				<button class="create-object">+</button>
-				<button class="delete-object">-</button>
-				<button class="rewind" title="Go to start of animation [shift-Z]"></button>
-				<button class="previous-keyframe" title="Go to previous keyframe [alt-Z]"></button>
-				<button class="previous-frame" title="Go to previous frame [Z]"></button>
-				<button class="play" title="Play/pause animation [space]"></button>
-				<button class="next-frame" title="Go to next frame [X]"></button>
-				<button class="next-keyframe" title="Go to next keyframe [alt-X]"></button>
-				<button class="fast-forward" title="Go to end of animation [shift-X]"></button>
-			</div>
-			<div class="object-details">
-				<p><span>Position</span> X<input value="0.00 m"/> Y<input value="0.00 m"/> Z<input value="-13.00 m"/></p>
-				<p><span>Target</span> X<input value="0.00 m"/> Y<input value="0.00 m"/> Z<input value="-12.00 m"/></p>
-				<p><span>Roll</span> <label style="opacity: 0; pointer-events: none;">X</label><input value="0 deg"/></p>
-				<p><span>Focus Distance</span> <label style="opacity: 0; pointer-events: none;">X</label><input value="10.00 m"/></p>
-			</div>
-			<div class="object-details part-2">
-				<p><span>Focal Length</span> <input value="35 mm"/></p>
-				<p><span>ISO</span> <input value="200"/></p>
-				<p><span>Shutter Speed</span> <input value="1/120 s"/></p>
-				<p><span>Aperture Size</span> <input value="f/4"/></p>
-				<p><span>White Balance</span> <input value="6500K"/></p>
-			</div>
-			<div class="keyframe-buttons">
-				<button class="new-keyframe" title="Create / Edit keyframe at playhead [c]">New Keyframe</button>
-				<button class="delete-keyframe" title="Delete selected keyframe">Delete Keyframe</button>
-				<button class="delete-all-keyframes" title="Delete all keyframes on object timeline">Delete All Keyframes</button>
-				<button class="save-animation" title="Save timeline as JSON">Save JSON</button>
-				<button class="load-animation" title="Load timeline JSON">Load JSON</button>
-			</div>
+
 			<div class="editor-toggle">
 				<button class="hide-editor" title="Hide editor"></button>
 			</div>
-			<div class="keyframe-editor">
-				<div class="curve-editor" title="Animation Curve">
-					<svg class="curveEditorCanvas">
-						<g class="tween-curve-container" style="display:none;" transform="translate(10 10)">
-							<path class="pc1" d="M 0 0" stroke="#666666" fill="none" />
-							<path class="pc2" d="M 0 0" stroke="#666666" fill="none" />
-							<path class="curve" d="M 0 100 L 0 100 C 25 75 75 25 100 0 L 100 0" stroke-width="2" stroke="#888888" fill="none" />
-							<circle class="p1" cx="0" cy="100" r="5" stroke="#888888" fill="#444444" />
-							<circle class="p2" cx="100" cy="0" r="5" stroke="#888888" fill="#444444" />
-							<rect class="c1" x="20" y="70" width="11" height="11" stroke="#888888" fill="#444444" />
-							<rect class="c2" x="70" y="20" width="11" height="11" stroke="#888888" fill="#444444" />
-						</g>
-						<g class="f-curve-container">
-							<g class="f-curves" stroke-width="1" stroke="#888888" fill="none" />
-							<g class="f-curve-dots" fill="rgba(255,192,0,0.5)" stroke-width="1" stroke="rgba(255,192,0,0.5)" />
-						</g>
-					</svg>
+
+			<div class="object-select">
+				<select multiple title="Selected object">
+				</select>
+			</div>
+
+			<div class="object-editor">
+				<div class="object-details">
+					<p><span>Position</span> X<input value="0.00 m"/> Y<input value="0.00 m"/> Z<input value="-13.00 m"/></p>
+					<p><span>Target</span> X<input value="0.00 m"/> Y<input value="0.00 m"/> Z<input value="-12.00 m"/></p>
+					<p><span>Roll</span> <label style="opacity: 0; pointer-events: none;">X</label><input value="0 deg"/></p>
+					<p><span>Focus Distance</span> <label style="opacity: 0; pointer-events: none;">X</label><input value="10.00 m"/></p>
+				</div>
+				<div class="object-details part-2">
+					<p><span>Focal Length</span> <input value="35 mm"/></p>
+					<p><span>ISO</span> <input value="200"/></p>
+					<p><span>Shutter Speed</span> <input value="1/120 s"/></p>
+					<p><span>Aperture Size</span> <input value="f/4"/></p>
+					<p><span>White Balance</span> <input value="6500K"/></p>
 				</div>
 			</div>
+
+			<div class="material-editor">
+				<div class="color-mixer" data-target="transmit">
+					<p>Transmit</p>
+				</div>
+				<div class="color-mixer" data-target="emission">
+					<p>Emission</p>
+				</div>
+				<div class="specular">
+					<span>Specular</span>
+					<input type="range" min="0" max="255" data-target="specular" orient="vertical">
+				</div>
+				<div class="color-mixer" data-target="rotorTransmit">
+					<p>Rotor Transmit</p>
+				</div>
+				<div class="color-mixer" data-target="rotorEmission">
+					<p>Rotor Emission</p>
+				</div>
+				<div class="specular">
+					<span>Rotor specular</span>
+					<input type="range" min="0" max="255" data-target="rotorSpecular" orient="vertical">
+				</div>
+			</div>
+
+			<div class="animation-editor">
+				<div class="playhead"></div>
+				<div class="timestrip">
+					<div class="keyframes"></div>
+					<div class="active-time">
+						<div class="start-time"></div>
+						<div class="end-time"></div>
+						<div class="end-of-time" title="Adjust length of animation"></div>
+					</div>
+				</div>
+	 			<div class="playback-controls">
+					<button class="create-object">+</button>
+					<button class="delete-object">-</button>
+					<button class="rewind" title="Go to start of animation [shift-Z]"></button>
+					<button class="previous-keyframe" title="Go to previous keyframe [alt-Z]"></button>
+					<button class="previous-frame" title="Go to previous frame [Z]"></button>
+					<button class="play" title="Play/pause animation [space]"></button>
+					<button class="next-frame" title="Go to next frame [X]"></button>
+					<button class="next-keyframe" title="Go to next keyframe [alt-X]"></button>
+					<button class="fast-forward" title="Go to end of animation [shift-X]"></button>
+				</div>
+				<div class="keyframe-buttons">
+					<button class="new-keyframe" title="Create / Edit keyframe at playhead [c]">New Keyframe</button>
+					<button class="delete-keyframe" title="Delete selected keyframe">Delete Keyframe</button>
+					<button class="delete-all-keyframes" title="Delete all keyframes on object timeline">Delete All Keyframes</button>
+					<button class="save-animation" title="Save timeline as JSON">Save JSON</button>
+					<button class="load-animation" title="Load timeline JSON">Load JSON</button>
+					<button class="shot-mode" title="Preview motion blur">Shot Mode</button>
+					<button class="render-shot" title="Render high-quality still">Render</button>
+				</div>
+				<div class="keyframe-editor">
+					<div class="curve-editor" title="Animation Curve">
+						<svg class="curveEditorCanvas">
+							<g class="tween-curve-container" style="display:none;" transform="translate(10 10)">
+								<path class="pc1" d="M 0 0" stroke="#666666" fill="none" />
+								<path class="pc2" d="M 0 0" stroke="#666666" fill="none" />
+								<path class="curve" d="M 0 100 L 0 100 C 25 75 75 25 100 0 L 100 0" stroke-width="2" stroke="#888888" fill="none" />
+								<circle class="p1" cx="0" cy="100" r="5" stroke="#888888" fill="#444444" />
+								<circle class="p2" cx="100" cy="0" r="5" stroke="#888888" fill="#444444" />
+								<rect class="c1" x="20" y="70" width="11" height="11" stroke="#888888" fill="#444444" />
+								<rect class="c2" x="70" y="20" width="11" height="11" stroke="#888888" fill="#444444" />
+							</g>
+							<g class="f-curve-container">
+								<g class="f-curves" stroke-width="1" stroke="#888888" fill="none" />
+								<g class="f-curve-dots" fill="rgba(255,192,0,0.5)" stroke-width="1" stroke="rgba(255,192,0,0.5)" />
+							</g>
+						</svg>
+					</div>
+				</div>
+			</div>
+
 		</div>
+
 		<div class="show-editor-controls">
 			<button class="play" title="Play/pause animation [space]"></button>
 			<button class="show-editor" title="Show editor"></button>
 		</div>
-		<ul id="shaders"></ul>
+
 		<script src="utils.js" async="true"></script>
 		<script src="curveUtils.js" async="true"></script>
 		<script src="main.js" async="true"></script>

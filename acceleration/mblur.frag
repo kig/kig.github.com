@@ -331,11 +331,10 @@ vec4 perspectiveView(vec2 fragCoord, vec2 pixelRatio, vec2 pixelAspect, float pi
 		vec3 dir = getDir(time, ((fragCoord+vec2(tx,ty)/box_size)*pixelRatio - 1.0)*pixelAspect);
 
 		float rayAA;
-		col += doReflections(time, ray, dir, rayAA, picked);
+		col += 1.0 - exp(-doReflections(time, ray, dir, rayAA, picked) * iISO * iShutterSpeed * pow(2.0, iExposureCompensation));
 		k++;
 	}
-	col = 1.0 - exp(-col/k * iISO * iShutterSpeed * pow(2.0, iExposureCompensation));
-	return vec4( col, 1.0 );
+	return vec4( col/k, 1.0 );
 }
 
 vec4 modelingView(vec3 ray, vec3 dir, float picked) {

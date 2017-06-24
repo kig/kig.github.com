@@ -164,8 +164,8 @@ float intersect(float time, vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sp
 	for (int i=0; i<16; i++) {
 		float fi = float(i);
 		#ifdef OES_TEXTURE_FLOAT
-		vec4 pr = texture2D(iChannel1, vec2(fi/16.0 + 0.5/16.0, 0.25));
-		pr += dt * texture2D(iChannel1, vec2(fi/16.0 + 0.5/16.0, 0.75));
+		vec4 pr = texture2D(iChannel1, vec2(fi/16.0 + 0.5/16.0, 0.25), -100.0);
+		pr += dt * texture2D(iChannel1, vec2(fi/16.0 + 0.5/16.0, 0.75), -100.0);
 		#else
 		vec4 pr = iObject[i];
 		pr += dt * iObjectV[i];
@@ -187,8 +187,8 @@ float intersect(float time, vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sp
 			dist = t;
 			sphere.radius = 100.0;
 			sphere.center = cen;
-			vec4 transmit = texture2D(iChannel2, vec2(fi/16.0 + 0.5/16.0, 0.125 + 0.5));
-			vec4 emission = texture2D(iChannel2, vec2(fi/16.0 + 0.5/16.0, 0.125 + 0.75));
+			vec4 transmit = texture2D(iChannel2, vec2(fi/16.0 + 0.5/16.0, 0.125 + 0.5), -100.0);
+			vec4 emission = texture2D(iChannel2, vec2(fi/16.0 + 0.5/16.0, 0.125 + 0.75), -100.0);
 			sphere.color = transmit.rgb;
 			sphere.spec = transmit.a * 256.0;
 			sphere.emission = emission.rgb;
@@ -202,8 +202,8 @@ float intersect(float time, vec3 ray, vec3 dir, inout vec3 nml, inout tSphere sp
 			sphere.radius = r;
 			sphere.center = cen;
 			nml = normalize(sphere.center - ray - dist*dir);
-			vec4 transmit = texture2D(iChannel2, vec2(fi/16.0 + 0.5/16.0, 0.125));
-			vec4 emission = texture2D(iChannel2, vec2(fi/16.0 + 0.5/16.0, 0.125 + 0.25));
+			vec4 transmit = texture2D(iChannel2, vec2(fi/16.0 + 0.5/16.0, 0.125), -100.0);
+			vec4 emission = texture2D(iChannel2, vec2(fi/16.0 + 0.5/16.0, 0.125 + 0.25), -100.0);
 			sphere.color = transmit.rgb;
 			sphere.spec = transmit.a * 256.0;
 			sphere.emission = emission.rgb;
@@ -261,12 +261,11 @@ vec3 getDir(float time, vec2 uv)
 	return m*normalize(vec3(uv*(iCameraTarget.w+dt*iCameraTargetV.w), 1.0));
 }
 
-vec3 doReflections(float time, vec3 ray, vec3 dir, inout float doAA, float picked)
+vec3 doReflections(float time, vec3 ray, vec3 dir, float picked)
 {
 	vec3 light = vec3(0.0);
 	vec3 transmit = vec3(1.0);
-	bool earlyTermination = true;
-	doAA = 0.0;
+	bool rayActive = true;
 	for (int i=0; i<3; i++) {
 		vec3 nml;
 		tSphere sphere;
@@ -278,7 +277,6 @@ vec3 doReflections(float time, vec3 ray, vec3 dir, inout float doAA, float picke
 		transmit *= fog;
 		sphere.spec *= min(1.0, mix(-1.0, 1.0, abs(picked-target)));
 		if (sphere.radius > 0.0) {
-			doAA = 1.0;
 			if (sphere.spec < 0.0) {
 				float a = pow(1.0 - abs(dot(dir, nml)), 5.0);
 				light += transmit * a * vec3(2.5, 1.6, 1.3);
@@ -288,15 +286,15 @@ vec3 doReflections(float time, vec3 ray, vec3 dir, inout float doAA, float picke
 			ray += dist*dir;
 			//vec3 v = sign(tex.xyz-0.5)*pow(tex.xyz, vec3(2.0));
 			nml = normalize(nml);// + v/(1.0+sphere.spec));
-			//tex = tex.yzwx;
+			// tex = tex.yzwx;
 			dir = reflect(dir, nml);
 			ray += dir*0.01;
 		} else {
-			earlyTermination = false;
+			rayActive = false;
 			break;
 		}
 	}
-	if (earlyTermination) {
+	if (rayActive) {
 		light += transmit * shadeBg(dir);
 	}
 	return light;
@@ -319,6 +317,7 @@ vec4 perspectiveView(vec2 fragCoord, vec2 pixelRatio, vec2 pixelAspect, float pi
 	vec4 tex = texture2D(iChannel0, gl_FragCoord.xy/256.0);
 	float k = 0.0;
 	vec3 col = vec3(0.0);
+	float exposure = iISO * iShutterSpeed * pow(2.0, iExposureCompensation);
 
 	float box_size = ceil(sqrt(MBLUR_SAMPLES));
 	for (float dt = 0.0; dt < MBLUR_SAMPLES; dt++) {
@@ -330,11 +329,10 @@ vec4 perspectiveView(vec2 fragCoord, vec2 pixelRatio, vec2 pixelAspect, float pi
 		vec3 ray = getEye(time);
 		vec3 dir = getDir(time, ((fragCoord+vec2(tx,ty)/box_size)*pixelRatio - 1.0)*pixelAspect);
 
-		float rayAA;
-		col += 1.0 - exp(-doReflections(time, ray, dir, rayAA, picked) * iISO * iShutterSpeed * pow(2.0, iExposureCompensation));
-		k++;
+		vec3 light = doReflections(time, ray, dir, picked);
+		col += 1.0 - exp(-light * exposure);
 	}
-	return vec4( col/k, 1.0 );
+	return vec4( col/MBLUR_SAMPLES, 1.0 );
 }
 
 vec4 modelingView(vec3 ray, vec3 dir, float picked) {

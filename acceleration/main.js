@@ -40,31 +40,32 @@ var init = function() {
 
 	var currentShader;
 
-	var setStaticShader = function() {
-		if (currentShader === 'static') {
-			return;
+	var setShaderN = function(name, shader) {
+		if (currentShader === name) {
+			return shader;
 		}
-		currentShader = 'static';
-		p = staticShader;
+		currentShader = name;
+		p = shader;
 		if (typeof p === 'string') {
-			p = staticShader = createProgram(gl, rtShader, p);
+			p = createProgram(gl, rtShader, p);
 		}
 		setShader(p);
+		return p;
+	};
+
+	var setStaticShader = function() {
+		staticShader = setShaderN('static', staticShader);
 	};
 
 	var setAnimShader = function() {
-		if (currentShader === 'anim') {
-			return;
-		}
-		currentShader = 'anim';
-		p = animShader;
-		if (typeof p === 'string') {
-			p = animShader = createProgram(gl, rtShader, p);
-		}
-		setShader(p);
+		animShader = setShaderN('anim', animShader);
 	};
 
-	var staticShader, animShader, p;
+	var setHiresShader = function() {
+		hiresShader = setShaderN('hires', hiresShader);
+	};
+
+	var hiresShader, staticShader, animShader, p;
 
 	var rtVert = 'precision highp float;attribute vec3 position;void main() {gl_Position = vec4(position, 1.0);}';
 	var rtShader = createShader(gl, rtVert, gl.VERTEX_SHADER);
@@ -75,6 +76,7 @@ var init = function() {
 			mblurFrag = "#define OES_TEXTURE_FLOAT\n" + mblurFrag;
 		}
 
+		hiresShader = mblurFrag.replace("#define MBLUR_SAMPLES 4.0", "#define MBLUR_SAMPLES 64.0");
 		staticShader = mblurFrag.replace("#define MBLUR_SAMPLES 4.0", "#define MBLUR_SAMPLES 4.0");
 		animShader = mblurFrag.replace("#define MBLUR_SAMPLES 4.0", "#define MBLUR_SAMPLES 1.0");
 
@@ -512,6 +514,19 @@ var init = function() {
 			};
 			input.click();
 			forceRedraw = true;
+			this.blur();
+		}, false);
+
+		document.querySelector('.shot-mode').addEventListener('click', function(ev) {
+			shotMode = !shotMode;
+			forceRedraw = true;
+			this.blur();
+		}, false);
+
+		document.querySelector('.render-shot').addEventListener('click', function(ev) {
+			renderHighRes = true;
+			forceRedraw = true;
+			playing = false;
 			this.blur();
 		}, false);
 
@@ -1402,6 +1417,9 @@ var init = function() {
 			play();
 		}
 
+		var shotMode = false;
+		var renderHighRes = false;
+
 		pt = t = performance.now() / 1000;
 		var tick = function() {
 			var cx0, cy0, cz0;
@@ -1480,7 +1498,7 @@ var init = function() {
 					document.body.classList.remove('playing');
 				}
 
-				var moved = 0;
+				var moved = false;
 				for (j=0; j<16; j++) {
 					i = j*4;
 					if (j >= spheres.length) {
@@ -1497,10 +1515,17 @@ var init = function() {
 					objectPositions[i+2] = sphere.position[2];
 					objectPositions[i+3] = sphere.position[3];
 					//if (updateMotionBlur) {
-						moved |= objectVelocities[i] = (objectPositions[i]-x0)/dt;
-						moved |= objectVelocities[i+1] = (objectPositions[i+1]-y0)/dt;
-						moved |= objectVelocities[i+2] = (objectPositions[i+2]-z0)/dt;
-						moved |= objectVelocities[i+3] = (objectPositions[i+3]-r0)/dt;
+					var vx = (objectPositions[i]-x0)/dt;
+					var vy = (objectPositions[i+1]-y0)/dt;
+					var vz = (objectPositions[i+2]-z0)/dt;
+					var vr = (objectPositions[i+3]-r0)/dt;
+					moved = moved || vx || vy || vz || vr;
+					if (!(shotMode || renderHighRes) || playing) {
+						objectVelocities[i] = vx;
+						objectVelocities[i+1] = vy;
+						objectVelocities[i+2] = vz;
+						objectVelocities[i+3] = vr;
+					}
 					//}
 					objectMaterials[i] = sphere.transmit[0]*255;
 					objectMaterials[i+1] = sphere.transmit[1]*255;
@@ -1520,22 +1545,22 @@ var init = function() {
 					trackElement(el, sphere.position, cameraPos, cameraTarget);
 				}
 
-				//if (updateCameraMotionBlur) {
-					cameraPosV[0] = (cameraPos[0]-previousCameraPos[0])/dt;
-					cameraPosV[1] = (cameraPos[1]-previousCameraPos[1])/dt;
-					cameraPosV[2] = (cameraPos[2]-previousCameraPos[2])/dt;
-					cameraPosV[3] = (cameraPos[3]-previousCameraPos[3])/dt;
-					previousCameraPos.set(cameraPos);
-					cameraTargetV[0] = (cameraTarget[0]-previousCameraTarget[0])/dt;
-					cameraTargetV[1] = (cameraTarget[1]-previousCameraTarget[1])/dt;
-					cameraTargetV[2] = (cameraTarget[2]-previousCameraTarget[2])/dt;
-					cameraTargetV[3] = (cameraTarget[3]-previousCameraTarget[3])/dt;
-					previousCameraTarget.set(cameraTarget);
-				//}
+				var cameraMoved = !( eq4(cameraPos, previousCameraPos) && eq4(cameraTarget, previousCameraTarget) );
+				if (!(shotMode || renderHighRes) || playing) { // updateCameraMotionBlur) {
+					sub4(cameraPos, previousCameraPos, cameraPosV);
+					scale4(cameraPosV, 1/dt, cameraPosV);
+					sub4(cameraTarget, previousCameraTarget, cameraTargetV);
+					scale4(cameraTargetV, 1/dt, cameraTargetV);
+				}
+				previousCameraPos.set(cameraPos);
+				previousCameraTarget.set(cameraTarget);
 
-				var cameraMoved = dot(cameraPosV, cameraPosV) || dot(cameraTargetV, cameraTargetV);
 				forceRedraw = cameraMoved || moved;
-				if (cameraMoved || playing || moved) {
+				if (renderHighRes) { 
+					setHiresShader();
+					forceRedraw = false;
+					renderHighRes = false;
+				} else if (cameraMoved || playing || moved) {
 					setAnimShader();
 				} else {
 					setStaticShader();

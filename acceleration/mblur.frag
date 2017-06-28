@@ -314,7 +314,7 @@ vec3 doPrimary(float time, vec3 ray, vec3 dir, float picked)
 }
 
 vec4 perspectiveView(vec2 fragCoord, vec2 pixelRatio, vec2 pixelAspect, float picked) {
-	vec4 tex = texture2D(iChannel0, gl_FragCoord.xy/256.0);
+	vec4 tex; // = texture2D(iChannel0, gl_FragCoord.xy/256.0);
 	float k = 0.0;
 	vec3 col = vec3(0.0);
 	float exposure = iISO * iShutterSpeed * pow(2.0, iExposureCompensation);
@@ -323,6 +323,10 @@ vec4 perspectiveView(vec2 fragCoord, vec2 pixelRatio, vec2 pixelAspect, float pi
 	for (float dt = 0.0; dt < MBLUR_SAMPLES; dt++) {
 		float ty = floor(dt/box_size);
 		float tx = dt - ty*box_size;
+		if (mod(dt, 4.0) < 0.5) {
+			tex = texture2D(iChannel0, (gl_FragCoord.xy+vec2(mod(k,8.0)*37.0,floor(k/8.0)*23.0))/256.0, -100.0);
+			k++;
+		}
 		float time = (iGlobalTime - (tex.r*2.0-dt/MBLUR_SAMPLES)*iShutterSpeed);
 		tex = tex.yzwx;
 

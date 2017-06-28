@@ -149,6 +149,20 @@ var scale = function(u,f,d) {
 	return d;
 };
 
+var sub4 = function(u,v,d) {
+	d[0] = u[0]-v[0]; d[1] = u[1]-v[1]; d[2] = u[2]-v[2]; d[3] = u[3]-v[3];
+	return d;
+};
+
+var scale4 = function(u,f,d) {
+	d[0] = u[0]*f; d[1] = u[1]*f; d[2] = u[2]*f; d[3] = u[3]*f;
+	return d;
+};
+
+var eq4 = function(u,v) {
+	return u[0] === v[0] && u[1] === v[1] && u[2] === v[2] && u[3] === v[3];
+};
+
 var normalize = function(v) {
 	var ilen = 1 / Math.sqrt(dot(v,v));
 	v[0] *= ilen; v[1] *= ilen; v[2] *= ilen;

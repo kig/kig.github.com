@@ -270,7 +270,7 @@ a {
 }
 
 .scene-editor[data-mode="animation"] .mode-animation,
-.scene-editor[data-mode="material"] .mode-material,
+.scene-editor[data-mode="behavior"] .mode-behavior,
 .scene-editor[data-mode="object"] .mode-object
 {
 	color: white;
@@ -279,14 +279,14 @@ a {
 }
 
 .scene-editor .animation-editor,
-.scene-editor .material-editor,
+.scene-editor .behavior-editor,
 .scene-editor .object-editor
 {
 	display: none;
 }
 
 .scene-editor[data-mode="animation"] .animation-editor,
-.scene-editor[data-mode="material"] .material-editor,
+.scene-editor[data-mode="behavior"] .behavior-editor,
 .scene-editor[data-mode="object"] .object-editor
 {
 	display: block;
@@ -514,7 +514,7 @@ a {
 	padding-left: 20px;
 }
 
-.material-editor {
+.object-editor {
 	position: absolute;
 	left: 140px;
 	top: 0px;
@@ -531,7 +531,7 @@ a {
 	text-align: left;
 }
 
-.material-editor .color-mixer {
+.object-editor .color-mixer {
 	top: 10px;
 	bottom: 10px;
 	left: 0px;
@@ -546,7 +546,7 @@ a {
 	vertical-align: top;
 }
 
-.material-editor .specular {
+.object-editor .specular {
 	display: inline-block;
 	vertical-align: top;
 	position: relative;
@@ -554,11 +554,11 @@ a {
 	text-align: center;
 }
 
-.material-editor .specular span {
+.object-editor .specular span {
 	display: block;
 }
 
-.material-editor .specular input[type="range"] {
+.object-editor .specular input[type="range"] {
 	width: 8px;
 	height: 160px;
 	writing-mode: bt-lr; /* IE */

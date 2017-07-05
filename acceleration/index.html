@@ -76,8 +76,8 @@
 		<div class="scene-editor" data-mode="animation">
 
 			<div class="mode-selector">
+				<div class="mode-behavior" onclick="document.querySelector('.scene-editor').dataset.mode='behavior'">Events</div>
 				<div class="mode-object" onclick="document.querySelector('.scene-editor').dataset.mode='object'">Object</div>
-				<div class="mode-material" onclick="document.querySelector('.scene-editor').dataset.mode='material'">Material</div>
 				<div class="mode-animation" onclick="document.querySelector('.scene-editor').dataset.mode='animation'">Animation</div>
 			</div>
 
@@ -88,6 +88,14 @@
 			<div class="object-select">
 				<select multiple title="Selected object">
 				</select>
+			</div>
+
+			<div class="behavior-editor">
+				<button class="add-event-listener" title="Add Event Listener"></button>
+				<svg class="event-canvas">
+					<g class="events">
+					</g>
+				</svg>
 			</div>
 
 			<div class="object-editor">
@@ -104,9 +112,6 @@
 					<p><span>Aperture Size</span> <input value="f/4"/></p>
 					<p><span>White Balance</span> <input value="6500K"/></p>
 				</div>
-			</div>
-
-			<div class="material-editor">
 				<div class="color-mixer" data-target="transmit">
 					<p>Transmit</p>
 				</div>

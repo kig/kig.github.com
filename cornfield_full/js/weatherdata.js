@@ -131,9 +131,9 @@ var updateWeather = function(cityName, weatherData) {
 
 var fetchWeather = function(cityName, callback, onerror) {
 	if (cityName.latitude) {
-		var queryURL = 'http://api.openweathermap.org/data/2.5/weather?lat='+encodeURIComponent(cityName.latitude)+'&lon='+encodeURIComponent(cityName.longitude)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
+		var queryURL = '//api.openweathermap.org/data/2.5/weather?lat='+encodeURIComponent(cityName.latitude)+'&lon='+encodeURIComponent(cityName.longitude)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
 	} else {
-		var queryURL = 'http://api.openweathermap.org/data/2.5/weather?q='+encodeURIComponent(cityName)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
+		var queryURL = '//api.openweathermap.org/data/2.5/weather?q='+encodeURIComponent(cityName)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
 	}
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', queryURL, true);

@@ -38,7 +38,7 @@
 			}
 
 			.daytime hr {
-				background: #635e62;
+				background: rgb(99, 94, 98, 0.5);
 			}
 
 			.daytime #wind-direction-arrow polygon {
@@ -356,13 +356,19 @@
 				top: 40px;
 			}
 			#info-toggle {
-				top: 70px;
+				display: block;
+				bottom: 18px;
+				right: 12px;
+				opacity: 0.5;
 			}
 
 			.cn {
 				font-family: Lantinghei SC, sans-serif;
 			}
-
+			.hide-text #weather-data {
+				opacity: 0;
+				pointer-events: none;
+			}
 			@media (max-width: 800px) {
 				#come-birds, #i-see-you, #fly-away {
 					width: 320px;
@@ -371,6 +377,10 @@
 				}
 				#audio {
 					font-size: 10px;
+				}
+				#weather-data {
+					zoom: 0.75;
+					top: 28px;
 				}
 			}
 		</style>
@@ -414,7 +424,6 @@ Moscow</textarea><br>
 			<hr>
 			<div><span id="weather-desc"></span>, <span id="cloud-cover">cloud cover 0%</span></div>
 			<div id="wind-data"><span id="wind-speed">wind 2.1 m/s</span> from <span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='15' width='15'><g id='wind-direction-arrow' transform='rotate(220 7.5 7.5)'><polygon points="0.2,7.4 14.8,11.1 11.4,7.4 14.8,3.7 " fill="white"/></g></svg></span></div>
-			<hr>
 		</div>
 		<div id="fullscreen"></div>
 		<div id="audio">

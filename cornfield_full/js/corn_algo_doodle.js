@@ -89,12 +89,12 @@ scene.add(cornMesh);
 scene.add(rainMesh);
 scene.add(birds);
 
-var addHeight = (/(iPhone|iPad|iPod).*AppleWebKit/.test(navigator.userAgent) && navigator.standalone) ? 20 : 0;
+var addHeight = (/(iPhone|iPad|iPod)/.test(navigator.userAgent) && navigator.standalone) ? 20 : 0;
 document.getElementById('weather-data').style.marginTop = addHeight + 'px';
 
 window.onresize = function() {
-	bgRenderer.setSize(document.documentElement.offsetWidth, document.documentElement.offsetHeight+addHeight);
-	renderer.setSize(document.documentElement.offsetWidth, document.documentElement.offsetHeight+addHeight);
+	bgRenderer.setSize(document.documentElement.offsetWidth, document.documentElement.offsetHeight);
+	renderer.setSize(document.documentElement.offsetWidth, document.documentElement.offsetHeight);
 	camera.aspect = renderer.domElement.width / renderer.domElement.height;
 	camera.updateProjectionMatrix();
 	shaderMat.uniforms.uv2Resolution.value.x = bgRenderer.domElement.width;

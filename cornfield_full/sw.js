@@ -24,10 +24,13 @@ self.addEventListener('fetch', async (evt) => {
     console.log('sw req', evt.request.url);
     if (/^https:\/\/api\.openweathermap\.org\/data\//.test(evt.request.url)) {
         // Try network and if it fails, go for the cached copy.
-        evt.respondWith(fromNetwork(evt.request, 3e3, false).catch(() => fromCache(evt.request)));
+        const res = fromNetwork(evt.request, 3e3, false).catch(() => fromCache(evt.request));
+        console.log('network-first response', res);
+        evt.respondWith(res);
     } else {
         // Try cache and if it fails, go for the network copy.
-        const res = await fromCache(evt.request).catch(() => fromNetwork(evt.request, 180e3));
+        const res = fromCache(evt.request).catch(() => fromNetwork(evt.request, 180e3));
+        console.log("read-through cache response", res);
         evt.respondWith(res);
     }
 });

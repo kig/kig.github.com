@@ -453,6 +453,7 @@ Moscow</textarea><br>
 					var container = document.getElementById('audio');
 					var player = document.getElementById('audio-player');
 					var targetVolume = 1;
+					var currentVolume = 0;
 					var paused = false;
 
 					var play = function() {
@@ -467,7 +468,7 @@ Moscow</textarea><br>
 						volumeTick();
 					};
 					var volumeTick = function() {
-						var newVol = (targetVolume - player.volume) * 0.05 + player.volume;
+						var newVol = (targetVolume - currentVolume) * 0.05 + currentVolume;
 						if (Math.abs(newVol - targetVolume) < 0.01) {
 							newVol = targetVolume;
 							if (newVol === 0) {
@@ -478,22 +479,14 @@ Moscow</textarea><br>
 						if (newVol !== targetVolume) {
 							setTimeout(volumeTick, 10);
 						}
+						currentVolume = newVol;
 					};
 
 					toggle.addEventListener('click', function(ev) {
 						ev.preventDefault();
 						paused ? play() : pause();
 						container.className = paused ? 'paused' : '';
-						if (window.localStorage) {
-							window.localStorage.audioEnabled = !paused;
-						}
 					}, false);
-					if (window.localStorage && window.localStorage.audioEnabled === 'false') {
-						container.className = 'paused';
-						player.removeAttribute('autoplay');
-						player.pause();
-						pause();
-					}
 				})();
 			</script>
 		</div>

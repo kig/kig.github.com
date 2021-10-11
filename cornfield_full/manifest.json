@@ -3,7 +3,7 @@
     "name": "Weather",
     "icons": [
       {
-        "src": "/images/weather_icon.png",
+        "src": "images/weather_icon.png",
         "type": "image/png",
         "sizes": "512x512",
         "purpose": "any maskable"

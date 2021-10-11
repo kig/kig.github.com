@@ -129,12 +129,12 @@ var frameTimes = [];
 var slow = false;
 var frame = 0;
 
-var lastHeight = document.body.clientHeight;
+var lastHeight = window.innerHeight;
 
 var tick = function() {
-	if (lastHeight !== document.body.clientHeight) {
+	if (lastHeight !== window.innerHeight) {
 		onresize();
-		lastHeight = document.body.clientHeight;
+		lastHeight = window.innerHeight;
 	}
 	frame++;
 	matrix.multiplyMatrices( camera.matrixWorld, matrix.getInverse( camera.projectionMatrix ) );

@@ -3,14 +3,14 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Weather</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="hidden">
 		<meta name="apple-mobile-web-app-title" content="Weather">
 		<link rel="apple-touch-icon" href="images/weather_icon.jpg">
 		<link rel="icon" href="images/weather_icon.jpg" />
-		<meta name="theme-color" content="#3367D6"/>
+		<meta name="theme-color" content="#000000"/>
 		<link rel="manifest" href="manifest.json">
 		<style>
 			html,
@@ -19,9 +19,11 @@
 				height: 100%;
 				background: #000;
 				overflow: hidden;
+				user-select: none;
 			}
 			* {
-			  margin: 0;
+				user-select: none;
+				margin: 0;
 			}
 			body {
 				background: #988F95;

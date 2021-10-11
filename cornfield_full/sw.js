@@ -6,7 +6,7 @@ self.addEventListener('install', (e) => {
         caches.open(CACHE).then((cache) => cache.addAll([
             './',
             './index.html',
-            './weather_icon.jpg',
+            './images/weather_icon.jpg',
             './js/lib/three.js',
             './js/weathertick.js',
             './js/weatherdata.js',

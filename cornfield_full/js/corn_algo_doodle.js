@@ -89,7 +89,7 @@ scene.add(cornMesh);
 scene.add(rainMesh);
 scene.add(birds);
 
-var addHeight = (/Mobile Safari/.test(navigator.userAgent) && navigator.standalone) ? 20 : 0;
+var addHeight = (/(iPhone|iPad|iPod).*AppleWebKit/.test(navigator.userAgent) && navigator.standalone) ? 20 : 0;
 document.getElementById('weather-data').style.marginTop = addHeight + 'px';
 
 window.onresize = function() {

@@ -20,35 +20,35 @@ self.addEventListener('install', (e) => {
     );
 });
 
-self.addEventListener('fetch', (evt) => {
+self.addEventListener('fetch', async (evt) => {
     console.log('sw req', evt.request.url);
     if (/^https:\/\/api\.openweathermap\.org\/data\//.test(evt.request.url)) {
         // Try network and if it fails, go for the cached copy.
-        evt.respondWith(fromNetwork(evt.request, 3e3).catch(() => fromCache(evt.request)));
+        evt.respondWith(fromNetwork(evt.request, 3e3, false).catch(() => fromCache(evt.request)));
     } else {
         // Try cache and if it fails, go for the network copy.
-        evt.respondWith(fromCache(evt.request).catch(() => fromNetwork(evt.request, 180e3, false)));
+        const res = await fromCache(evt.request).catch(() => fromNetwork(evt.request, 180e3));
+        evt.respondWith(res);
     }
 });
 
 
 // Time limited network request. If the network fails or the response is not
 // served before timeout, the promise is rejected.
-function fromNetwork(request, timeout, addToCache=true) {
-    return caches.open(CACHE).then(function (cache) {
-        new Promise(function (fulfill, reject) {
-            // Reject in case of timeout.
-            var timeoutId = setTimeout(reject, timeout);
-            // Fulfill in case of success.
-            fetch(request).then(function (response) {
-                clearTimeout(timeoutId);
-                fulfill(response);
-                if (addToCache && response.status < 400) {
-                    cache.put(request, response.clone());
-                }
-                // Reject also if network fetch rejects.
-            }, reject);
-        });
+function fromNetwork(request, timeout, addToCache = true) {
+    console.log("fromNetwork", request.url);
+    return new Promise(function (fulfill, reject) {
+        // Reject in case of timeout.
+        var timeoutId = setTimeout(reject, timeout);
+        // Fulfill in case of success.
+        fetch(request.clone()).then(function (response) {
+            clearTimeout(timeoutId);
+            if (addToCache && response.status < 400) {
+                caches.open(CACHE).then((cache) => cache.put(request.clone(), response.clone()));
+            }
+            fulfill(response.clone());
+            // Reject also if network fetch rejects.
+        }, reject);
     });
 }
 
@@ -56,8 +56,10 @@ function fromNetwork(request, timeout, addToCache=true) {
 // resource. Notice that in case of no matching, the promise still resolves
 // but it does with `undefined` as value.
 function fromCache(request) {
+    console.log("fromCache", request.url);
     return caches.open(CACHE).then(function (cache) {
-        return cache.match(request).then(function (matching) {
+        return cache.match(request.clone()).then(function (matching) {
+            console.log("fromCache got", request.url, matching);
             return matching || Promise.reject('no-match');
         });
     });

@@ -437,7 +437,7 @@ Moscow</textarea><br>
 			<audio id="audio-player" src="music_1.m4a" loop="true" autoplay="true"></audio>
 			<script>
 				try {
-					navigator.serviceWorker.register('./js/sw.js', {scope: './'});
+					navigator.serviceWorker.register('./sw.js', {scope: './'});
 				} catch(e) {
 					console.error(e);
 				}

@@ -17,9 +17,9 @@ self.addEventListener('install', (e) => {
             './js/corn_worker.js',
             './js/corn_algo_doodle.js',
             './js/birds.js',
-            './music_1.m4a',
         ])),
     );
+    caches.open(CACHE).then((cache) => cache.addAll(['./music_1.m4a']));
 });
 
 self.addEventListener('fetch', async (evt) => {

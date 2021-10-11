@@ -90,8 +90,8 @@ scene.add(rainMesh);
 scene.add(birds);
 
 window.onresize = function() {
-	bgRenderer.setSize(window.innerWidth, window.innerHeight);
-	renderer.setSize(window.innerWidth, window.innerHeight);
+	bgRenderer.setSize(document.documentElement.offsetWidth, document.documentElement.offsetHeight);
+	renderer.setSize(document.documentElement.offsetWidth, document.documentElement.offsetHeight);
 	camera.aspect = renderer.domElement.width / renderer.domElement.height;
 	camera.updateProjectionMatrix();
 	shaderMat.uniforms.uv2Resolution.value.x = bgRenderer.domElement.width;
@@ -129,12 +129,12 @@ var frameTimes = [];
 var slow = false;
 var frame = 0;
 
-var lastHeight = window.innerHeight;
+var lastHeight = document.documentElement.offsetHeight;
 
 var tick = function() {
-	if (lastHeight !== window.innerHeight) {
+	if (lastHeight !== document.documentElement.offsetHeight) {
 		onresize();
-		lastHeight = window.innerHeight;
+		lastHeight = document.documentElement.offsetHeight;
 	}
 	frame++;
 	matrix.multiplyMatrices( camera.matrixWorld, matrix.getInverse( camera.projectionMatrix ) );

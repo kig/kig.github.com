@@ -5,11 +5,13 @@
       {
         "src": "/images/weather_icon.png",
         "type": "image/png",
-        "sizes": "512x512"
+        "sizes": "512x512",
+        "purpose": "any maskable"
       }
     ],
     "background_color": "#3367D6",
     "display": "fullscreen",
     "theme_color": "#3367D6",
-    "description": "Current weather"
+    "description": "Current weather",
+    "start_url": "./"
   }

@@ -21,6 +21,7 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('fetch', (evt) => {
+    console.log('sw req', evt.request.url);
     if (/^https:\/\/api\.openweathermap\.org\/data\//.test(evt.request.url)) {
         // Try network and if it fails, go for the cached copy.
         evt.respondWith(fromNetwork(evt.request, 3e3).catch(() => fromCache(evt.request)));
@@ -41,10 +42,10 @@ function fromNetwork(request, timeout, addToCache=true) {
             // Fulfill in case of success.
             fetch(request).then(function (response) {
                 clearTimeout(timeoutId);
+                fulfill(response);
                 if (addToCache && response.status < 400) {
                     cache.put(request, response.clone());
                 }
-                fulfill(response);
                 // Reject also if network fetch rejects.
             }, reject);
         });

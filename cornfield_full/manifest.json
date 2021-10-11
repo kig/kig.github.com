@@ -9,9 +9,9 @@
         "purpose": "any maskable"
       }
     ],
-    "background_color": "#3367D6",
+    "background_color": "#000",
     "display": "fullscreen",
-    "theme_color": "#3367D6",
+    "theme_color": "#000",
     "description": "Current weather",
     "start_url": "./"
   }

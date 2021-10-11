@@ -89,9 +89,12 @@ scene.add(cornMesh);
 scene.add(rainMesh);
 scene.add(birds);
 
+var addHeight = (/Mobile Safari/.test(navigator.userAgent) && navigator.standalone) ? 20 : 0;
+document.getElementById('weather-data').style.marginTop = addHeight + 'px';
+
 window.onresize = function() {
-	bgRenderer.setSize(document.documentElement.offsetWidth, document.documentElement.offsetHeight);
-	renderer.setSize(document.documentElement.offsetWidth, document.documentElement.offsetHeight);
+	bgRenderer.setSize(document.documentElement.offsetWidth, document.documentElement.offsetHeight+addHeight);
+	renderer.setSize(document.documentElement.offsetWidth, document.documentElement.offsetHeight+addHeight);
 	camera.aspect = renderer.domElement.width / renderer.domElement.height;
 	camera.updateProjectionMatrix();
 	shaderMat.uniforms.uv2Resolution.value.x = bgRenderer.domElement.width;

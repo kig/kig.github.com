@@ -30,6 +30,7 @@
 				background: #000;
 				overflow: hidden;
 				user-select: none;
+				-webkit-tap-highlight-color: transparent;
 			}
 			* {
 				user-select: none;
@@ -287,8 +288,10 @@
 			#fullscreen {
 				position: absolute;
 				z-index: 4;
+				margin-right: env(safe-area-inset-right);
+				margin-bottom: env(safe-area-inset-bottom);
 				right: 43px;
-				bottom: 21px;
+				bottom: 50px;
 				width: 15px;
 				height: 15px;
 				cursor: pointer;
@@ -296,7 +299,7 @@
 				transition: 0.5s;
 				opacity: 0.5;
 			}
-			#fullscreen:hover {
+			#fullscreen:active {
 				opacity: 1 !important;
 			}
 
@@ -305,7 +308,7 @@
 				width: 20px;
 				height: 20px;
 				cursor: pointer;
-				margin-top: -1px;
+				margin-top: 0px;
 				vertical-align: top;
 				margin-left: 8px;
 			}
@@ -313,8 +316,10 @@
 			#audio {
 				position: absolute;
 				z-index: 4;
+				margin-right: env(safe-area-inset-right);
+				margin-bottom: env(safe-area-inset-bottom);
 				right: 68px;
-				bottom: 19px;
+				bottom: 48px;
 				font-size: 14px;
 				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
 				font-weight: 100;
@@ -334,7 +339,7 @@
 			#audio.paused .vol {
 				opacity: 0;
 			}
-			#audio:hover {
+			#audio:active {
 				opacity: 0.6;
 			}
 			.audio-info {
@@ -362,8 +367,8 @@
 				cursor: pointer;
 				color: white;
 			}
-			#settings-toggle:hover,
-			#info-toggle:hover
+			#settings-toggle:active,
+			#info-toggle:active
 			{
 				opacity: 0.6;
 			}
@@ -378,7 +383,9 @@
 			}
 			#info-toggle {
 				display: block;
-				bottom: 18px;
+				margin-right: env(safe-area-inset-right);
+				margin-bottom: env(safe-area-inset-bottom);
+				bottom: 47px;
 				right: 12px;
 				opacity: 0.5;
 			}

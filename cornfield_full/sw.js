@@ -6,6 +6,7 @@ self.addEventListener('install', (e) => {
         caches.open(CACHE).then((cache) => cache.addAll([
             './',
             './index.html',
+            './weather_icon.jpg',
             './js/lib/three.js',
             './js/weathertick.js',
             './js/weatherdata.js',
@@ -24,7 +25,7 @@ self.addEventListener('install', (e) => {
 self.addEventListener('fetch', async (evt) => {
     if (/^https:\/\/api\.openweathermap\.org\/data\//.test(evt.request.url)) {
         // Try network and if it fails, go for the cached copy.
-        const res = fromNetwork(evt.request, 3e3, false).catch(() => fromCache(evt.request));
+        const res = fromNetwork(evt.request, 3e3).catch(() => fromCache(evt.request));
         if (DEBUG) console.log(evt.request.url, 'network-first response', res);
         evt.respondWith(res);
     } else {

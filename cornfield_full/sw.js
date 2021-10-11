@@ -19,7 +19,6 @@ self.addEventListener('install', (e) => {
             './js/birds.js',
         ])),
     );
-    caches.open(CACHE).then((cache) => cache.addAll(['./music_1.m4a']));
 });
 
 self.addEventListener('fetch', async (evt) => {

@@ -129,7 +129,13 @@ var updateWeather = function(cityName, weatherData) {
 	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3/4);
 };
 
+var fetchInterval = 0;
+
 var fetchWeather = function(cityName, callback, onerror) {
+	// Update weather every 30 minutes
+	clearInterval(fetchInterval);
+	fetchInterval = setInterval(function() { fetchWeather(cityName, callback, onerror); }, 30*60*1000);
+
 	if (cityName.latitude) {
 		var queryURL = '//api.openweathermap.org/data/2.5/weather?lat='+encodeURIComponent(cityName.latitude)+'&lon='+encodeURIComponent(cityName.longitude)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
 	} else {

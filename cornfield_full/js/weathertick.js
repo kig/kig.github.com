@@ -33,13 +33,13 @@ var setWeather = function() {
 		document.getElementById('weather-data').classList.remove('fade-out');
 
 		// Update window title.
-		if (currentCityIndex === 0) {
-			var temp = Math.round(c.temperature) + 'C';
-			var desc = c.weatherData.weather.map(function(wd) {
-				return wd.description;
-			}).join(", ");
-			document.title = temp + ', ' + desc + ' - ' + cityNames[currentCityIndex] + ' Weather';
-		}
+		// if (currentCityIndex === 0) {
+		// 	var temp = Math.round(c.temperature) + 'C';
+		// 	var desc = c.weatherData.weather.map(function(wd) {
+		// 		return wd.description;
+		// 	}).join(", ");
+		// 	document.title = temp + ', ' + desc + ' - ' + cityNames[currentCityIndex] + ' Weather';
+		// }
 	}
 
 	if (weatherTimer <= cityChangeDuration && currentCityIndex !== targetCityIndex) {

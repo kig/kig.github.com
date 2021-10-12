@@ -153,7 +153,7 @@ var fetchWeather = function(cityName, callback, onerror) {
 			const span = document.createElement('span');
 			span.textContent = Math.round(f.main.temp) + '°C';
 			const icon = document.createElement('span');
-			icon.className = 'weather-icon wi-owm-'+f.weather[0].id;
+			icon.className = 'weather-icon wi wi-owm-'+f.weather[0].id;
 			span.appendChild(icon);
 			forecastElem.appendChild(span);
 		});

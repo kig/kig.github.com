@@ -10,7 +10,8 @@
       }
     ],
     "background_color": "#000000",
-    "display": "fullscreen",
+    "display_override": ["fullscreen"],
+    "display": "standalone",
     "theme_color": "#000000",
     "description": "Current weather",
     "start_url": "./?pwa"

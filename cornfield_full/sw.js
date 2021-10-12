@@ -1,7 +1,8 @@
-const CACHE = 'cornfield-cache';
+const CACHE = 'cornfield-cache-v2';
 const DEBUG = false;
 
 self.addEventListener('install', (e) => {
+    self.skipWaiting();
     e.waitUntil(
         caches.open(CACHE).then((cache) => cache.addAll([
             './',

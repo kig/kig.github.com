@@ -471,6 +471,14 @@ Moscow</textarea><br>
 		<script>
 			try {
 				navigator.serviceWorker.register('./sw.js', {scope: './'});
+				var refreshing;
+				navigator.serviceWorker.addEventListener('controllerchange',
+					function() {
+						if (refreshing) return;
+						refreshing = true;
+						window.location.reload();
+					}
+				);
 			} catch(e) {
 				console.error(e);
 			}

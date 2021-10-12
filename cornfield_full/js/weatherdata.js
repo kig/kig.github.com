@@ -151,7 +151,7 @@ var fetchWeather = function(cityName, callback, onerror) {
 		forecastElem.innerHTML = '';
 		dayTemps.forEach(f => {
 			const span = document.createElement('span');
-			span.textContent = Math.round(f.main.temp) + '°C';
+			span.textContent = new Date((f.dt+fc.city.timezone)*1e3).toLocaleDateString(undefined, {weekday:'short'}) + ' ' + Math.round(f.main.temp) + '°C';
 			const icon = document.createElement('span');
 			icon.className = 'weather-icon wi wi-owm-'+f.weather[0].id;
 			span.appendChild(icon);

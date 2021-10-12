@@ -24,6 +24,19 @@ self.addEventListener('install', (e) => {
     );
 });
 
+// Delete old app cache versions.
+self.addEventListener('activate', function (event) {
+    event.waitUntil(
+        caches.keys().then(cacheNames =>
+            Promise.all(
+                cacheNames
+                    .filter(cacheName => /^cornfield-cache/.test(cacheName) && cacheName !== APP_CACHE)
+                    .map(cacheName => caches.delete(cacheName))
+            )
+        )
+    );
+});
+
 self.addEventListener('fetch', async (evt) => {
     if (/^https:\/\/api\.openweathermap\.org\/data\//.test(evt.request.url)) {
         // Cache weather responses to EXT_CACHE.

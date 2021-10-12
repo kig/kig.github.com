@@ -13,5 +13,5 @@
     "display": "fullscreen",
     "theme_color": "#000000",
     "description": "Current weather",
-    "start_url": "./"
+    "start_url": "./?pwa"
   }

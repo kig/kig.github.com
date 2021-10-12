@@ -195,7 +195,7 @@ if (fullscreenButton && (document.exitFullscreen||document.webkitExitFullscreen|
 			(d.exitFullscreen||d.webkitExitFullscreen||d.webkitExitFullScreen||d.mozCancelFullScreen||d.msExitFullscreen).call(d);
 		} else {
 			var e = document.body;
-			(e.requestFullscreen||e.webkitRequestFullscreen||e.webkitRequestFullScreen||e.mozRequestFullScreen||e.msRequestFullscreen).call(e);
+			(e.requestFullscreen||e.webkitRequestFullscreen||e.webkitRequestFullScreen||e.mozRequestFullScreen||e.msRequestFullscreen).call(e, {navigationUI:"hide"});
 		}
 	}
 	if (window.navigator.standalone === true) {

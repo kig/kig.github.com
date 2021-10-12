@@ -138,19 +138,78 @@ var fetchWeather = function(cityName, callback, onerror) {
 
 	if (cityName.latitude) {
 		var queryURL = '//api.openweathermap.org/data/2.5/weather?lat='+encodeURIComponent(cityName.latitude)+'&lon='+encodeURIComponent(cityName.longitude)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
+		var forecastQueryURL = '//api.openweathermap.org/data/2.5/forecast?lat='+encodeURIComponent(cityName.latitude)+'&lon='+encodeURIComponent(cityName.longitude)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
 	} else {
 		var queryURL = '//api.openweathermap.org/data/2.5/weather?q='+encodeURIComponent(cityName)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
+		var forecastQueryURL = '//api.openweathermap.org/data/2.5/forecast?q='+encodeURIComponent(cityName)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
 	}
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', queryURL, true);
-	xhr.onload = function(ev) {
-		var weatherData = JSON.parse(ev.target.responseText);
-		if (callback) {
-			callback(cityName, weatherData);
-		}
-	};
-	xhr.onerror = onerror;
-	xhr.send(null);
+	fetch(queryURL).then(res => res.json()).then(weatherData => callback(cityName, weatherData)).catch(onerror);
+	fetch(forecastQueryURL).then(res => res.json()).then(fc => {
+
+		const dayTemps = fc.list.filter(l => /(12|13|14):00:00.000Z$/.test(new Date((l.dt+fc.city.timezone)*1e3).toISOString()));
+		const forecastElem = document.getElementById('forecast');
+		forecastElem.innerHTML = '';
+		dayTemps.forEach(f => {
+			const span = document.createElement('span');
+			span.textContent = Math.round(f.main.temp) + '°C';
+			const icon = document.createElement('span');
+			icon.className = 'weather-icon wi-owm-'+f.weather[0].id;
+			span.appendChild(icon);
+			forecastElem.appendChild(span);
+		});
+
+		// Weather data graph
+		/////////////////////
+		//
+		// const rain = fc.list.map((f,i) => f.rain ? (f.rain['3h']||0) : 0);
+		// const humidity = fc.list.map(f => f.main.humidity);
+		// const temp = fc.list.map(f => [f.main.temp, f.main.feels_like]);
+		// const pressure = fc.list.map(f => f.main.pressure);
+		// const clouds = clouds = fc.list.map(f => f.clouds.all);
+		// const wind = fc.list.map(f => [f.wind.deg, f.wind.speed, f.wind.gust]);
+		// const visibility = fc.list.map(f => f.visibility);
+		// 
+		//
+		// line = (label, color, off, values, height=40) => {
+		// 	let maxV = values[0], maxIdx = 0;
+		// 	let minV = values[0], minIdx = 0;
+		// 	values.forEach((v,i) => {
+		// 		if (v > maxV) {
+		// 			maxV = v;
+		// 			maxIdx = i;
+		// 		}
+		// 		if (v < minV) {
+		// 			minV = v;
+		// 			minIdx = i;
+		// 		}
+		// 	});
+		// 	const dV = (maxV - minV) || 1;
+		// 	ctx.fillStyle = color;
+        //     const txt = label + " " + (values[0]|0);
+		// 	ctx.fillText(txt, 100-ctx.measureText(txt).width-3, 3+off - height*(values[0]-minV)/dV);
+		// 	ctx.fillText(values[values.length-1]|0, 492, 3+off - height*(values[values.length-1]-minV)/dV);
+		// 	if (maxIdx > 0 && maxIdx < values.length-1) ctx.fillText(maxV|0, 100+maxIdx*10, -2+off - height*(maxV-minV)/dV);
+		// 	if (minIdx > 0 && minIdx < values.length-1) ctx.fillText(minV|0, 100+minIdx*10, 10+off - height*(minV-minV)/dV);
+		// 	ctx.beginPath();
+		// 	values.forEach((v,i) => ctx.lineTo(100+i*10, off - height*(v-minV)/dV));
+		// 	ctx.strokeStyle = color;
+		// 	ctx.stroke();
+		// }
+
+		// ctx.clearRect(0,0,600,600); 
+
+		// line('Temperature', '#822', 60, fc.list.map(f => f.main.temp));
+		// line('Feels Like', '#C22', 120, fc.list.map(f => f.main.feels_like));
+
+		// line('Rain', '#44C', 180, fc.list.map(f => f.rain ? f.rain['3h'] : 0));
+		// line('Pressure', '#4C8', 240, fc.list.map(f => f.main.pressure));		
+		// line('Clouds', '#888', 300, fc.list.map(f => f.clouds.all));
+		// line('Humidity', '#49F', 360, fc.list.map(f => f.main.humidity));
+		// line('Gust', '#C80', 420, fc.list.map(f => f.wind.gust));
+		// line('Wind', '#840', 480, fc.list.map(f => f.wind.speed));
+		// line('Visibility', '#088', 540, fc.list.map(f => f.visibility));
+
+	});
 };
 
 window.currentLocation = false;

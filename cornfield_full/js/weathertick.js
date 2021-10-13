@@ -68,7 +68,11 @@ var setWeather = function() {
 	shaderMat.uniforms.ufSunPosition.value = 2*timeOfDay / 86400; // 0 = left = 6:00, 0.5 = up = 12:00, 1 = right = 18:00, 1.5 = down = 24:00
 	// shaderMat.uniforms.ufSunPosition.value = (Date.now() / 3000) % 2;
 
-	if (shaderMat.uniforms.ufSunPosition.value > 0.0 && shaderMat.uniforms.ufSunPosition.value < 1.0) {
+	// Base this on screen width:
+	//  - narrow screens need dark text most of the day
+	//  - wide screens only need dark text in the morning
+	var wideScreen = (shaderMat.uniforms.uv2Resolution.value.x / shaderMat.uniforms.uv2Resolution.value.y) > 3/4;
+	if (shaderMat.uniforms.ufSunPosition.value > 0.05 && shaderMat.uniforms.ufSunPosition.value < (wideScreen ? 0.5 : 0.95)) {
 		document.body.classList.add('daytime');
 	} else {
 		document.body.classList.remove('daytime');		

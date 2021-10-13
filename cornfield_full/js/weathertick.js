@@ -74,7 +74,7 @@ var setWeather = function() {
 	//  - squat screens need dark text most of the time
 	var aspect = (shaderMat.uniforms.uv2Resolution.value.x / shaderMat.uniforms.uv2Resolution.value.y);
 	if (shaderMat.uniforms.ufSunPosition.value > 0.05 && shaderMat.uniforms.ufSunPosition.value < 0.95 && // daytime
-		shaderMat.uniforms.ufSunPosition.value < (document.body.offsetHeight < 360 ? 0.95 : (aspect > 3/4 ? 0.5 : 0.75)) // tweak based on screen size
+		shaderMat.uniforms.ufSunPosition.value < (document.body.offsetHeight < 360 ? 0.95 : (aspect > 3/4 ? 0.5 : 0.92)) // tweak based on screen size
 	) {
 		document.body.classList.add('daytime');
 	} else {

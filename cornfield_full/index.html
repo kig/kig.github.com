@@ -38,10 +38,6 @@
 				user-select: none;
 				margin: 0;
 			}
-			body {
-				background: #988F95;
-				background: linear-gradient(#988F95, #E2F1FC);
-			}
 			body > canvas {
 				position: absolute;
 				left: 0;
@@ -51,30 +47,30 @@
 			.daytime #weather-data,
 			.daytime #city
 			{
-				color: #635e62;
+				color: #000;
 			}
 
 			.daytime #city:hover {
-				border-color: #635e62;
+				border-color: #000;
 			}
 
 			.daytime hr {
-				background: rgb(99, 94, 98, 0.5);
+				background: rgba(0, 0, 0, 0.5);
 			}
 
 			.daytime #wind-direction-arrow polygon {
-				fill: #635e62;
+				fill: #000;
 			}
 
 			.daytime #my-location rect,
 			.daytime #my-location #center
 			{
-				fill: #635e62;
+				fill: #000;
 			}
 
 			.daytime #my-location #surround
 			{
-				stroke: #635e62;
+				stroke: #000;
 			}
 
 
@@ -94,6 +90,7 @@
 				opacity: 0.8;
 				margin-top: env(safe-area-inset-top);
 				margin-right: env(safe-area-inset-right);
+				min-width: 200px;
 			}
 			.fade-out {
 				opacity: 0 !important;
@@ -114,6 +111,7 @@
 				outline: 0 !important;
 				border-bottom: 1px solid transparent;
 				margin-bottom: -1px;
+				border-radius: 0;
 				width: 100%;
 			}
 
@@ -413,6 +411,18 @@
 				    transform-origin: top right;
 				}
 			}
+			@media (max-height: 278px) {
+				#fullscreen {
+					bottom: 16px;
+					right: 16px;
+				}
+			}
+			@media (max-height: 238px) {
+				#fullscreen {
+					display: none;
+				}
+			}
+
 			:fullscreen #fullscreen {
 				display: none;
 			}

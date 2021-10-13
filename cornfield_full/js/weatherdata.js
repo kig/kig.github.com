@@ -280,7 +280,9 @@ document.getElementById('city').onchange = function(ev) {
 		updateWeather(cityName, weatherData);
 		targetCityIndex = idx;
 		weatherTimer = 0;
+		document.body.focus();
 	});
+	document.body.focus();
 };
 
 document.getElementById('city').onfocus = function(ev) {

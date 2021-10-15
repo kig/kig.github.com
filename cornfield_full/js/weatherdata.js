@@ -66,7 +66,7 @@ setInterval(function() {
 var cityNames = [];
 
 var cities = {};
-var currentCityIndex = 0;
+var currentCityIndex = -1;
 var zeroCity = {
 	cloudCover: 0, windDirection: 0, windStrength: 8, rainAmount: 0, sunrise: Date.now()/1000-12000, sunset: Date.now()/1000+43200-12000,
 	temperature: 10, weatherData: {weather: []}
@@ -115,7 +115,7 @@ var parseRainAmount = function(weatherData) {
 
 var updateWeather = function(cityName, weatherData) {
 	targetCityIndex = addCityIfNeeded(cityName);
-	weatherTime = 0;
+	weatherTimer = 0;
 
 	var c = cities[cityName];
 	if (!c) {
@@ -133,10 +133,6 @@ var updateWeather = function(cityName, weatherData) {
 
 	if (!document.body.classList.contains('loaded')) {
 		document.body.classList.add('loaded');
-		weatherTimer = 0;
-		weatherUpdateTriggered = true;
-	} else {
-		weatherUpdateTriggered = true;
 	}
 };
 

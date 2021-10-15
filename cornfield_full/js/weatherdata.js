@@ -114,6 +114,10 @@ var parseRainAmount = function(weatherData) {
 };
 
 var updateWeather = function(cityName, weatherData) {
+	if (!document.body.classList.contains('loaded')) {
+		document.body.classList.add('loaded');
+	}
+
 	var c = cities[cityName];
 	if (!c) {
 		c = cities[cityName] = {};

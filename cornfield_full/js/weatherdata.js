@@ -117,6 +117,7 @@ var updateWeather = function(cityName, weatherData) {
 	if (!document.body.classList.contains('loaded')) {
 		document.body.classList.add('loaded');
 		weatherTimer = 0;
+		weatherUpdateTriggered = true;
 	}
 
 	var c = cities[cityName];

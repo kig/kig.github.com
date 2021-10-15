@@ -158,12 +158,12 @@ var fetchWeather = function (cityName, onerror) {
 		fetch(server+'weather'+location+units+appid+lang).then(res => res.json()),
 		fetch(server+'forecast'+location+units+appid+lang).then(res => res.json())
 	]).then(([weatherData, forecast]) => {
-		if (weatherData.cod !== 200) {
+		if (parseInt(weatherData.cod) !== 200) {
 			document.body.classList.add('error');
 			document.getElementById('error').textContent = weatherData.message;
 			return;
 		}
-		weatherData.forecast = forecast.cod === 200 ? forecast : zeroCity.forecast;
+		weatherData.forecast = (parseInt(forecast.cod) === 200 ? forecast : zeroCity.forecast);
 		updateWeather(weatherData.name, weatherData);
 	}).catch(onerror);
 };

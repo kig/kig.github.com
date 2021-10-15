@@ -488,6 +488,17 @@
 				height: 24px;
 				margin-top: 4px;
 			}
+			#error {
+				display: none;
+				padding: 4px;
+				border-radius: 4px;
+				background: black;
+				color: yellow;
+				margin-bottom: 8px;
+			}
+			.error #error {
+				display: block;
+			}
 		</style>
 		<link rel="stylesheet" href="weather-icons/css/weather-icons.min.css">
 	</head>
@@ -522,6 +533,7 @@ Moscow</textarea><br>
 			I see you...
 		</div>
 		<div id="weather-data" class="fade-out">
+			<div id="error"></div>
 			<div><input id="city" value="London" aria-label="Location"></input><span id="my-location"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><circle id="surround" fill="none" stroke="#000000" stroke-miterlimit="10" cx="7.6" cy="7.5" r="5.4"/><rect x="7" width="1" height="1.9"/><rect x="7" y="13.1" width="1" height="1.9"/><rect x="13.1" y="7" width="1.9" height="1"/><rect x="0" y="7" width="1.9" height="1"/><circle id="center" cx="7.6" cy="7.5" r="3.5"/></svg></span></div>
 			<div id="temperature">7°C</div>
 			<hr>

@@ -158,7 +158,12 @@ var fetchWeather = function (cityName, onerror) {
 		fetch(server+'weather'+location+units+appid+lang).then(res => res.json()),
 		fetch(server+'forecast'+location+units+appid+lang).then(res => res.json())
 	]).then(([weatherData, forecast]) => {
-		weatherData.forecast = forecast;
+		if (weatherData.cod !== 200) {
+			document.body.classList.add('error');
+			document.getElementById('error').textContent = weatherData.message;
+			return;
+		}
+		weatherData.forecast = forecast.cod === 200 ? forecast : zeroCity.forecast;
 		updateWeather(weatherData.name, weatherData);
 	}).catch(onerror);
 };
@@ -185,12 +190,14 @@ document.getElementById('city').onblur = function (ev) {
 
 var prevCityValue = '';
 document.getElementById('city').onfocus = function (ev) {
+	document.body.classList.remove('error');
 	prevCityValue = ev.target.value;
 	ev.target.value = '';
 };
 
 document.getElementById('my-location').onclick = function (ev) {
 	ev.preventDefault();
+	document.body.classList.remove('error');
 	fetchMyLocationWeather();
 };
 

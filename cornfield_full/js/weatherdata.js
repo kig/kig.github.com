@@ -131,6 +131,8 @@ var updateWeather = function(cityName, weatherData) {
 	c.temperature = (weatherData.main && weatherData.main.temp) || 0;
 	c.sunrise = (weatherData.sys && weatherData.sys.sunrise) || (86400 * 1/4);
 	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3/4);
+
+	weatherUpdateTriggered = true;
 };
 
 var fetchInterval = 0;
@@ -271,8 +273,6 @@ var fetchCities = function(location) {
 		});
 	}
 };
-
-// setInterval(fetchCities, 15*60*1000);
 
 document.getElementById('city').onchange = function(ev) {
 	ev.target.blur();

@@ -70,8 +70,8 @@ var currentCityIndex = -1;
 var targetCityIndex = -1;
 
 var zeroCity = {
-	cloudCover: 0, windDirection: 0, windStrength: 8, rainAmount: 0, sunrise: Date.now()/1000-12000, sunset: Date.now()/1000+43200-12000,
-	temperature: 10, weatherData: {weather: []}
+	cloudCover: 0, windDirection: 0, windStrength: 8, rainAmount: 0, sunrise: Date.now() / 1000 - 12000, sunset: Date.now() / 1000 + 43200 - 12000,
+	temperature: 10, weatherData: { weather: [] }
 };
 
 var rainTable = {
@@ -103,7 +103,7 @@ var rainTable = {
 	531: 0.4
 };
 
-var parseRainAmount = function(weatherData) {
+var parseRainAmount = function (weatherData) {
 	var rainAmount = 0;
 	for (var i = 0; i < weatherData.weather.length; i++) {
 		var w = weatherData.weather[i];
@@ -115,7 +115,7 @@ var parseRainAmount = function(weatherData) {
 	return rainAmount;
 };
 
-var updateWeather = function(cityName, weatherData) {
+var updateWeather = function (cityName, weatherData) {
 	targetCityIndex = addCityIfNeeded(cityName);
 	weatherTimer = 0;
 
@@ -130,8 +130,8 @@ var updateWeather = function(cityName, weatherData) {
 	c.windStrength = (weatherData.wind && weatherData.wind.speed) || 0.1;
 	c.rainAmount = parseRainAmount(weatherData);
 	c.temperature = (weatherData.main && weatherData.main.temp) || 0;
-	c.sunrise = (weatherData.sys && weatherData.sys.sunrise) || (86400 * 1/4);
-	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3/4);
+	c.sunrise = (weatherData.sys && weatherData.sys.sunrise) || (86400 * 1 / 4);
+	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3 / 4);
 
 	if (!document.body.classList.contains('loaded')) {
 		document.body.classList.add('loaded');
@@ -140,29 +140,29 @@ var updateWeather = function(cityName, weatherData) {
 
 var fetchInterval = 0;
 
-var fetchWeather = function(cityName, callback, onerror) {
+var fetchWeather = function (cityName, onerror) {
 	// Update weather every 30 minutes
 	clearInterval(fetchInterval);
-	fetchInterval = setInterval(function() { fetchWeather(cityName, callback, onerror); }, 30*60*1000);
+	fetchInterval = setInterval(function () { fetchWeather(cityName, onerror); }, 30 * 60 * 1000);
 
 	if (cityName.latitude) {
-		var queryURL = '//api.openweathermap.org/data/2.5/weather?lat='+encodeURIComponent(cityName.latitude)+'&lon='+encodeURIComponent(cityName.longitude)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
-		var forecastQueryURL = '//api.openweathermap.org/data/2.5/forecast?lat='+encodeURIComponent(cityName.latitude)+'&lon='+encodeURIComponent(cityName.longitude)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
+		var queryURL = '//api.openweathermap.org/data/2.5/weather?lat=' + encodeURIComponent(cityName.latitude) + '&lon=' + encodeURIComponent(cityName.longitude) + '&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
+		var forecastQueryURL = '//api.openweathermap.org/data/2.5/forecast?lat=' + encodeURIComponent(cityName.latitude) + '&lon=' + encodeURIComponent(cityName.longitude) + '&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
 	} else {
-		var queryURL = '//api.openweathermap.org/data/2.5/weather?q='+encodeURIComponent(cityName)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
-		var forecastQueryURL = '//api.openweathermap.org/data/2.5/forecast?q='+encodeURIComponent(cityName)+'&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
+		var queryURL = '//api.openweathermap.org/data/2.5/weather?q=' + encodeURIComponent(cityName) + '&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
+		var forecastQueryURL = '//api.openweathermap.org/data/2.5/forecast?q=' + encodeURIComponent(cityName) + '&units=metric&APPID=1271d12e99b5bdc1e4d563a61e467190';
 	}
-	fetch(queryURL).then(res => res.json()).then(weatherData => callback(cityName, weatherData)).catch(onerror);
+	fetch(queryURL).then(res => res.json()).then(weatherData => updateWeather(weatherData.name, weatherData)).catch(onerror);
 	fetch(forecastQueryURL).then(res => res.json()).then(fc => {
 
-		const dayTemps = fc.list.filter(l => /(12|13|14):00:00.000Z$/.test(new Date((l.dt+fc.city.timezone)*1e3).toISOString()));
+		const dayTemps = fc.list.filter(l => /(12|13|14):00:00.000Z$/.test(new Date((l.dt + fc.city.timezone) * 1e3).toISOString()));
 		const forecastElem = document.getElementById('forecast');
 		forecastElem.innerHTML = '';
 		dayTemps.forEach(f => {
 			const span = document.createElement('span');
-			span.textContent = new Date((f.dt+fc.city.timezone)*1e3).toLocaleDateString(undefined, {weekday:'short'}) + ' ' + Math.round(f.main.temp) + '°C';
+			span.textContent = new Date((f.dt + fc.city.timezone) * 1e3).toLocaleDateString(undefined, { weekday: 'short' }) + ' ' + Math.round(f.main.temp) + '°C';
 			const icon = document.createElement('span');
-			icon.className = 'weather-icon wi wi-owm-'+f.weather[0].id;
+			icon.className = 'weather-icon wi wi-owm-' + f.weather[0].id;
 			span.appendChild(icon);
 			forecastElem.appendChild(span);
 		});
@@ -194,7 +194,7 @@ var fetchWeather = function(cityName, callback, onerror) {
 		// 	});
 		// 	const dV = (maxV - minV) || 1;
 		// 	ctx.fillStyle = color;
-        //     const txt = label + " " + (values[0]|0);
+		//     const txt = label + " " + (values[0]|0);
 		// 	ctx.fillText(txt, 100-ctx.measureText(txt).width-3, 3+off - height*(values[0]-minV)/dV);
 		// 	ctx.fillText(values[values.length-1]|0, 492, 3+off - height*(values[values.length-1]-minV)/dV);
 		// 	if (maxIdx > 0 && maxIdx < values.length-1) ctx.fillText(maxV|0, 100+maxIdx*10, -2+off - height*(maxV-minV)/dV);
@@ -218,26 +218,24 @@ var fetchWeather = function(cityName, callback, onerror) {
 		// line('Wind', '#840', 480, fc.list.map(f => f.wind.speed));
 		// line('Visibility', '#088', 540, fc.list.map(f => f.visibility));
 
-	});
+	}).catch(onerror);
 };
 
 window.currentLocation = false;
 
-document.getElementById('city').onchange = function(ev) {
+document.getElementById('city').onchange = function (ev) {
 	ev.target.blur();
 	var cityName = ev.target.value;
 	document.body.classList.remove('current-location');
-	fetchWeather(cityName, function(location, weatherData) {
-		updateWeather(weatherData.name, weatherData);
-	});
+	fetchWeather(cityName);
 	document.body.focus();
 };
 
-document.getElementById('city').onfocus = function(ev) {
+document.getElementById('city').onfocus = function (ev) {
 	ev.target.select();
 };
 
-document.getElementById('my-location').onclick = function(ev) {
+document.getElementById('my-location').onclick = function (ev) {
 	ev.preventDefault();
 	fetchMyLocationWeather();
 };
@@ -256,37 +254,58 @@ function fetchMyLocationWeather() {
 	document.getElementById('my-location').classList.add('locating');
 	if (navigator.geolocation) {
 		navigator.geolocation.getCurrentPosition(
-			function(pos) {
+			function (pos) {
+				window.currentLocation = pos.coords;
 				document.getElementById('my-location').classList.remove('locating');
 				document.body.classList.add('current-location');
-				fetchWeather(pos.coords, function(location, weatherData) {
-					updateWeather(weatherData.name, weatherData);
-				});
+				fetchWeather(pos.coords);
 			},
-			function(error) {
+			function (error) {
 				// Couldn't get location from geolocation, let's go back to geoip.
 				document.getElementById('my-location').classList.remove('locating');
 				document.body.classList.add('current-location');
-				fetchWeather(window.currentLocation, function(location, weatherData) {
-					updateWeather(weatherData.name, weatherData);
-				});
+				fetchGeoIPWeather();
 			},
 			{
-				enableHighAccuracy: false, timeout: 5000
+				maximumAge: Infinity, timeout: 5000
 			}
 		);
 	} else {
 		// Couldn't get location from geolocation, let's go back to geoip.
 		document.getElementById('my-location').classList.remove('locating');
 		document.body.classList.add('current-location');
-		fetchWeather(window.currentLocation, function(location, weatherData) {
-			updateWeather(weatherData.name, weatherData);
-		});		
+		fetchGeoIPWeather();
 	}
 };
 
-window.currentLocation = {"country_code":"HK","country_name":"Hong Kong","region_code":"","region_name":"","city":"Central District","zip_code":"","time_zone":"Asia/Hong_Kong","latitude":22.291,"longitude":114.15,"metro_code":0};
-fetchMyLocationWeather();
+window.currentLocation = { "country_code": "HK", "country_name": "Hong Kong", "region_code": "", "region_name": "", "city": "Central District", "zip_code": "", "time_zone": "Asia/Hong_Kong", "latitude": 22.291, "longitude": 114.15, "metro_code": 0 };
+
+if (navigator.geolocation && navigator.permissions) {
+	navigator.permissions.query({
+        name: 'geolocation'
+	}).then(permission => {
+        if (permission.state === "granted") {
+			fetchMyLocationWeather();
+		} else {
+			fetchGeoIPWeather();
+		}
+	});
+} else {
+	fetchGeoIPWeather();
+}
+
+function fetchGeoIPWeather() {
+	fetch('https://ipapi.co/json/')
+	.then(function (response) {
+		response.json().then(jsonData => {
+			window.currentLocation = jsonData;
+			fetchWeather(jsonData);
+		});
+	})
+	.catch(function (error) {
+		fetchWeather(window.currentLocation);
+	});
+}
 
 // var getCityNames = function() {
 // 	return document.getElementById('city-names').value

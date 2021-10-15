@@ -5,6 +5,11 @@ var wsOff = 0;
 var wsOffTarget = 0;
 var windDirection = 0, windStrength = 0;
 var weatherTimer = 0;
+var useUSAUnits = localStorage.useUSAUnits;
+if (useUSAUnits === undefined) {
+	useUSAUnits = /^en-US$/i.test(navigator.language);
+	localStorage.useUSAUnits = useUSAUnits;
+}
 
 var cityChangeDuration = 3000;
 var weatherUpdateTriggered = false;
@@ -22,9 +27,16 @@ var setWeather = function() {
 		weatherUpdateTriggered = false;
 		var c = cities[cityNames[currentCityIndex]] || zeroCity;
 		document.getElementById('city').value = (cityNames[currentCityIndex] || "").split(",")[0];
-		document.getElementById('temperature').textContent = Math.round(c.temperature) + '°C';
-		document.getElementById('cloud-cover').textContent = 'clouds ' + Math.floor(c.cloudCover*100) + '%';
-		document.getElementById('wind-speed').textContent = 'wind ' + Math.floor(c.windStrength*10)/10 + ' m/s';
+		var tempString = Math.round(c.temperature) + '°C';
+		var windString = '<i class="wi wi-strong-wind"></i> ' + Math.floor(c.windStrength*10)/10 + ' m/s';
+		if (useUSAUnits) {
+			tempString = Math.round(c.temperature * 1.8 + 32);
+			windString = '<i class="wi wi-strong-wind"></i> ' + Math.floor(c.windStrength * 2.237) + ' m/s';
+		}
+
+		document.getElementById('temperature').textContent = tempString; 
+		document.getElementById('cloud-cover').innerHTML = '<i class="wi wi-cloudy"></i> ' + Math.floor(c.cloudCover*100) + '%';
+		document.getElementById('wind-speed').innerHTML = windString;
 		document.getElementById('wind-direction-arrow').transform.baseVal.getItem(0).setRotate(c.windDirection, 7.5, 7.5);
 		document.getElementById('weather-desc').textContent = c.weatherData.weather.map(function(wd) {
 			return wd.description;

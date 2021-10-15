@@ -5,10 +5,17 @@ var wsOff = 0;
 var wsOffTarget = 0;
 var windDirection = 0, windStrength = 0;
 var weatherTimer = 0;
-var useUSAUnits = localStorage.useUSAUnits;
-if (useUSAUnits === undefined) {
-	useUSAUnits = /^en-US$/i.test(navigator.language);
-	localStorage.useUSAUnits = useUSAUnits;
+
+var useUSAUnits = /^en-US$/i.test(navigator.language);
+if (localStorage.useUSAUnits !== undefined) {
+	useUSAUnits = localStorage.useUSAUnits === 'true';
+}
+
+document.getElementById('temperature').onclick = document.getElementById('temperature').ontouchstart = function(ev) {
+	ev.preventDefault();
+	useUSAUnits = !useUSAUnits;
+	localStorage.useUSAUnits = useUSAUnits.toString();
+	weatherUpdateTriggered = true;
 }
 
 var cityChangeDuration = 3000;

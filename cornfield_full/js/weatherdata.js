@@ -251,12 +251,6 @@ if (navigator.geolocation && navigator.permissions) {
 	fetchGeoIPWeather();
 }
 
-document.getElementById('temperature').onclick = document.getElementById('temperature').ontouchstart = function(ev) {
-	ev.preventDefault();
-	useUSAUnits = !useUSAUnits;
-	localStorage.useUSAUnits = useUSAUnits;
-	weatherUpdateTriggered = true;
-}
 
 // var getCityNames = function() {
 // 	return document.getElementById('city-names').value

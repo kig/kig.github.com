@@ -34,8 +34,8 @@ var setWeather = function() {
 			windString = '<i class="wi wi-strong-wind"></i> ' + Math.floor(c.windStrength * 2.237) + ' mph';
 		}
 
-		document.getElementById('temperature').textContent = tempString; 
-		document.getElementById('cloud-cover').innerHTML = '<i class="wi wi-cloudy"></i> ' + Math.floor(c.cloudCover*100) + '%';
+		document.getElementById('temperature').textContent = tempString;
+		document.getElementById('cloud-cover').innerHTML = Math.floor(c.cloudCover*100) + '% <i class="wi wi-cloudy"></i>';
 		document.getElementById('wind-speed').innerHTML = windString;
 		document.getElementById('wind-direction-arrow').transform.baseVal.getItem(0).setRotate(c.windDirection, 7.5, 7.5);
 		document.getElementById('weather-desc').textContent = c.weatherData.weather.map(function(wd) {

@@ -114,11 +114,8 @@ var parseRainAmount = function(weatherData) {
 };
 
 var updateWeather = function(cityName, weatherData) {
-	if (!document.body.classList.contains('loaded')) {
-		document.body.classList.add('loaded');
-		weatherTimer = 0;
-		weatherUpdateTriggered = true;
-	}
+	targetCityIndex = addCityIfNeeded(cityName);
+	weatherTime = 0;
 
 	var c = cities[cityName];
 	if (!c) {
@@ -134,6 +131,13 @@ var updateWeather = function(cityName, weatherData) {
 	c.sunrise = (weatherData.sys && weatherData.sys.sunrise) || (86400 * 1/4);
 	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3/4);
 
+	if (!document.body.classList.contains('loaded')) {
+		document.body.classList.add('loaded');
+		weatherTimer = 0;
+		weatherUpdateTriggered = true;
+	} else {
+		weatherUpdateTriggered = true;
+	}
 };
 
 var fetchInterval = 0;
@@ -278,14 +282,9 @@ var fetchCities = function(location) {
 document.getElementById('city').onchange = function(ev) {
 	ev.target.blur();
 	var cityName = ev.target.value;
-	var idx = cityNames.length;
-	cityNames.push(cityName);
 	document.body.classList.remove('current-location');
 	fetchWeather(cityName, function(location, weatherData) {
-		updateWeather(cityName, weatherData);
-		targetCityIndex = idx;
-		weatherTimer = 0;
-		document.body.focus();
+		updateWeather(weatherData.name, weatherData);
 	});
 	document.body.focus();
 };
@@ -299,6 +298,15 @@ document.getElementById('my-location').onclick = function(ev) {
 	fetchMyLocationWeather();
 };
 
+function addCityIfNeeded(name) {
+	var idx = cityNames.indexOf(name);
+	if (idx === -1) {
+		idx = cityNames.length;
+		cityNames.push(name);
+	}
+	return idx;
+}
+
 function fetchMyLocationWeather() {
 	document.getElementById('my-location').blur();
 	document.getElementById('my-location').classList.add('locating');
@@ -308,9 +316,6 @@ function fetchMyLocationWeather() {
 				document.getElementById('my-location').classList.remove('locating');
 				document.body.classList.add('current-location');
 				fetchWeather(pos.coords, function(location, weatherData) {
-					targetCityIndex = cityNames.length;
-					weatherTimer = 0;
-					cityNames.push(weatherData.name);
 					updateWeather(weatherData.name, weatherData);
 				});
 			},
@@ -319,9 +324,7 @@ function fetchMyLocationWeather() {
 				document.getElementById('my-location').classList.remove('locating');
 				document.body.classList.add('current-location');
 				fetchWeather(window.currentLocation, function(location, weatherData) {
-					updateWeather(location.city + ', ' + location.country, weatherData);
-					targetCityIndex = 0;
-					weatherTimer = 0;
+					updateWeather(weatherData.name, weatherData);
 				});
 			},
 			{
@@ -333,15 +336,14 @@ function fetchMyLocationWeather() {
 		document.getElementById('my-location').classList.remove('locating');
 		document.body.classList.add('current-location');
 		fetchWeather(window.currentLocation, function(location, weatherData) {
-			updateWeather(location.city + ', ' + location.country, weatherData);
-			targetCityIndex = 0;
+			targetCityIndex = addCityIfNeeded(weatherData.name);
 			weatherTimer = 0;
+			updateWeather(weatherData.name, weatherData);
 		});		
 	}
 };
 
 window.currentLocation = {"country_code":"HK","country_name":"Hong Kong","region_code":"","region_name":"","city":"Central District","zip_code":"","time_zone":"Asia/Hong_Kong","latitude":22.291,"longitude":114.15,"metro_code":0};
-cityNames.push(window.currentLocation.name);
 fetchMyLocationWeather();
 
 // var getCityNames = function() {

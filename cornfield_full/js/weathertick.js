@@ -28,15 +28,15 @@ var setWeather = function() {
 		var c = cities[cityNames[currentCityIndex]] || zeroCity;
 		document.getElementById('city').value = (cityNames[currentCityIndex] || "").split(",")[0];
 		var tempString = Math.round(c.temperature) + '°C';
-		var windString = '<i class="wi wi-strong-wind"></i> ' + Math.floor(c.windStrength*10)/10 + ' m/s';
+		var windString = Math.floor(c.windStrength*10)/10 + ' m/s';
 		if (useUSAUnits) {
 			tempString = Math.round(c.temperature * 1.8 + 32) + '°F';
-			windString = '<i class="wi wi-strong-wind"></i> ' + Math.floor(c.windStrength * 2.237) + ' mph';
+			windString = Math.floor(c.windStrength * 2.237) + ' mph';
 		}
 
 		document.getElementById('temperature').textContent = tempString;
 		document.getElementById('cloud-cover').innerHTML = Math.floor(c.cloudCover*100) + '% <i class="wi wi-cloudy"></i>';
-		document.getElementById('wind-speed').innerHTML = windString;
+		document.getElementById('wind-speed').innerHTML = windString + ' <i class="wi wi-strong-wind"></i>';
 		document.getElementById('wind-direction-arrow').transform.baseVal.getItem(0).setRotate(c.windDirection, 7.5, 7.5);
 		document.getElementById('weather-desc').textContent = c.weatherData.weather.map(function(wd) {
 			return wd.description;

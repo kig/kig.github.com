@@ -18,7 +18,7 @@ var setWeather = function() {
 		currentCityIndex = targetCityIndex;
 		weatherUpdateTriggered = true;
 	}
-	if (weatherUpdateTriggered) {
+	if (weatherUpdateTriggered || (currentCityIndex === -1 && targetCityIndex !== -1)) {
 		weatherUpdateTriggered = false;
 		var c = cities[cityNames[currentCityIndex]] || zeroCity;
 		document.getElementById('city').value = (cityNames[currentCityIndex] || "").split(",")[0];

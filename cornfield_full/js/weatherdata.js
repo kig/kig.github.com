@@ -71,7 +71,7 @@ var targetCityIndex = -1;
 
 var zeroCity = {
 	cloudCover: 0, windDirection: 0, windStrength: 8, rainAmount: 0, sunrise: Date.now() / 1000 - 12000, sunset: Date.now() / 1000 + 43200 - 12000,
-	temperature: 10, weatherData: { weather: [] }
+	temperature: 10, weatherData: { weather: [] }, forecast: { list: [], city: { timezone: 0 }}
 };
 
 var rainTable = {
@@ -153,72 +153,12 @@ var fetchWeather = function (cityName, onerror) {
 		? '?lat=' + encodeURIComponent(cityName.latitude) + '&lon=' + encodeURIComponent(cityName.longitude)
 		: '?q=' + encodeURIComponent(cityName);
 
-	fetch(server+'weather'+location+units+appid+lang).then(res => res.json()).then(weatherData => updateWeather(weatherData.name, weatherData)).catch(onerror);
-	fetch(server+'forecast'+location+units+appid+lang).then(res => res.json()).then(fc => {
-
-		const dayTemps = fc.list.filter(l => /(12|13|14):00:00.000Z$/.test(new Date((l.dt + fc.city.timezone) * 1e3).toISOString()));
-		const forecastElem = document.getElementById('forecast');
-		forecastElem.innerHTML = '';
-		dayTemps.forEach(f => {
-			const span = document.createElement('span');
-			span.textContent = new Date((f.dt + fc.city.timezone) * 1e3).toLocaleDateString(undefined, { weekday: 'short' }) + ' ' + Math.round(f.main.temp) + '°C';
-			const icon = document.createElement('span');
-			icon.className = 'weather-icon wi wi-owm-' + f.weather[0].id;
-			span.appendChild(icon);
-			forecastElem.appendChild(span);
-		});
-
-		// Weather data graph
-		/////////////////////
-		//
-		// const rain = fc.list.map((f,i) => f.rain ? (f.rain['3h']||0) : 0);
-		// const humidity = fc.list.map(f => f.main.humidity);
-		// const temp = fc.list.map(f => [f.main.temp, f.main.feels_like]);
-		// const pressure = fc.list.map(f => f.main.pressure);
-		// const clouds = clouds = fc.list.map(f => f.clouds.all);
-		// const wind = fc.list.map(f => [f.wind.deg, f.wind.speed, f.wind.gust]);
-		// const visibility = fc.list.map(f => f.visibility);
-		// 
-		//
-		// line = (label, color, off, values, height=40) => {
-		// 	let maxV = values[0], maxIdx = 0;
-		// 	let minV = values[0], minIdx = 0;
-		// 	values.forEach((v,i) => {
-		// 		if (v > maxV) {
-		// 			maxV = v;
-		// 			maxIdx = i;
-		// 		}
-		// 		if (v < minV) {
-		// 			minV = v;
-		// 			minIdx = i;
-		// 		}
-		// 	});
-		// 	const dV = (maxV - minV) || 1;
-		// 	ctx.fillStyle = color;
-		//     const txt = label + " " + (values[0]|0);
-		// 	ctx.fillText(txt, 100-ctx.measureText(txt).width-3, 3+off - height*(values[0]-minV)/dV);
-		// 	ctx.fillText(values[values.length-1]|0, 492, 3+off - height*(values[values.length-1]-minV)/dV);
-		// 	if (maxIdx > 0 && maxIdx < values.length-1) ctx.fillText(maxV|0, 100+maxIdx*10, -2+off - height*(maxV-minV)/dV);
-		// 	if (minIdx > 0 && minIdx < values.length-1) ctx.fillText(minV|0, 100+minIdx*10, 10+off - height*(minV-minV)/dV);
-		// 	ctx.beginPath();
-		// 	values.forEach((v,i) => ctx.lineTo(100+i*10, off - height*(v-minV)/dV));
-		// 	ctx.strokeStyle = color;
-		// 	ctx.stroke();
-		// }
-
-		// ctx.clearRect(0,0,600,600); 
-
-		// line('Temperature', '#822', 60, fc.list.map(f => f.main.temp));
-		// line('Feels Like', '#C22', 120, fc.list.map(f => f.main.feels_like));
-
-		// line('Rain', '#44C', 180, fc.list.map(f => f.rain ? f.rain['3h'] : 0));
-		// line('Pressure', '#4C8', 240, fc.list.map(f => f.main.pressure));		
-		// line('Clouds', '#888', 300, fc.list.map(f => f.clouds.all));
-		// line('Humidity', '#49F', 360, fc.list.map(f => f.main.humidity));
-		// line('Gust', '#C80', 420, fc.list.map(f => f.wind.gust));
-		// line('Wind', '#840', 480, fc.list.map(f => f.wind.speed));
-		// line('Visibility', '#088', 540, fc.list.map(f => f.visibility));
-
+	Promise.all([
+		fetch(server+'weather'+location+units+appid+lang).then(res => res.json()),
+		fetch(server+'forecast'+location+units+appid+lang).then(res => res.json())
+	]).then(([weatherData, forecast]) => {
+		weatherData.forecast = forecast;
+		updateWeather(weatherData.name, weatherData);
 	}).catch(onerror);
 };
 

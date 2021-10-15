@@ -132,6 +132,7 @@ var updateWeather = function (cityName, weatherData) {
 	c.temperature = (weatherData.main && weatherData.main.temp) || 0;
 	c.sunrise = (weatherData.sys && weatherData.sys.sunrise) || (86400 * 1 / 4);
 	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3 / 4);
+	c.forecast = weatherData.forecast || zeroCity.forecast;
 
 	if (!document.body.classList.contains('loaded')) {
 		document.body.classList.add('loaded');

@@ -289,8 +289,8 @@ document.getElementById('city').onfocus = function(ev) {
 	ev.target.select();
 };
 
-document.getElementById('my-location').onclick = function(ev) {
-	ev.preventDefault();
+document.getElementById('my-location').onclick = function fetchMyLocationWeather(ev) {
+	if (ev) ev.preventDefault();
 	document.getElementById('my-location').blur();
 	document.getElementById('my-location').classList.add('locating');
 	if (navigator.geolocation) {
@@ -331,7 +331,8 @@ document.getElementById('my-location').onclick = function(ev) {
 	}
 };
 
-fetchCities({"country_code":"HK","country_name":"Hong Kong","region_code":"","region_name":"","city":"Central District","zip_code":"","time_zone":"Asia/Hong_Kong","latitude":22.291,"longitude":114.15,"metro_code":0});
+window.currentLocation = {"country_code":"HK","country_name":"Hong Kong","region_code":"","region_name":"","city":"Central District","zip_code":"","time_zone":"Asia/Hong_Kong","latitude":22.291,"longitude":114.15,"metro_code":0};
+fetchMyLocationWeather();
 
 // var getCityNames = function() {
 // 	return document.getElementById('city-names').value

@@ -6,8 +6,6 @@ var wsOffTarget = 0;
 var windDirection = 0, windStrength = 0;
 var weatherTimer = 0;
 
-var targetCityIndex = 0;
-
 var cityChangeDuration = 3000;
 var weatherUpdateTriggered = false;
 var windArrow = document.getElementById('wind-direction-arrow').transform.baseVal.getItem(0);

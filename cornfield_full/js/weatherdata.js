@@ -63,10 +63,12 @@ setInterval(function() {
 
 */
 
+var cities = {};
 var cityNames = [];
 
-var cities = {};
 var currentCityIndex = -1;
+var targetCityIndex = -1;
+
 var zeroCity = {
 	cloudCover: 0, windDirection: 0, windStrength: 8, rainAmount: 0, sunrise: Date.now()/1000-12000, sunset: Date.now()/1000+43200-12000,
 	temperature: 10, weatherData: {weather: []}
@@ -221,60 +223,6 @@ var fetchWeather = function(cityName, callback, onerror) {
 
 window.currentLocation = false;
 
-var fetchCities = function(location) {
-	// console.log('fetchCities', location);
-	if (location) {
-		window.currentLocation = location;
-	}
-	if (!document.body.classList.contains('loaded')) {
-	
-		fetchWeather(currentLocation, function(location, weatherData) {
-			cityNames = [weatherData.name];
-			updateWeather(weatherData.name, weatherData);
-			document.body.classList.add('loaded');
-			setTimeout(function() {
-				weatherUpdateTriggered = true;
-			}, 800);
-		});
-
-	} else {
-	
-		fetchWeather(currentLocation, function(location, weatherData) {
-			updateWeather(location.city + ', ' + location.country, weatherData);
-			weatherUpdateTriggered = true;
-		});
-	
-	}
-	
-	return;
-
-	var loadCount = cityNames.length;
-	for (var i = 0; i < cityNames.length; i++) {
-		fetchWeather(cityNames[i], function(cityName, weatherData) {
-			updateWeather(cityName, weatherData);
-			loadCount--;
-			if (cityNames[currentCityIndex] === cityName) {
-				if (!document.body.classList.contains('loaded')) {
-					document.body.classList.add('loaded');
-					setTimeout(function() {
-						weatherUpdateTriggered = true;
-					}, 800);
-				} else {
-					weatherUpdateTriggered = true;
-				}
-			}
-			if (loadCount === 0) {
-				document.body.classList.add('loaded');
-			}
-		}, function() {
-			loadCount--;
-			if (loadCount === 0) {
-				document.body.classList.add('loaded');
-			}
-		});
-	}
-};
-
 document.getElementById('city').onchange = function(ev) {
 	ev.target.blur();
 	var cityName = ev.target.value;
@@ -332,8 +280,6 @@ function fetchMyLocationWeather() {
 		document.getElementById('my-location').classList.remove('locating');
 		document.body.classList.add('current-location');
 		fetchWeather(window.currentLocation, function(location, weatherData) {
-			targetCityIndex = addCityIfNeeded(weatherData.name);
-			weatherTimer = 0;
 			updateWeather(weatherData.name, weatherData);
 		});		
 	}

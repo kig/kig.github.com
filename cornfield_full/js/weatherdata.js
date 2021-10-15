@@ -116,6 +116,7 @@ var parseRainAmount = function(weatherData) {
 var updateWeather = function(cityName, weatherData) {
 	if (!document.body.classList.contains('loaded')) {
 		document.body.classList.add('loaded');
+		weatherTimer = 0;
 	}
 
 	var c = cities[cityName];
@@ -132,7 +133,6 @@ var updateWeather = function(cityName, weatherData) {
 	c.sunrise = (weatherData.sys && weatherData.sys.sunrise) || (86400 * 1/4);
 	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3/4);
 
-	weatherUpdateTriggered = true;
 };
 
 var fetchInterval = 0;
@@ -340,6 +340,7 @@ function fetchMyLocationWeather() {
 };
 
 window.currentLocation = {"country_code":"HK","country_name":"Hong Kong","region_code":"","region_name":"","city":"Central District","zip_code":"","time_zone":"Asia/Hong_Kong","latitude":22.291,"longitude":114.15,"metro_code":0};
+cityNames.push(window.currentLocation.name);
 fetchMyLocationWeather();
 
 // var getCityNames = function() {

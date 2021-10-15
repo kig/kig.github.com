@@ -324,7 +324,7 @@ function fetchMyLocationWeather() {
 				});
 			},
 			{
-				enableHighAccuracy: true, timeout: 5000
+				enableHighAccuracy: false, timeout: 5000
 			}
 		);
 	} else {

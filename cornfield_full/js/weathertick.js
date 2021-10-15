@@ -30,8 +30,8 @@ var setWeather = function() {
 		var tempString = Math.round(c.temperature) + '°C';
 		var windString = '<i class="wi wi-strong-wind"></i> ' + Math.floor(c.windStrength*10)/10 + ' m/s';
 		if (useUSAUnits) {
-			tempString = Math.round(c.temperature * 1.8 + 32);
-			windString = '<i class="wi wi-strong-wind"></i> ' + Math.floor(c.windStrength * 2.237) + ' m/s';
+			tempString = Math.round(c.temperature * 1.8 + 32) + '°F';
+			windString = '<i class="wi wi-strong-wind"></i> ' + Math.floor(c.windStrength * 2.237) + ' mph';
 		}
 
 		document.getElementById('temperature').textContent = tempString; 

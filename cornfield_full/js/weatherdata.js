@@ -310,7 +310,7 @@ if (navigator.geolocation && navigator.permissions) {
 	fetchGeoIPWeather();
 }
 
-window.getElementById('temperature').onclick = function(ev) {
+document.getElementById('temperature').onclick = document.getElementById('temperature').ontouchstart = function(ev) {
 	ev.preventDefault();
 	useUSAUnits = !useUSAUnits;
 	localStorage.useUSAUnits = useUSAUnits;

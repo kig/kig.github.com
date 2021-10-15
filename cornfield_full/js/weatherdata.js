@@ -289,8 +289,12 @@ document.getElementById('city').onfocus = function(ev) {
 	ev.target.select();
 };
 
-document.getElementById('my-location').onclick = function fetchMyLocationWeather(ev) {
-	if (ev) ev.preventDefault();
+document.getElementById('my-location').onclick = function(ev) {
+	ev.preventDefault();
+	fetchMyLocationWeather();
+};
+
+function fetchMyLocationWeather() {
 	document.getElementById('my-location').blur();
 	document.getElementById('my-location').classList.add('locating');
 	if (navigator.geolocation) {

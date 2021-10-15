@@ -144,7 +144,7 @@ var fetchInterval = 0;
 var fetchWeather = function (cityName, onerror) {
 	// Update weather every 30 minutes
 	clearInterval(fetchInterval);
-	fetchInterval = setInterval(function () { fetchWeather(cityName, onerror); }, 30 * 60 * 1000);
+	fetchInterval = setInterval(function () { fetchWeather(cityName); }, 30 * 60 * 1000);
 	var server = '//api.openweathermap.org/data/2.5/';
 	var units = '&units=metric';
 	var appid = '&APPID=1271d12e99b5bdc1e4d563a61e467190';
@@ -154,7 +154,7 @@ var fetchWeather = function (cityName, onerror) {
 		? '?lat=' + encodeURIComponent(cityName.latitude) + '&lon=' + encodeURIComponent(cityName.longitude)
 		: '?q=' + encodeURIComponent(cityName);
 
-	Promise.all([
+	return Promise.all([
 		fetch(server+'weather'+location+units+appid+lang).then(res => res.json()),
 		fetch(server+'forecast'+location+units+appid+lang).then(res => res.json())
 	]).then(([weatherData, forecast]) => {
@@ -166,15 +166,27 @@ var fetchWeather = function (cityName, onerror) {
 window.currentLocation = false;
 
 document.getElementById('city').onchange = function (ev) {
-	ev.target.blur();
-	var cityName = ev.target.value;
-	document.body.classList.remove('current-location');
-	fetchWeather(cityName);
-	document.body.focus();
+	if (ev.target.value === '') {
+		ev.target.value = prevCityValue;
+	} else {
+		var cityName = ev.target.value;
+		document.body.classList.remove('current-location');
+		fetchWeather(cityName);
+		ev.target.blur();
+		document.body.focus();
+	}
 };
 
+document.getElementById('city').onblur = function (ev) {
+	if (ev.target.value === '') {
+		ev.target.value = prevCityValue;
+	}
+};
+
+var prevCityValue = '';
 document.getElementById('city').onfocus = function (ev) {
-	ev.target.select();
+	prevCityValue = ev.target.value;
+	ev.target.value = '';
 };
 
 document.getElementById('my-location').onclick = function (ev) {
@@ -210,7 +222,7 @@ function fetchMyLocationWeather() {
 			},
 			{
 				enableHighAccuracy: false,
-				maximumAge: Infinity,
+				maximumAge: 86400000,
 				timeout: 5000
 			}
 		);

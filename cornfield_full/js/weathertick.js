@@ -11,7 +11,7 @@ if (localStorage.useUSAUnits !== undefined) {
 	useUSAUnits = localStorage.useUSAUnits === 'true';
 }
 
-document.getElementById('temperature').onclick = document.getElementById('temperature').ontouchstart = function(ev) {
+document.getElementById('temperature').ondblclick = document.getElementById('temperature').ontouchstart = function(ev) {
 	ev.preventDefault();
 	useUSAUnits = !useUSAUnits;
 	localStorage.useUSAUnits = useUSAUnits.toString();

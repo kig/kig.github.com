@@ -50,7 +50,7 @@ var setWeather = function() {
 		dayTemps.forEach(f => {
 			const span = document.createElement('span');
 			const tempString = useUSAUnits ? Math.round(f.main.temp * 1.8 + 32) + '°F' : Math.round(f.main.temp) + '°C';
-			span.textContent = new Date((f.dt + fc.city.timezone) * 1e3).toLocaleDateString(undefined, { weekday: 'short' }) + ' ' + tempString;
+			span.textContent = new Date((f.dt + fc.city.timezone) * 1e3).toLocaleDateString(navigator.language, { weekday: 'short' }) + ' ' + tempString;
 			const icon = document.createElement('span');
 			icon.className = 'weather-icon wi wi-owm-' + f.weather[0].id;
 			span.appendChild(icon);

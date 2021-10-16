@@ -38,8 +38,8 @@ var setWeather = function() {
 	}
 	if (weatherUpdateTriggered || (currentCityIndex === -1 && targetCityIndex !== -1)) {
 		weatherUpdateTriggered = false;
-		var c = cities[cityNames[currentCityIndex]] || zeroCity;
-		document.getElementById('city').value = (cityNames[currentCityIndex] || "").split(",")[0];
+		var c = cities[cityNames[currentCityIndex]] || cities[cityNames[targetCityIndex]] || zeroCity;
+		document.getElementById('city').value = (cityNames[currentCityIndex] || cityNames[targetCityIndex] || "").split(",")[0];
 		var tempString = Math.round(c.temperature) + '°C';
 		var windString = Math.floor(c.windStrength*10)/10 + ' m/s';
 		if (useUSAUnits) {

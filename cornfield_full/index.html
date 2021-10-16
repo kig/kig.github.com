@@ -68,6 +68,7 @@
 				/* user-select: none; */
 				margin: 0;
 			}
+
 			body > canvas {
 				position: absolute;
 				left: 0;
@@ -267,54 +268,6 @@
 				display: none;
 			}
 
-			#loader {
-				position: absolute;
-				top: 50%;
-				left: 50%;
-				width: 50px;
-				height: 50px;
-				margin-left: -25px;
-				margin-top: -25px;
-				background: url('data:image/svg+xml;utf8,<svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" stroke="#fff"><g fill="none" fill-rule="evenodd"><g transform="translate(1 1)" stroke-width="2"><circle stroke-opacity=".5" cx="18" cy="18" r="18"/><path d="M36 18c0-9.94-8.06-18-18-18"><animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/></path></g></g></svg>') 0 0 / 50px no-repeat;
-				opacity: 0;
-				transition: 0.5s;
-				-webkit-animation: loader-intro 1s 1 ease-in-out;
-				-webkit-animation-fill-mode: both;
-				z-index: 3;
-			}
-
-			.loaded #loader {
-				-webkit-animation: loader-outro 0.5s 1 ease-in-out;
-				-webkit-animation-fill-mode: both;
-			}
-
-			@-webkit-keyframes loader-intro {
-				0% {
-					opacity: 0;
-					transform: scale(0.01);
-					color: rgba(255,255,255,0);
-				}
-				50% {
-					color: rgba(255,255,255,0);
-				}
-				100% {
-					opacity: 1;
-					transform: scale(1);
-					color: rgba(255,255,255,1);
-				}
-			}
-
-			@-webkit-keyframes loader-outro {
-				0% {
-					opacity: 1;
-					transform: scale(1);
-				}
-				100% {
-					opacity: 0;
-					transform: scale(0.01);
-				}
-			}
-
 			.audio-icon svg {
 				width: 100%;
 				height: 100%;
@@ -511,7 +464,6 @@
 		<link rel="stylesheet" href="weather-icons/css/weather-icons.min.css">
 	</head>
 	<body>
-		<div id="loader"></div>
 		<div id="settings-toggle">
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -256 1792 1792" fill="#fff"><g transform="matrix(1,0,0,-1,121.49153,1285.4237)"><path d="m 1024,640 q 0,106 -75,181 -75,75 -181,75 -106,0 -181,-75 -75,-75 -75,-181 0,-106 75,-181 75,-75 181,-75 106,0 181,75 75,75 75,181 z m 512,109 V 527 q 0,-12 -8,-23 -8,-11 -20,-13 l -185,-28 q -19,-54 -39,-91 35,-50 107,-138 10,-12 10,-25 0,-13 -9,-23 -27,-37 -99,-108 -72,-71 -94,-71 -12,0 -26,9 l -138,108 q -44,-23 -91,-38 -16,-136 -29,-186 -7,-28 -36,-28 H 657 q -14,0 -24.5,8.5 Q 622,-111 621,-98 L 593,86 q -49,16 -90,37 L 362,16 Q 352,7 337,7 323,7 312,18 186,132 147,186 q -7,10 -7,23 0,12 8,23 15,21 51,66.5 36,45.5 54,70.5 -27,50 -41,99 L 29,495 Q 16,497 8,507.5 0,518 0,531 v 222 q 0,12 8,23 8,11 19,13 l 186,28 q 14,46 39,92 -40,57 -107,138 -10,12 -10,24 0,10 9,23 26,36 98.5,107.5 72.5,71.5 94.5,71.5 13,0 26,-10 l 138,-107 q 44,23 91,38 16,136 29,186 7,28 36,28 h 222 q 14,0 24.5,-8.5 Q 914,1391 915,1378 l 28,-184 q 49,-16 90,-37 l 142,107 q 9,9 24,9 13,0 25,-10 129,-119 165,-170 7,-8 7,-22 0,-12 -8,-23 -15,-21 -51,-66.5 -36,-45.5 -54,-70.5 26,-50 41,-98 l 183,-28 q 13,-2 21,-12.5 8,-10.5 8,-23.5 z"/></g></svg>
 		</div>
@@ -530,15 +482,6 @@ Berlin
 Rio de Janeiro
 Moscow</textarea><br>
 			<input type="checkbox" id="show-weather" checked onclick="document.body.classList.toggle('weather')"> <label for="show-weather">Show weather text</label><br>
-		</div>
-		<div id="come-birds" class="fade-out">
-			Birdy birdy come come...
-		</div>
-		<div id="fly-away" class="fade-out">
-			Fly away!
-		</div>
-		<div id="i-see-you" class="fade-out">
-			I see you...
 		</div>
 		<div id="weather-data" class="fade-out">
 			<div id="error"></div>

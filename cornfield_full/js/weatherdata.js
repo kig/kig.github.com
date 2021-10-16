@@ -256,18 +256,16 @@ function fetchGeoIPWeather() {
 
 window.currentLocation = { "country_code": "HK", "country_name": "Hong Kong", "region_code": "", "region_name": "", "city": "Central District", "zip_code": "", "time_zone": "Asia/Hong_Kong", "latitude": 22.291, "longitude": 114.15, "metro_code": 0 };
 
+fetchGeoIPWeather();
+
 if (navigator.geolocation && navigator.permissions) {
 	navigator.permissions.query({
         name: 'geolocation'
 	}).then(permission => {
         if (permission.state === "granted") {
 			fetchMyLocationWeather();
-		} else {
-			fetchGeoIPWeather();
 		}
 	});
-} else {
-	fetchGeoIPWeather();
 }
 
 

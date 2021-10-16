@@ -57,16 +57,6 @@ var birdsTick = function() {
 	if (birds.visible) {
 		birdMat.opacity += 0.05 * (0.5-birdMat.opacity);
 	}
-    if (scareBirds) {
-        document.getElementById('fly-away').classList.remove('fade-out');
-    } else {
-        document.getElementById('fly-away').classList.add('fade-out');                
-    }
-    if (attractBirds) {
-        document.getElementById('come-birds').classList.remove('fade-out');
-    } else {
-        document.getElementById('come-birds').classList.add('fade-out');                
-    }
 	var sunPos = shaderMat.uniforms.ufSunPosition.value; // 0 = left = 6:00, 0.5 = up = 12:00, 1 = right = 18:00, 1.5 = down = 24:00
 	if (sunPos < 0) {
 		sunPos = 2+sunPos;

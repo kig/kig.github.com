@@ -11,11 +11,17 @@ if (localStorage.useUSAUnits !== undefined) {
 	useUSAUnits = localStorage.useUSAUnits === 'true';
 }
 
-document.getElementById('temperature').ondblclick = document.getElementById('temperature').ontouchstart = function(ev) {
+var lastTap = Date.now();
+document.getElementById('temperature').onmousedown = document.getElementById('temperature').ontouchstart = function(ev) {
 	ev.preventDefault();
-	useUSAUnits = !useUSAUnits;
-	localStorage.useUSAUnits = useUSAUnits.toString();
-	weatherUpdateTriggered = true;
+	if (Date.now() - lastTap < 1000) {
+		useUSAUnits = !useUSAUnits;
+		localStorage.useUSAUnits = useUSAUnits.toString();
+		weatherUpdateTriggered = true;
+		lastTap = 0;
+	} else {
+		lastTap = Date.now();
+	}
 }
 
 var cityChangeDuration = 3000;
@@ -128,7 +134,9 @@ var setWeather = function() {
 	if (weatherTimer <= cityChangeDuration && currentCityIndex !== targetCityIndex) {
 		fade = weatherTimer / cityChangeDuration;
 		fade = 0.5 - 0.5*Math.cos(fade*Math.PI);
-		document.getElementById('weather-data').classList.add('fade-out');
+		if (currentCityIndex !== -1) {
+			document.getElementById('weather-data').classList.add('fade-out');
+		}
 	}
 
 	var c0 = cities[cityNames[currentCityIndex]] || zeroCity;

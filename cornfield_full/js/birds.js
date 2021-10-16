@@ -70,13 +70,13 @@ var birdsTick = function() {
 		birdMat.color.g += (1 - birdMat.color.g)*0.1;
 		birdMat.color.b += (1 - birdMat.color.b)*0.1;
 	} else {
-		birdMat.color.r += (0 - birdMat.color.r)*0.1;
-		birdMat.color.g += (0 - birdMat.color.g)*0.1;
-		birdMat.color.b += (0 - birdMat.color.b)*0.1;		
+		birdMat.color.r += (1 - birdMat.color.r)*0.1;
+		birdMat.color.g += (1 - birdMat.color.g)*0.1;
+		birdMat.color.b += (1 - birdMat.color.b)*0.1;		
 	}
 
 	if (clicked) {
-		//birdScareCounter = 150;
+		birdScareCounter = 150;
 	}
 
 	if (birdScareCounter > 0) {

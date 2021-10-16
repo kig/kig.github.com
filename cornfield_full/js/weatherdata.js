@@ -147,7 +147,9 @@ var fetchInterval = 0;
 var fetchWeather = function (cityName, onerror) {
 	// Update weather every hour
 	clearInterval(fetchInterval);
-	fetchInterval = setInterval(function () { fetchWeather(cityName); }, 60 * 60 * 1000);
+	fetchInterval = setInterval(function () {
+		fetchWeather(cityName).then(() => weatherUpdateTriggered = true);
+	}, 60 * 60 * 1000);
 	var server = '//api.openweathermap.org/data/2.5/';
 	var units = '&units=metric';
 	var appid = '&APPID=1271d12e99b5bdc1e4d563a61e467190';

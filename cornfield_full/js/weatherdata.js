@@ -69,8 +69,11 @@ var cityNames = [];
 var currentCityIndex = -1;
 var targetCityIndex = -1;
 
+var previousMidnight = Date.parse(new Date().toDateString());
+var initialSunrise = previousMidnight + 3600e3 * 6;
+var initialSunset = previousMidnight + 3600e3 * 18;
 var zeroCity = {
-	cloudCover: 0, windDirection: 0, windStrength: 8, rainAmount: 0, sunrise: Date.now() / 1000 - 12000, sunset: Date.now() / 1000 + 43200 - 12000,
+	cloudCover: 0, windDirection: 0, windStrength: 8, rainAmount: 0, sunrise: initialSunrise/1e3, sunset: initialSunset/1e3,
 	temperature: 10, weatherData: { weather: [] }, forecast: { list: [], city: { timezone: 0 }}
 };
 

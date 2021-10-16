@@ -1,4 +1,4 @@
-const APP_CACHE = 'cornfield-cache-v41';
+const APP_CACHE = 'cornfield-cache-v42';
 const EXT_CACHE = 'cornfield-ext-cache';
 const DEBUG = false;
 

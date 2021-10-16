@@ -54,9 +54,6 @@ var birdsCenter = new THREE.Vector3(0,0,0);
 var birdsPhase = Math.random()*Math.PI*2;
 var birdScareCounter = 0;
 var birdsTick = function() {
-	if (birds.visible) {
-		birdMat.opacity += 0.05 * (0.5-birdMat.opacity);
-	}
 	var sunPos = shaderMat.uniforms.ufSunPosition.value; // 0 = left = 6:00, 0.5 = up = 12:00, 1 = right = 18:00, 1.5 = down = 24:00
 	if (sunPos < 0) {
 		sunPos = 2+sunPos;
@@ -69,10 +66,16 @@ var birdsTick = function() {
 		birdMat.color.r += (1 - birdMat.color.r)*0.1;
 		birdMat.color.g += (1 - birdMat.color.g)*0.1;
 		birdMat.color.b += (1 - birdMat.color.b)*0.1;
+		if (birds.visible) {
+			birdMat.opacity += 0.05 * (0.5-birdMat.opacity);
+		}
 	} else {
 		birdMat.color.r += (1 - birdMat.color.r)*0.1;
 		birdMat.color.g += (1 - birdMat.color.g)*0.1;
 		birdMat.color.b += (1 - birdMat.color.b)*0.1;		
+		if (birds.visible) {
+			birdMat.opacity += 0.05 * (0.8-birdMat.opacity);
+		}
 	}
 
 	if (clicked) {

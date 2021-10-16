@@ -1,4 +1,4 @@
-const APP_CACHE = 'cornfield-cache-v42';
+const APP_CACHE = 'cornfield-cache-v43';
 const EXT_CACHE = 'cornfield-ext-cache';
 const DEBUG = false;
 
@@ -38,20 +38,12 @@ self.addEventListener('activate', function (event) {
 });
 
 self.addEventListener('fetch', async (evt) => {
-    if (/^https:\/\/api\.openweathermap\.org\/data\//.test(evt.request.url)) {
-        // Cache weather responses to EXT_CACHE.
-        // Try network and if it fails, go for the cached copy.
-        const res = fromNetwork(evt.request, 3e3, EXT_CACHE).catch(() => fromCache(evt.request, EXT_CACHE));
-        if (DEBUG) console.log(evt.request.url, 'network-first response', res);
-        evt.respondWith(res);
-    } else {
-        // Cache typekit responses to EXT_CACHE and app sources to APP_CACHE.
-        // Try cache and if it fails, go for the network copy.
-        const cacheName = /^https:\/\/[^\.]*\.?typekit\.net\//.test(evt.request.url) ? EXT_CACHE : APP_CACHE;
-        const res = fromCache(evt.request, cacheName).catch(() => fromNetwork(evt.request, 180e3, cacheName));
-        if (DEBUG) console.log(evt.request.url, "read-through cache response", res);
-        evt.respondWith(res);
-    }
+    // Cache typekit responses to EXT_CACHE and app sources and weather data to APP_CACHE.
+    // Try cache and if it fails, go for the network copy.
+    const cacheName = /^https:\/\/[^\.]*\.?typekit\.net\//.test(evt.request.url) ? EXT_CACHE : APP_CACHE;
+    const res = fromCache(evt.request, cacheName).catch(() => fromNetwork(evt.request, 180e3, cacheName));
+    if (DEBUG) console.log(evt.request.url, "read-through cache response", res);
+    evt.respondWith(res);
 });
 
 

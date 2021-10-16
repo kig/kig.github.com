@@ -145,9 +145,9 @@ var updateWeather = function (cityName, weatherData) {
 var fetchInterval = 0;
 
 var fetchWeather = function (cityName, onerror) {
-	// Update weather every 30 minutes
+	// Update weather every hour
 	clearInterval(fetchInterval);
-	fetchInterval = setInterval(function () { fetchWeather(cityName); }, 30 * 60 * 1000);
+	fetchInterval = setInterval(function () { fetchWeather(cityName); }, 60 * 60 * 1000);
 	var server = '//api.openweathermap.org/data/2.5/';
 	var units = '&units=metric';
 	var appid = '&APPID=1271d12e99b5bdc1e4d563a61e467190';
@@ -156,10 +156,11 @@ var fetchWeather = function (cityName, onerror) {
 		cityName.latitude
 		? '?lat=' + encodeURIComponent(cityName.latitude) + '&lon=' + encodeURIComponent(cityName.longitude)
 		: '?q=' + encodeURIComponent(cityName);
+	var cacheTime = '&' + Math.floor(Date.now() / 3.6e6); // Cache weather responses for 1 hour.
 
 	return Promise.all([
-		fetch(server+'weather'+location+units+appid+lang).then(res => res.json()),
-		fetch(server+'forecast'+location+units+appid+lang).then(res => res.json())
+		fetch(server+'weather'+location+units+appid+lang+cacheTime).then(res => res.json()),
+		fetch(server+'forecast'+location+units+appid+lang+cacheTime).then(res => res.json())
 	]).then(([weatherData, forecast]) => {
 		if (parseInt(weatherData.cod) !== 200) {
 			document.body.classList.add('error');

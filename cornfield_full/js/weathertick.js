@@ -54,13 +54,6 @@ var setWeather = function() {
 		document.getElementById('weather-desc').textContent = c.weatherData.weather.map(function(wd) {
 			return wd.description;
 		}).join(", ");
-		const wd = document.getElementById('weather-data');
-		if (currentCityIndex === -1) {
-			wd.classList.add('transition-0');
-		} else {
-			wd.classList.remove('transition-0');
-		}
-		wd.classList.remove('fade-out');
 
 		const fc = c.forecast;
 		const dayTemps = fc.list.filter(l => /(12|13|14):00:00.000Z$/.test(new Date((l.dt + fc.city.timezone) * 1e3).toISOString()));
@@ -126,6 +119,15 @@ var setWeather = function() {
 		// 	}).join(", ");
 		// 	document.title = temp + ', ' + desc + ' - ' + cityNames[currentCityIndex] + ' Weather';
 		// }
+
+		const wd = document.getElementById('weather-data');
+		if (currentCityIndex === -1) {
+			wd.classList.add('transition-0');
+		} else {
+			wd.classList.remove('transition-0');
+		}
+		wd.classList.remove('fade-out');
+
 	}
 
 	if (weatherTimer <= cityChangeDuration && currentCityIndex !== targetCityIndex) {

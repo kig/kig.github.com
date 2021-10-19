@@ -54,7 +54,13 @@ var setWeather = function() {
 		document.getElementById('weather-desc').textContent = c.weatherData.weather.map(function(wd) {
 			return wd.description;
 		}).join(", ");
-		document.getElementById('weather-data').classList.remove('fade-out');
+		const wd = document.getElementById('weather-data');
+		if (currentCityIndex === -1) {
+			wd.classList.add('transition-0');
+		} else {
+			wd.classList.remove('transition-0');
+		}
+		wd.classList.remove('fade-out');
 
 		const fc = c.forecast;
 		const dayTemps = fc.list.filter(l => /(12|13|14):00:00.000Z$/.test(new Date((l.dt + fc.city.timezone) * 1e3).toISOString()));
@@ -72,15 +78,6 @@ var setWeather = function() {
 
 		// Weather data graph
 		/////////////////////
-		//
-		// const rain = fc.list.map((f,i) => f.rain ? (f.rain['3h']||0) : 0);
-		// const humidity = fc.list.map(f => f.main.humidity);
-		// const temp = fc.list.map(f => [f.main.temp, f.main.feels_like]);
-		// const pressure = fc.list.map(f => f.main.pressure);
-		// const clouds = clouds = fc.list.map(f => f.clouds.all);
-		// const wind = fc.list.map(f => [f.wind.deg, f.wind.speed, f.wind.gust]);
-		// const visibility = fc.list.map(f => f.visibility);
-		// 
 		//
 		// line = (label, color, off, values, height=40) => {
 		// 	let maxV = values[0], maxIdx = 0;

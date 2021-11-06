@@ -38,7 +38,7 @@ var setWeather = function() {
 	}
 	if (weatherUpdateTriggered || (currentCityIndex === -1 && targetCityIndex !== -1)) {
 		weatherUpdateTriggered = false;
-		var c = cities[cityNames[currentCityIndex]] || cities[cityNames[targetCityIndex]] || zeroCity;
+		const c = cities[cityNames[currentCityIndex]] || cities[cityNames[targetCityIndex]] || zeroCity;
 		document.getElementById('city').value = (cityNames[currentCityIndex] || cityNames[targetCityIndex] || "").split(",")[0];
 		var tempString = Math.round(c.temperature) + '°C';
 		var windString = Math.floor(c.windStrength*10)/10 + ' m/s';
@@ -81,13 +81,13 @@ var setWeather = function() {
 
 		const weatherGraph = document.getElementById('weather-graph');
 		if (!weatherGraph.ctx) {
-			ctx = c.getContext('2d');
+			ctx = weatherGraph.getContext('2d');
 			weatherGraph.ctx = ctx;
 			ctx.scale(2,2);
 		}
 		const ctx = weatherGraph.ctx;
 		ctx.font = '16px "Helvetica Neue"'
-		line = (label, color, off, values, height=40) => {
+		const line = (label, color, off, values, height=40) => {
 			if (!values[0].length) values = values.map(v => [v]);
 			let vl = values[0].length;
 			if (!(color instanceof Array)) color = [color];

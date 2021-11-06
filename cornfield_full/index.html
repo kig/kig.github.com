@@ -463,6 +463,12 @@
 			.transition-0 {
 				transition: 0;
 			}
+			#weather-graph {
+				width: 300px;
+				height: 300px;
+				margin-right: -55px;
+				display: none;
+			}
 		</style>
 		<link rel="stylesheet" href="weather-icons/css/weather-icons.min.css">
 	</head>
@@ -494,6 +500,7 @@ Moscow</textarea><br>
 			<div id="forecast"><span>1°C ☀️</span><span>9°C 🌤</span><span>3°C ☀️</span><span>3°C ⛈</span><span>0°C 🌧</span></div>
 			<div><span id="weather-desc"></span>, <span id="cloud-cover"><i class="wi wi-cloudy"></i> 0%</span></div>
 			<div id="wind-data"><span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='15' width='15'><g id='wind-direction-arrow' transform='rotate(220 7.5 7.5)'><polygon points="0.2,7.4 14.8,11.1 11.4,7.4 14.8,3.7 " fill="white"/></g></svg></span><span id="wind-speed">2.1 m/s <i class="wi wi-strong-wind"></i></span></div>
+			<canvas id="weather-graph" width="1200" height="1200"></canvas>
 		</div>
 		<div id="fullscreen"></div>
 		<script>
@@ -935,7 +942,6 @@ Moscow</textarea><br>
 		<script src="js/corn.js"></script>
 		<script src="js/rain.js"></script>
 		<script src="js/weatherdata.js"></script>
-		<!-- <script src="https://freegeoip.io/json/?callback=fetchCities"></script> -->
 		<script src="js/weathertick.js"></script>
 		<script src="js/particles.js"></script>
 		<script src="js/birds.js"></script>

@@ -69,47 +69,67 @@ var setWeather = function() {
 			forecastElem.appendChild(span);
 		});
 
-		// Weather data graph
-		/////////////////////
-		//
-		// line = (label, color, off, values, height=40) => {
-		// 	let maxV = values[0], maxIdx = 0;
-		// 	let minV = values[0], minIdx = 0;
-		// 	values.forEach((v,i) => {
-		// 		if (v > maxV) {
-		// 			maxV = v;
-		// 			maxIdx = i;
-		// 		}
-		// 		if (v < minV) {
-		// 			minV = v;
-		// 			minIdx = i;
-		// 		}
-		// 	});
-		// 	const dV = (maxV - minV) || 1;
-		// 	ctx.fillStyle = color;
-		//     const txt = label + " " + (values[0]|0);
-		// 	ctx.fillText(txt, 100-ctx.measureText(txt).width-3, 3+off - height*(values[0]-minV)/dV);
-		// 	ctx.fillText(values[values.length-1]|0, 492, 3+off - height*(values[values.length-1]-minV)/dV);
-		// 	if (maxIdx > 0 && maxIdx < values.length-1) ctx.fillText(maxV|0, 100+maxIdx*10, -2+off - height*(maxV-minV)/dV);
-		// 	if (minIdx > 0 && minIdx < values.length-1) ctx.fillText(minV|0, 100+minIdx*10, 10+off - height*(minV-minV)/dV);
-		// 	ctx.beginPath();
-		// 	values.forEach((v,i) => ctx.lineTo(100+i*10, off - height*(v-minV)/dV));
-		// 	ctx.strokeStyle = color;
-		// 	ctx.stroke();
-		// }
+		forecastElem.onclick = function(ev) {
+			ev.preventDefault();
+			const c = document.getElementById('weather-graph');
+			if (c.style.display !== 'block') {
+				c.style.display = 'block';
+			} else {
+				c.style.display = 'none';
+			}
+		}
 
-		// ctx.clearRect(0,0,600,600); 
+		const c = document.getElementById('weather-graph');
+		if (!c.ctx) {
+			ctx = c.getContext('2d');
+			c.ctx = ctx;
+			ctx.scale(2,2);
+		}
+		const ctx = c.ctx;
+		ctx.font = '16px "Helvetica Neue"'
+		line = (label, color, off, values, height=40) => {
+			if (!values[0].length) values = values.map(v => [v]);
+			let vl = values[0].length;
+			if (!(color instanceof Array)) color = [color];
+			const fvalues= values.flat();
+			let maxV = fvalues[0], maxIdx = 0;
+			let minV = fvalues[0], minIdx = 0;
+			fvalues.forEach((v,i) => {
+				if (v > maxV) {
+					maxV = v;
+					maxIdx = i;
+				}
+				if (v < minV) {
+					minV = v;
+					minIdx = i;
+				}
+			});
+			const dV = (maxV - minV) || 1;
+			ctx.fillStyle = color;
+            const txt = label + " " + (fvalues[0]|0);
+			ctx.fillText(txt, 100-ctx.measureText(txt).width-3, 3+off - height*(fvalues[0]-minV)/dV);
+			ctx.fillText(fvalues[fvalues.length-1]|0, 492, 3+off - height*(fvalues[fvalues.length-1]-minV)/dV);
+			if (maxIdx > 0 && maxIdx < fvalues.length-1) ctx.fillText(maxV|0, 100+((maxIdx/vl)|0)*10, -2+off - height*(maxV-minV)/dV);
+			if (minIdx > 0 && minIdx < fvalues.length-1) ctx.fillText(minV|0, 100+((minIdx/vl)|0)*10, 10+off - height*(minV-minV)/dV);
+			for(let j=0; j < vl; j++){
+				ctx.beginPath();
+				values.forEach((v,i) => ctx.lineTo(100+i*10, off - height*(v[j]-minV)/dV));
+				ctx.strokeStyle = color[j];
+				ctx.stroke();
+			}
+		}
 
-		// line('Temperature', '#822', 60, fc.list.map(f => f.main.temp));
-		// line('Feels Like', '#C22', 120, fc.list.map(f => f.main.feels_like));
+		ctx.clearRect(0,0,600,600); 
 
-		// line('Rain', '#44C', 180, fc.list.map(f => f.rain ? f.rain['3h'] : 0));
-		// line('Pressure', '#4C8', 240, fc.list.map(f => f.main.pressure));		
-		// line('Clouds', '#888', 300, fc.list.map(f => f.clouds.all));
-		// line('Humidity', '#49F', 360, fc.list.map(f => f.main.humidity));
-		// line('Gust', '#C80', 420, fc.list.map(f => f.wind.gust));
-		// line('Wind', '#840', 480, fc.list.map(f => f.wind.speed));
-		// line('Visibility', '#088', 540, fc.list.map(f => f.visibility));
+		line('Temp', ['#822','#C22'], 60, fc.list.map(f => [f.main.temp,f.main.feels_like]));
+		
+		line('Rain', '#44C', 180, fc.list.map(f => f.rain ? f.rain['3h'] : 0));
+		line('Pres', '#4C8', 240, fc.list.map(f => f.main.pressure));		
+		line('Clouds', '#888', 300, fc.list.map(f => f.clouds.all));
+		line('Humidity', '#49F', 360, fc.list.map(f => f.main.humidity));
+
+		line('Wind', ['#840','#C80'], 120, fc.list.map(f => [f.wind.speed,f.wind.gust]));
+		line('Vis', '#088', 420, fc.list.map(f => f.visibility));
 
 		// Update window title.
 		// if (currentCityIndex === 0) {

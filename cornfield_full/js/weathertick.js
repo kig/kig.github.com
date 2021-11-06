@@ -79,13 +79,13 @@ var setWeather = function() {
 			}
 		}
 
-		const c = document.getElementById('weather-graph');
-		if (!c.ctx) {
+		const weatherGraph = document.getElementById('weather-graph');
+		if (!weatherGraph.ctx) {
 			ctx = c.getContext('2d');
-			c.ctx = ctx;
+			weatherGraph.ctx = ctx;
 			ctx.scale(2,2);
 		}
-		const ctx = c.ctx;
+		const ctx = weatherGraph.ctx;
 		ctx.font = '16px "Helvetica Neue"'
 		line = (label, color, off, values, height=40) => {
 			if (!values[0].length) values = values.map(v => [v]);

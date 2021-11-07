@@ -81,9 +81,8 @@ var setWeather = function() {
 
 		const weatherGraph = document.getElementById('weather-graph');
 		if (!weatherGraph.ctx) {
-			ctx = weatherGraph.getContext('2d');
-			weatherGraph.ctx = ctx;
-			ctx.scale(2,2);
+			weatherGraph.ctx = weatherGraph.getContext('2d');
+			weatherGraph.ctx.scale(2,2);
 		}
 		const ctx = weatherGraph.ctx;
 		ctx.font = '16px "Helvetica Neue"'

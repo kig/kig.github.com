@@ -87,6 +87,7 @@ var setWeather = function() {
 		const ctx = weatherGraph.ctx;
 		ctx.font = '24px "Helvetica Neue"'
 		const line = (label, color, off, values, height=40) => {
+			off = off / 60 * 80;
 			if (!values[0].length) values = values.map(v => [v]);
 			let vl = values[0].length;
 			if (!(color instanceof Array)) color = [color];
@@ -106,13 +107,13 @@ var setWeather = function() {
 			const dV = (maxV - minV) || 1;
 			ctx.fillStyle = color;
             const txt = label + " " + (fvalues[0]|0);
-			ctx.fillText(txt, 100-ctx.measureText(txt).width-3, 3+off - height*(fvalues[0]-minV)/dV);
-			ctx.fillText(fvalues[fvalues.length-1]|0, 492, 3+off - height*(fvalues[fvalues.length-1]-minV)/dV);
-			if (maxIdx > 0 && maxIdx < fvalues.length-1) ctx.fillText(maxV|0, 100+((maxIdx/vl)|0)*10, -2+off - height*(maxV-minV)/dV);
-			if (minIdx > 0 && minIdx < fvalues.length-1) ctx.fillText(minV|0, 100+((minIdx/vl)|0)*10, 10+off - height*(minV-minV)/dV);
+			ctx.fillText(txt, 120-ctx.measureText(txt).width-3, 5+off - height*(fvalues[0]-minV)/dV);
+			ctx.fillText(fvalues[fvalues.length-1]|0, 492, 5+off - height*(fvalues[fvalues.length-1]-minV)/dV);
+			if (maxIdx > 0 && maxIdx < fvalues.length-1) ctx.fillText(maxV|0, 120+((maxIdx/vl)|0)*10, -2+off - height*(maxV-minV)/dV);
+			if (minIdx > 0 && minIdx < fvalues.length-1) ctx.fillText(minV|0, 120+((minIdx/vl)|0)*10, 10+off - height*(minV-minV)/dV);
 			for(let j=0; j < vl; j++){
 				ctx.beginPath();
-				values.forEach((v,i) => ctx.lineTo(100+i*10, off - height*(v[j]-minV)/dV));
+				values.forEach((v,i) => ctx.lineTo(120+i*10, off - height*(v[j]-minV)/dV));
 				ctx.strokeStyle = color[j];
 				ctx.lineWidth = 2;
 				ctx.stroke();
@@ -122,14 +123,15 @@ var setWeather = function() {
 		ctx.clearRect(0,0,600,600); 
 
 		line('Temp', ['#822','#C22'], 60, fc.list.map(f => [f.main.temp,f.main.feels_like]));
+
+		line('Wind', ['#840','#C80'], 120, fc.list.map(f => [f.wind.speed,f.wind.gust]));
 		
 		line('Rain', '#44C', 180, fc.list.map(f => f.rain ? f.rain['3h'] : 0));
 		line('Pres', '#4C8', 240, fc.list.map(f => f.main.pressure));		
 		line('Cloud', '#888', 300, fc.list.map(f => f.clouds.all));
 		line('Humid', '#49F', 360, fc.list.map(f => f.main.humidity));
 
-		line('Wind', ['#840','#C80'], 120, fc.list.map(f => [f.wind.speed,f.wind.gust]));
-		line('Vis', '#088', 420, fc.list.map(f => f.visibility));
+		line('Vis', '#088', 420, fc.list.map(f => Math.round(f.visibility/1000)));
 
 		// Update window title.
 		// if (currentCityIndex === 0) {

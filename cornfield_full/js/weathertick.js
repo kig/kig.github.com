@@ -107,8 +107,8 @@ var setWeather = function() {
 			const dV = (maxV - minV) || 1;
 			ctx.fillStyle = color;
             const txt = label + " " + (fvalues[0]|0);
-			ctx.fillText(txt, 120-ctx.measureText(txt).width-3, 5+off - height*(fvalues[0]-minV)/dV);
-			ctx.fillText(fvalues[fvalues.length-1]|0, 492+20, 5+off - height*(fvalues[fvalues.length-1]-minV)/dV);
+			ctx.fillText(txt, 120-ctx.measureText(txt).width-5, 7+off - height*(fvalues[0]-minV)/dV);
+			ctx.fillText(fvalues[fvalues.length-1]|0, 492+20, 7+off - height*(fvalues[fvalues.length-1]-minV)/dV);
 			if (maxIdx > 0 && maxIdx < fvalues.length-1) ctx.fillText(maxV|0, 120+((maxIdx/vl)|0)*10, -2+off - height*(maxV-minV)/dV);
 			if (minIdx > 0 && minIdx < fvalues.length-1) ctx.fillText(minV|0, 120+((minIdx/vl)|0)*10, 10+off - height*(minV-minV)/dV);
 			for(let j=0; j < vl; j++){

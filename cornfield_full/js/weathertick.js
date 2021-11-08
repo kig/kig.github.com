@@ -105,7 +105,7 @@ var setWeather = function() {
 				}
 			});
 			const dV = (maxV - minV) || 1;
-			ctx.fillStyle = color;
+			ctx.fillStyle = color[0];
             const txt = label + " " + (fvalues[0]|0);
 			ctx.fillText(txt, 120-ctx.measureText(txt).width-5, 7+off - height*(fvalues[0]-minV)/dV);
 			ctx.fillText(fvalues[fvalues.length-1]|0, 492+20, 7+off - height*(fvalues[fvalues.length-1]-minV)/dV);

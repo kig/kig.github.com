@@ -85,7 +85,7 @@ var setWeather = function() {
 			weatherGraph.ctx.scale(2,2);
 		}
 		const ctx = weatherGraph.ctx;
-		ctx.font = '16px "Helvetica Neue"'
+		ctx.font = '24px "Helvetica Neue"'
 		const line = (label, color, off, values, height=40) => {
 			if (!values[0].length) values = values.map(v => [v]);
 			let vl = values[0].length;
@@ -114,6 +114,7 @@ var setWeather = function() {
 				ctx.beginPath();
 				values.forEach((v,i) => ctx.lineTo(100+i*10, off - height*(v[j]-minV)/dV));
 				ctx.strokeStyle = color[j];
+				ctx.lineWidth = 2;
 				ctx.stroke();
 			}
 		}
@@ -124,8 +125,8 @@ var setWeather = function() {
 		
 		line('Rain', '#44C', 180, fc.list.map(f => f.rain ? f.rain['3h'] : 0));
 		line('Pres', '#4C8', 240, fc.list.map(f => f.main.pressure));		
-		line('Clouds', '#888', 300, fc.list.map(f => f.clouds.all));
-		line('Humidity', '#49F', 360, fc.list.map(f => f.main.humidity));
+		line('Cloud', '#888', 300, fc.list.map(f => f.clouds.all));
+		line('Humid', '#49F', 360, fc.list.map(f => f.main.humidity));
 
 		line('Wind', ['#840','#C80'], 120, fc.list.map(f => [f.wind.speed,f.wind.gust]));
 		line('Vis', '#088', 420, fc.list.map(f => f.visibility));

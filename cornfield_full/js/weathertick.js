@@ -118,7 +118,7 @@ var setWeather = function() {
 				});
 				const dV = (maxV - minV) || 1;
 				ctx.fillStyle = color[color.length-1];
-				dayIndexes.forEach(idx => ctx.fillRect(120 + idx*10, off - height*(fractSample2DArray(values, 0, idx)-minV)/dV-5, 2, 10));
+				dayIndexes.forEach(idx => ctx.fillRect(120 + idx*10, off - height*(fractSample2DArray(values, 0, idx)-minV)/dV, 2, 10));
 				const txt = label + " " + (fvalues[0]|0);
 				ctx.fillText(txt, 120-ctx.measureText(txt).width-5, 7+off - height*(fvalues[0]-minV)/dV);
 				ctx.fillText(fvalues[fvalues.length-1]|0, 492+20, 7+off - height*(fvalues[fvalues.length-1]-minV)/dV);

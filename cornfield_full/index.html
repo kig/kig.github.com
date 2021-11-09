@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<title>Weather</title>
 		<script>
-			fetch('https://ipapi.co/json/?'+Math.floor(Date.now()/1.8e6)).then(res => res.json()).then(jsonData => {
+			fetch('https://ipapi.co/json/').then(res => res.json()).then(jsonData => {
 				window.geoIPFetched = true;
 				window.geoIPData = jsonData;
 			}).catch(() => window.geoIPFetched = true);
@@ -117,7 +117,7 @@
 				font-size: 15px;
 				text-align: right;
 				box-sizing: border-box;
-				transition: 0.5s;
+				transition: 0.1s;
 				/*text-shadow: 0px 0px 30px rgba(0,0,0,0.2);*/
 				z-index: 15;
 				opacity: 0.8;

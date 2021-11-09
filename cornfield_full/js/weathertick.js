@@ -97,7 +97,7 @@ var setWeather = function() {
 				weatherGraph.ctx.scale(2,2);
 			}
 			const ctx = weatherGraph.ctx;
-			ctx.font = '400 24px "Roboto Condensed","roboto-condensed","Helvetica Neue","Segoe UI",sans-serif'
+			ctx.font = '700 24px "Roboto Condensed","roboto-condensed","Helvetica Neue","Segoe UI",sans-serif'
 			const line = (ctx, label, color, off, values, dayIndexes, height=40) => {
 				off = off / 60 * 80;
 				if (!values[0].length) values = values.map(v => [v]);
@@ -121,7 +121,7 @@ var setWeather = function() {
 				dayIndexes.forEach(idx => ctx.fillRect(120 + idx*10, off - height*(fractSample2DArray(values, 0, idx)-minV)/dV, 2, 10));
 				const txt = label + " " + (fvalues[0]|0);
 				ctx.fillText(txt, 120-ctx.measureText(txt).width-5, 7+off - height*(fvalues[0]-minV)/dV);
-				ctx.fillText(fvalues[fvalues.length-1]|0, 492+20, 7+off - height*(fvalues[fvalues.length-1]-minV)/dV);
+				ctx.fillText(fvalues[fvalues.length-1]|0, 492+24, 7+off - height*(fvalues[fvalues.length-1]-minV)/dV);
 				if (maxIdx > 0 && maxIdx < fvalues.length-1) ctx.fillText(maxV|0, 120+((maxIdx/vl)|0)*10, -5+off - height*(maxV-minV)/dV);
 				if (minIdx > 0 && minIdx < fvalues.length-1) ctx.fillText(minV|0, 120+((minIdx/vl)|0)*10, 20+off - height*(minV-minV)/dV);
 				for(let j=0; j < vl; j++){

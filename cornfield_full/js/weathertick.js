@@ -28,6 +28,11 @@ var cityChangeDuration = 3000;
 var weatherUpdateTriggered = false;
 var windArrow = document.getElementById('wind-direction-arrow').transform.baseVal.getItem(0);
 
+function fractSample2DArray(arr, i, idx) {
+	const t = idx - Math.floor(idx);
+	return arr[Math.floor(idx)][i] * (1-t) + arr[Math.ceil(idx)][i] * t;
+}
+
 var setWeather = function() {
 	weatherTimer += 16;
 	var fade = 0;
@@ -79,60 +84,68 @@ var setWeather = function() {
 			}
 		}
 
-		const weatherGraph = document.getElementById('weather-graph');
-		if (!weatherGraph.ctx) {
-			weatherGraph.ctx = weatherGraph.getContext('2d');
-			weatherGraph.ctx.scale(2,2);
-		}
-		const ctx = weatherGraph.ctx;
-		ctx.font = '24px "Helvetica Neue"'
-		const line = (label, color, off, values, height=40) => {
-			off = off / 60 * 80;
-			if (!values[0].length) values = values.map(v => [v]);
-			let vl = values[0].length;
-			if (!(color instanceof Array)) color = [color];
-			const fvalues= values.flat();
-			let maxV = fvalues[0], maxIdx = 0;
-			let minV = fvalues[0], minIdx = 0;
-			fvalues.forEach((v,i) => {
-				if (v > maxV) {
-					maxV = v;
-					maxIdx = i;
-				}
-				if (v < minV) {
-					minV = v;
-					minIdx = i;
-				}
-			});
-			const dV = (maxV - minV) || 1;
-			ctx.fillStyle = color[color.length-1];
-            const txt = label + " " + (fvalues[0]|0);
-			ctx.fillText(txt, 120-ctx.measureText(txt).width-5, 7+off - height*(fvalues[0]-minV)/dV);
-			ctx.fillText(fvalues[fvalues.length-1]|0, 492+20, 7+off - height*(fvalues[fvalues.length-1]-minV)/dV);
-			if (maxIdx > 0 && maxIdx < fvalues.length-1) ctx.fillText(maxV|0, 120+((maxIdx/vl)|0)*10, -5+off - height*(maxV-minV)/dV);
-			if (minIdx > 0 && minIdx < fvalues.length-1) ctx.fillText(minV|0, 120+((minIdx/vl)|0)*10, 20+off - height*(minV-minV)/dV);
-			for(let j=0; j < vl; j++){
-				ctx.beginPath();
-				values.forEach((v,i) => ctx.lineTo(120+i*10, off - height*(v[j]-minV)/dV));
-				ctx.strokeStyle = color[j];
-				ctx.lineWidth = 2;
-				ctx.stroke();
+		{ 
+			const hours = fc.list.map(l => parseInt(new Date((l.dt + fc.city.timezone) * 1e3).toISOString().match(/T(\d+)/)[1]));
+			const dayIndexes = [];
+			for (let i = 0; i < hours.length; i++) { 
+				const h = hours[i]; 
+				if (h < 3) dayIndexes.push(i - h/3);
 			}
+			const weatherGraph = document.getElementById('weather-graph');
+			if (!weatherGraph.ctx) {
+				weatherGraph.ctx = weatherGraph.getContext('2d');
+				weatherGraph.ctx.scale(2,2);
+			}
+			const ctx = weatherGraph.ctx;
+			ctx.font = '24px "Helvetica Neue"'
+			const line = (ctx, label, color, off, values, dayIndexes, height=40) => {
+				off = off / 60 * 80;
+				if (!values[0].length) values = values.map(v => [v]);
+				let vl = values[0].length;
+				if (!(color instanceof Array)) color = [color];
+				const fvalues= values.flat();
+				let maxV = fvalues[0], maxIdx = 0;
+				let minV = fvalues[0], minIdx = 0;
+				fvalues.forEach((v,i) => {
+					if (v > maxV) {
+						maxV = v;
+						maxIdx = i;
+					}
+					if (v < minV) {
+						minV = v;
+						minIdx = i;
+					}
+				});
+				const dV = (maxV - minV) || 1;
+				ctx.fillStyle = color[color.length-1];
+				dayIndexes.forEach(idx => ctx.fillRect(120 + idx*10, off - height*(fractSample2DArray(values, 0, idx)-minV)/dV-5, 2, 10));
+				const txt = label + " " + (fvalues[0]|0);
+				ctx.fillText(txt, 120-ctx.measureText(txt).width-5, 7+off - height*(fvalues[0]-minV)/dV);
+				ctx.fillText(fvalues[fvalues.length-1]|0, 492+20, 7+off - height*(fvalues[fvalues.length-1]-minV)/dV);
+				if (maxIdx > 0 && maxIdx < fvalues.length-1) ctx.fillText(maxV|0, 120+((maxIdx/vl)|0)*10, -5+off - height*(maxV-minV)/dV);
+				if (minIdx > 0 && minIdx < fvalues.length-1) ctx.fillText(minV|0, 120+((minIdx/vl)|0)*10, 20+off - height*(minV-minV)/dV);
+				for(let j=0; j < vl; j++){
+					ctx.beginPath();
+					values.forEach((v,i) => ctx.lineTo(120+i*10, off - height*(v[j]-minV)/dV));
+					ctx.strokeStyle = color[j];
+					ctx.lineWidth = 2;
+					ctx.stroke();
+				}
+			}
+
+			ctx.clearRect(0,0,600,600); 
+
+			line(ctx, 'Temp', ['#822','#C22'], 60, fc.list.map(f => [f.main.temp,f.main.feels_like]), dayIndexes);
+
+			line(ctx, 'Wind', ['#840','#C80'], 120, fc.list.map(f => [f.wind.speed,f.wind.gust]), dayIndexes);
+			
+			line(ctx, 'Rain', '#44C', 180, fc.list.map(f => f.rain ? f.rain['3h'] : 0), dayIndexes);
+			line(ctx, 'Pres', '#4C8', 240, fc.list.map(f => f.main.pressure), dayIndexes);		
+			line(ctx, 'Cloud', '#888', 300, fc.list.map(f => f.clouds.all), dayIndexes);
+			line(ctx, 'Humid', '#49F', 360, fc.list.map(f => f.main.humidity), dayIndexes);
+
+			line(ctx, 'Vis', '#088', 420, fc.list.map(f => Math.round(f.visibility/1000)), dayIndexes);
 		}
-
-		ctx.clearRect(0,0,600,600); 
-
-		line('Temp', ['#822','#C22'], 60, fc.list.map(f => [f.main.temp,f.main.feels_like]));
-
-		line('Wind', ['#840','#C80'], 120, fc.list.map(f => [f.wind.speed,f.wind.gust]));
-		
-		line('Rain', '#44C', 180, fc.list.map(f => f.rain ? f.rain['3h'] : 0));
-		line('Pres', '#4C8', 240, fc.list.map(f => f.main.pressure));		
-		line('Cloud', '#888', 300, fc.list.map(f => f.clouds.all));
-		line('Humid', '#49F', 360, fc.list.map(f => f.main.humidity));
-
-		line('Vis', '#088', 420, fc.list.map(f => Math.round(f.visibility/1000)));
-
 		// Update window title.
 		// if (currentCityIndex === 0) {
 		// 	var temp = Math.round(c.temperature) + 'C';

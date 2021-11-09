@@ -3,6 +3,12 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Weather</title>
+		<script>
+			fetch('https://ipapi.co/json/?'+Math.floor(Date.now()/1.8e6)).then(res => res.json()).then(jsonData => {
+				window.geoIPFetched = true;
+				window.geoIPData = jsonData;
+			}).catch(() => window.geoIPFetched = true);
+		</script>
 		<link rel="preconnect" href="https://api.openweathermap.org">
 		<link rel="preconnect" href="https://use.typekit.net">
 		<meta name="description" content="Current weather in the field.">

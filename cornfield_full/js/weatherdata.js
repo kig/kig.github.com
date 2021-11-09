@@ -222,6 +222,7 @@ function fetchMyLocationWeather() {
 	if (navigator.geolocation) {
 		navigator.geolocation.getCurrentPosition(
 			function (pos) {
+				window.geolocationFetched = true;
 				window.currentLocation = pos.coords;
 				document.getElementById('my-location').classList.remove('locating');
 				document.body.classList.add('current-location');
@@ -248,16 +249,13 @@ function fetchMyLocationWeather() {
 }
 
 function fetchGeoIPWeather() {
-	return fetch('https://ipapi.co/json/')
-	.then(function (response) {
-		response.json().then(jsonData => {
-			window.currentLocation = jsonData;
-			fetchWeather(jsonData);
-		});
-	})
-	.catch(function (error) {
+	if (!window.geoIPFetched) return setTimeout(fetchGeoIPWeather, 10);
+	if (window.geoIPData && !window.geolocationFetched) {
+		window.currentLocation = window.geoIPData;
+		fetchWeather(window.geoIPData);
+	} else {
 		fetchWeather(window.currentLocation);
-	});
+	}
 }
 
 window.currentLocation = { "country_code": "HK", "country_name": "Hong Kong", "region_code": "", "region_name": "", "city": "Central District", "zip_code": "", "time_zone": "Asia/Hong_Kong", "latitude": 22.291, "longitude": 114.15, "metro_code": 0 };
@@ -274,35 +272,3 @@ if (navigator.geolocation && navigator.permissions) {
 	});
 }
 
-
-// var getCityNames = function() {
-// 	return document.getElementById('city-names').value
-// 			.split('\n')
-// 			.map(function(c) { return c.replace(/^\s+|\s+$/g, ''); })
-// 			.filter(function(c) { return c !== ''; });	
-// };
-
-// var updateCityNames = function() {
-// 	cityNames = getCityNames() || ['London'];
-// 	if (window.localStorage) {
-// 		localStorage.setItem('cityNames', JSON.stringify(cityNames));
-// 	}
-// 	fetchCities();
-// };
-
-// var initializeCityNames = function() {
-// 	try {
-// 		cityNames = JSON.parse(localStorage.getItem('cityNames'));
-// 		if (cityNames.length === 0) {
-// 			cityNames = getCityNames();
-// 			localStorage.setItem('cityNames', JSON.stringify(cityNames));
-// 		}
-// 		document.getElementById('city-names').value = cityNames.join("\n");
-// 	} catch(e) {
-// 		cityNames = getCityNames();
-// 	}
-// 	fetchCities();
-// };
-
-// initializeCityNames();
-// document.getElementById('city-names').onchange = updateCityNames;

@@ -97,7 +97,7 @@ var setWeather = function() {
 				weatherGraph.ctx.scale(2,2);
 			}
 			const ctx = weatherGraph.ctx;
-			ctx.font = '24px "Helvetica Neue"'
+			ctx.font = '400 24px "Proxima Nova",proxima-nova,"Helvetica Neue","Segoe UI",sans-serif'
 			const line = (ctx, label, color, off, values, dayIndexes, height=40) => {
 				off = off / 60 * 80;
 				if (!values[0].length) values = values.map(v => [v]);

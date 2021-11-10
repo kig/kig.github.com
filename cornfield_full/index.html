@@ -3,11 +3,13 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Weather</title>
+		<script src="//use.typekit.net/svb7vim.js" async="true"></script>
 		<script>
-			fetch('https://ipapi.co/json/').then(res => res.json()).then(jsonData => {
+			fetch('https://ipapi.co/json/?'+Math.floor(Date.now()/1.8e6)).then(res => res.json()).then(jsonData => {
 				window.geoIPFetched = true;
 				window.geoIPData = jsonData;
 			}).catch(() => window.geoIPFetched = true);
+			(function(){var tt=0,t=function(){try{Typekit.load()}catch(e){setTimeout(t,tt++<100?20:(tt*=2))}};t()})();
 		</script>
 		<link rel="preconnect" href="https://api.openweathermap.org">
 		<link rel="preconnect" href="https://use.typekit.net">
@@ -957,7 +959,5 @@ Moscow</textarea><br>
 		<!-- <script src="js/kinect-ws.js"></script> -->
 		<!-- <script src="js/microphone.js"></script> -->
 		<script src="js/corn_algo_doodle.js"></script>
-		<script src="//use.typekit.net/svb7vim.js" async="true"></script>
-		<script type="text/javascript">(function(){var t=function(){try{Typekit.load()}catch(e){setTimeout(t,100)}};t()})()</script>
 	</body>
 </html>

@@ -30,7 +30,7 @@ var windArrow = document.getElementById('wind-direction-arrow').transform.baseVa
 
 function fractSample2DArray(arr, i, idx) {
 	const t = idx - Math.floor(idx);
-	return arr[Math.floor(idx)][i] * (1-t) + arr[Math.ceil(idx)][i] * t;
+	return arr[Math.max(0,Math.min(arr.length-1, Math.floor(idx)))][i] * (1-t) + arr[Math.max(0,Math.min(arr.length-1, Math.ceil(idx)))][i] * t;
 }
 
 var setWeather = function() {

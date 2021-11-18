@@ -98,14 +98,14 @@ var setWeather = function() {
 			}
 			const ctx = weatherGraph.ctx;
 			ctx.font = '700 24px "Roboto Condensed","roboto-condensed","Helvetica Neue","Segoe UI",sans-serif'
-			const line = (ctx, label, color, off, values, dayIndexes, height=40) => {
+			const line = (ctx, label, color, off, values, dayIndexes, minV=Infinity, maxV=-Infinity, height=40) => {
 				off = off / 60 * 80;
 				if (!values[0].length) values = values.map(v => [v]);
 				let vl = values[0].length;
 				if (!(color instanceof Array)) color = [color];
 				const fvalues= values.flat();
-				let maxV = fvalues[0], maxIdx = 0;
-				let minV = fvalues[0], minIdx = 0;
+				let maxIdx = 0;
+				let minIdx = 0;
 				fvalues.forEach((v,i) => {
 					if (v > maxV) {
 						maxV = v;
@@ -139,9 +139,9 @@ var setWeather = function() {
 
 			line(ctx, 'Wind', ['#840','#C80'], 120, fc.list.map(f => [f.wind.speed,f.wind.gust]), dayIndexes);
 			
-			line(ctx, 'Rain', '#44C', 180, fc.list.map(f => f.rain ? f.rain['3h'] : 0), dayIndexes);
+			line(ctx, 'Rain', '#44C', 180, fc.list.map(f => f.rain ? f.rain['3h'] : 0), dayIndexes, 0, 50);
 			line(ctx, 'Pres', '#4C8', 240, fc.list.map(f => f.main.pressure), dayIndexes);		
-			line(ctx, 'Cloud', '#888', 300, fc.list.map(f => f.clouds.all), dayIndexes);
+			line(ctx, 'Cloud', '#888', 300, fc.list.map(f => f.clouds.all), dayIndexes, 0, 100);
 			line(ctx, 'Humid', '#49F', 360, fc.list.map(f => f.main.humidity), dayIndexes);
 
 			line(ctx, 'Vis', '#088', 420, fc.list.map(f => Math.round(f.visibility/1000)), dayIndexes);

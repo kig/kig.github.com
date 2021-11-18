@@ -1,4 +1,4 @@
-const APP_CACHE = 'cornfield-cache-v72';
+const APP_CACHE = 'cornfield-cache-v73';
 const LIB_CACHE = 'cornfield-lib-cache-v1';
 const EXT_CACHE = 'cornfield-ext-cache';
 const DEBUG = false;
@@ -67,7 +67,12 @@ function fromNetwork(request, timeout, cacheName, addToCache = true) {
         // Reject in case of timeout.
         var timeoutId = setTimeout(reject, timeout);
         // Fulfill in case of success.
-        fetch(request.clone()).then(function (response) {
+        // Use a cache-bypassing URL hack because we don't have content-hash-based filenames.
+        const fetchReq = request.clone();
+        if ((cacheName === LIB_CACHE || cacheName === APP_CACHE) && fetchReq.url.indexOf("?") === -1) {
+            fetchReq.url += '?' + cacheName;
+        }
+        fetch(fetchReq).then(function (response) {
             clearTimeout(timeoutId);
             if (addToCache && response.status < 400 && response.status !== 206) {
                 caches.open(cacheName).then((cache) => cache.put(request.clone(), response.clone()));

@@ -34,7 +34,7 @@ window.addEventListener('keyup', function(ev) {
 	}
 }, false);
 
-var impactTick = function() {
+var impactTick = function(elapsed) {
 	if (clicked) {
 		//impactFrames = 60;
 	}
@@ -43,7 +43,8 @@ var impactTick = function() {
 		cornShaderMat.uniforms.ufImpulse.value = f;
 	}
 	impactFrames--;
-	cornShaderMat.uniforms.ufGrassHeight.value += 0.1 * (grassHeight-cornShaderMat.uniforms.ufGrassHeight.value) + Math.max(0.0, grassHeightModifier / 100 - 0.15);
+	var tf = elapsed / 16; // rough approx is fine with 0.1
+	cornShaderMat.uniforms.ufGrassHeight.value += tf * 0.1 * (grassHeight-cornShaderMat.uniforms.ufGrassHeight.value) + Math.max(0.0, grassHeightModifier / 100 - 0.15);
 	if (cornShaderMat.uniforms.ufGrassHeight.value < 0.001) {
 		cornMesh.visible = false;
 	} else {

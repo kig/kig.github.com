@@ -15,7 +15,9 @@ for (var i=0; i<200; i++) {
 
 var particleMode = 'fireflies';
 
-var updateParticles = function() {
+var tmpVel = new THREE.Vector3();
+
+var updateParticles = function(elapsed) {
 
 	var sun = shaderMat.uniforms.ufSunPosition.value;
 	if (sun > 1.15 && sun < 1.49) {
@@ -34,14 +36,14 @@ var updateParticles = function() {
 		switch (particleMode) {
 			case 'seeds':
 				particle.velocity.set(
-					0.5*Math.cos(rainShaderMat.uniforms.ufWindDirection.value)*rainShaderMat.uniforms.ufWindStrength.value,
-					0.03,
-					0.5*Math.sin(rainShaderMat.uniforms.ufWindDirection.value)*rainShaderMat.uniforms.ufWindStrength.value
+					(elapsed/16)*0.5*Math.cos(rainShaderMat.uniforms.ufWindDirection.value)*rainShaderMat.uniforms.ufWindStrength.value,
+					(elapsed/16)*0.03,
+					(elapsed/16)*0.5*Math.sin(rainShaderMat.uniforms.ufWindDirection.value)*rainShaderMat.uniforms.ufWindStrength.value
 				);
 				particle.position.add(particle.velocity);
-				particle.rotation.x += 0.5*rainShaderMat.uniforms.ufWindStrength.value;
-				particle.rotation.y += 0.5*rainShaderMat.uniforms.ufWindStrength.value;
-				particle.rotation.z += 0.5*rainShaderMat.uniforms.ufWindStrength.value;
+				particle.rotation.x += (elapsed/16)*0.5*rainShaderMat.uniforms.ufWindStrength.value;
+				particle.rotation.y += (elapsed/16)*0.5*rainShaderMat.uniforms.ufWindStrength.value;
+				particle.rotation.z += (elapsed/16)*0.5*rainShaderMat.uniforms.ufWindStrength.value;
 				if (particle.position.y > 45 || Math.abs(particle.position.x) > 7*30 || particle.position.z > camera.position.z) {
 					particle.scale.x = particle.scale.y = particle.scale.z = Math.random()*0.5+0.5; 
 					particle.position.y = 10;
@@ -63,12 +65,14 @@ var updateParticles = function() {
 					particle.energy = 100 + Math.random()*100;
 				}
 				particle.energy--;
-				particle.velocity.multiplyScalar(0.99);
-				particle.velocity.add(particle.acceleration);
+				particle.velocity.multiplyScalar((elapsed/16)*0.99);
+				tmpVel.copy(particle.acceleration);
+				tmpVel.multiplyScalar(elapsed/16);
+				particle.velocity.add(tmpVel);
 				particle.position.add(particle.velocity);
-				particle.rotation.x += 0.5*rainShaderMat.uniforms.ufWindStrength.value;
-				particle.rotation.y += 0.5*rainShaderMat.uniforms.ufWindStrength.value;
-				particle.rotation.z += 0.5*rainShaderMat.uniforms.ufWindStrength.value;
+				particle.rotation.x += (elapsed/16)*0.5*rainShaderMat.uniforms.ufWindStrength.value;
+				particle.rotation.y += (elapsed/16)*0.5*rainShaderMat.uniforms.ufWindStrength.value;
+				particle.rotation.z += (elapsed/16)*0.5*rainShaderMat.uniforms.ufWindStrength.value;
 				if (particle.position.z > 40) particle.position.z = Math.random()*30;
 				particle.material.opacity = 0.2 * (1+0.3*Math.sin(animationTime*2));
 				if (rainShaderMat.uniforms.ufRainAmount.value > 0) {
@@ -78,14 +82,14 @@ var updateParticles = function() {
 
 			case 'stars':
 				particle.velocity.set(
-					Math.cos(particle.position.x)*1.5,
-					-0.5,
-					-Math.sin(particle.position.x)*1.5
+					(elapsed/16)*Math.cos(particle.position.x)*1.5,
+					(elapsed/16)*-0.5,
+					(elapsed/16)*-Math.sin(particle.position.x)*1.5
 				);
 				particle.position.add(particle.velocity);
-				particle.rotation.x += 0.05;
-				particle.rotation.y += 0.05;
-				particle.rotation.z += 0.05;
+				particle.rotation.x += (elapsed/16)*0.05;
+				particle.rotation.y += (elapsed/16)*0.05;
+				particle.rotation.z += (elapsed/16)*0.05;
 				if (particle.position.y < 15) {
 					particle.scale.x = particle.scale.y = particle.scale.z = Math.random()*0.5+0.5; 
 					particle.position.y = 45 + Math.random()*45;
@@ -97,11 +101,13 @@ var updateParticles = function() {
 				break;
 
 			default:
-				particle.position.add(particle.velocity);
-				particle.rotation.x += 0.5*rainShaderMat.uniforms.ufWindStrength.value;
-				particle.rotation.y += 0.5*rainShaderMat.uniforms.ufWindStrength.value;
-				particle.rotation.z += 0.5*rainShaderMat.uniforms.ufWindStrength.value;
-				particle.material.opacity *= 0.9;
+				tmpVel.copy(particle.velocity);
+				tmpVel.multiplyScalar(elapsed/16);
+				particle.position.add(tmpVel);
+				particle.rotation.x += (elapsed/16)*0.5*rainShaderMat.uniforms.ufWindStrength.value;
+				particle.rotation.y += (elapsed/16)*0.5*rainShaderMat.uniforms.ufWindStrength.value;
+				particle.rotation.z += (elapsed/16)*0.5*rainShaderMat.uniforms.ufWindStrength.value;
+				particle.material.opacity *= 1-((elapsed/16)*0.1);
 				if (particle.material.opacity < 0.01) {
 					particle.velocity.set(0,0,0);
 				}

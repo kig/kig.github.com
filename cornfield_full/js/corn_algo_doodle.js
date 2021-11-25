@@ -152,13 +152,13 @@ var tick = function() {
 
 	setWeather(clampedElapsed);
 	if (!slow) {
-		updateParticles();
-		birdsTick();
+		updateParticles(clampedElapsed);
+		birdsTick(clampedElapsed);
 	}
 	if (cornMesh.children[0]) {
 		cornMesh.children[0].material = slow ? simpleCornMat : cornShaderMat;
 	}
-	impactTick();
+	impactTick(clampedElapsed);
 	birds.visible = !slow;
 	// cornMesh.visible = !slow;
 	particles.visible = !slow;

@@ -53,7 +53,7 @@ var birdsTickTmpV = new THREE.Vector3(0,0,0);
 var birdsCenter = new THREE.Vector3(0,0,0);
 var birdsPhase = Math.random()*Math.PI*2;
 var birdScareCounter = 0;
-var birdsTick = function() {
+var birdsTick = function(elapsed) {
 	var sunPos = shaderMat.uniforms.ufSunPosition.value; // 0 = left = 6:00, 0.5 = up = 12:00, 1 = right = 18:00, 1.5 = down = 24:00
 	if (sunPos < 0) {
 		sunPos = 2+sunPos;
@@ -101,12 +101,13 @@ var birdsTick = function() {
 		if ((birdScareCounter > 0 || scareBirds) && !attractBirds) {
 			birdsTickTmpV.copy(bird.position);
 			birdsTickTmpV.normalize();
-			birdsTickTmpV.multiplyScalar(0.01);
-			birdsTickTmpV.y = 0.001;
+			birdsTickTmpV.multiplyScalar((elapsed/16)*0.01);
+			birdsTickTmpV.y = (elapsed/16)*0.001;
 			bird.velocity.add(birdsTickTmpV);
 		}
 		if (bird.position.length() > 400 || attractBirds) {
 			birdsTickTmpV.set(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5);
+			birdsTickTmpV.multiplyScalar((elapsed/16));
 			bird.position.add(birdsTickTmpV);
 			birdsTickTmpV.copy(bird.position);
 			if (attractBirds) {
@@ -115,7 +116,7 @@ var birdsTick = function() {
 			birdsTickTmpV.y += 10;
 			var len = birdsTickTmpV.length();
 			birdsTickTmpV.normalize();
-			birdsTickTmpV.multiplyScalar(-0.01 * Math.min(1, len/50));
+			birdsTickTmpV.multiplyScalar((elapsed/16) * -0.01 * Math.min(1, len/50));
 			bird.velocity.add(birdsTickTmpV);
 		}
 
@@ -125,12 +126,14 @@ var birdsTick = function() {
 			var d = birdsTickTmpV.length();
 			if (d < 5*2.5) {
 				birdsTickTmpV.normalize();
-				birdsTickTmpV.multiplyScalar( Math.min( 0.001, 0.0002/(d/(5*2.5)) ) );
+				birdsTickTmpV.multiplyScalar( (elapsed/16) * Math.min( 0.001, 0.0002/(d/(5*2.5)) ) );
 				ob.velocity.add(birdsTickTmpV);
 				bird.velocity.sub(birdsTickTmpV);
 			}
 		}
 
+		birdsTickTmpV.copy(bird.velocity);
+		birdsTickTmpV.multiplyScalar(elapsed/16);
 		birdsTickTmpV.addVectors(bird.position, bird.velocity);
 		bird.lookAt(birdsTickTmpV);
 
@@ -143,6 +146,7 @@ var birdsTick = function() {
 		birdsTickTmpV.multiplyScalar(0.001);
 		birdsTickTmpV.x *= 1.1;
 		birdsTickTmpV.z *= 1.1;
+		birdsTickTmpV.multiplyScalar(elapsed/16);
 		bird.velocity.add(birdsTickTmpV);
 
 		if (bird.velocity.length > 0.001) {
@@ -151,20 +155,20 @@ var birdsTick = function() {
 		}
 
 		birdsTickTmpV.copy(bird.velocity);
-		birdsTickTmpV.multiplyScalar(2.5);
+		birdsTickTmpV.multiplyScalar((elapsed/16)*2.5);
 
 		bird.position.add(birdsTickTmpV);
 
 		if (bird.position.y < 12) {
-			bird.velocity.y += 0.005;
-			bird.velocity.multiplyScalar(0.97);
+			bird.velocity.y += (elapsed/16)*0.005;
+			bird.velocity.multiplyScalar(1-(elapsed/16)*0.03);
 		}
 		if (bird.position.y < 4) {
 			bird.position.y = 4;
 			bird.velocity.multiplyScalar(-1);
 		}
 
-		bird.phase += (bird.velocity.length()/0.01)/60;
+		bird.phase += (((elapsed/16)*bird.velocity.length())/0.01)/60;
 
 		bird.position.x = Math.max(Math.min(bird.position.x, 400), -400);
 		bird.position.y = Math.max(Math.min(bird.position.y, 100), 8);

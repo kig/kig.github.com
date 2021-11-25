@@ -132,6 +132,10 @@ var frame = 0;
 var lastHeight = document.documentElement.offsetHeight;
 
 var tick = function() {
+
+	var elapsed = Date.now() - lastTime; 
+	lastTime = Date.now();
+
 	if (lastHeight !== document.documentElement.offsetHeight) {
 		onresize();
 		lastHeight = document.documentElement.offsetHeight;
@@ -139,11 +143,15 @@ var tick = function() {
 	frame++;
 	matrix.multiplyMatrices( camera.matrixWorld, matrix.getInverse( camera.projectionMatrix ) );
 
+	animationTime += clampedElapsed * 0.001;
+
 	shaderMat.uniforms.ufGlobalTime.value = animationTime;
 	shaderMat.uniforms.um4CameraMatrix.value = matrix;
 	shaderMat.uniforms.uv3CameraPosition.value = camera.position;
 
-	setWeather();
+	var clampedElapsed = Math.min(16, elapsed);
+
+	setWeather(clampedElapsed);
 	if (!slow) {
 		updateParticles();
 		birdsTick();
@@ -158,7 +166,6 @@ var tick = function() {
 
 	camera.lookAt(zero);
 
-	animationTime += 0.016;
 	bgRenderer.clear();
 	bgRenderer.render(bgScene, bgCamera);
 	if (bgRenderer !== renderer) {
@@ -169,8 +176,6 @@ var tick = function() {
 	clicked = false;
 
 	if (frame < 200) {
-		var elapsed = Date.now() - lastTime; 
-		lastTime = Date.now();
 		frameTimes.push(elapsed);
 		var fastFrames = 0;
 		var slowFrames = 0;

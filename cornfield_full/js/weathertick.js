@@ -33,8 +33,8 @@ function fractSample2DArray(arr, i, idx) {
 	return arr[Math.max(0,Math.min(arr.length-1, Math.floor(idx)))][i] * (1-t) + arr[Math.max(0,Math.min(arr.length-1, Math.ceil(idx)))][i] * t;
 }
 
-var setWeather = function() {
-	weatherTimer += 16;
+var setWeather = function(elapsed) {
+	weatherTimer += elapsed;
 	var fade = 0;
 	if (weatherTimer > cityChangeDuration && currentCityIndex !== targetCityIndex) {
 		weatherTimer = 0;

@@ -135,6 +135,7 @@ var tick = function() {
 
 	var elapsed = Date.now() - lastTime; 
 	lastTime = Date.now();
+	var clampedElapsed = Math.min(16, elapsed);
 
 	if (lastHeight !== document.documentElement.offsetHeight) {
 		onresize();
@@ -148,8 +149,6 @@ var tick = function() {
 	shaderMat.uniforms.ufGlobalTime.value = animationTime;
 	shaderMat.uniforms.um4CameraMatrix.value = matrix;
 	shaderMat.uniforms.uv3CameraPosition.value = camera.position;
-
-	var clampedElapsed = Math.min(16, elapsed);
 
 	setWeather(clampedElapsed);
 	if (!slow) {

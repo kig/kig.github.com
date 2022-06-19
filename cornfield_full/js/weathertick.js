@@ -19,10 +19,10 @@ document.getElementById('temperature').onmousedown = document.getElementById('te
 		localStorage.useUSAUnits = useUSAUnits.toString();
 		weatherUpdateTriggered = true;
 		lastTap = 0;
-		gtag('temperature', {action: 'USAUnits-' + useUSAUnits});
+		gtag({event: 'temperature', action: 'USAUnits-' + useUSAUnits});
 	} else {
 		lastTap = Date.now();
-		gtag('temperature', {action: 'ignored-fast-tap'});
+		gtag({event: 'temperature', action: 'ignored-fast-tap'});
 	}
 }
 
@@ -80,10 +80,10 @@ var setWeather = function(elapsed) {
 			ev.preventDefault();
 			const c = document.getElementById('weather-graph');
 			if (c.style.display !== 'block') {
-				gtag('forecast', {action: 'opened'});
+				gtag({event: 'forecast', action: 'opened'});
 				c.style.display = 'block';
 			} else {
-				gtag('forecast', {action: 'closed'});
+				gtag({event: 'forecast', action: 'closed'});
 				c.style.display = 'none';
 			}
 		}
@@ -103,7 +103,7 @@ var setWeather = function(elapsed) {
 					const box = weatherGraph.getBoundingClientRect();
 					const x = (ev.clientX - box.x) / box.width;
 					const y = (ev.clientY - box.y) / box.height;
-					gtag('weather-graph-click', {x: x, y: y});
+					gtag({event: 'weather-graph-click', x: x, y: y});
 				};
 			}
 			const ctx = weatherGraph.ctx;

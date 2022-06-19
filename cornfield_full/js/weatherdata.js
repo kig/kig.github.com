@@ -185,7 +185,7 @@ document.getElementById('city').onchange = function (ev) {
 		fetchWeather(cityName);
 		ev.target.blur();
 		document.body.focus();
-		gtag('location-field', {action: 'change'});
+		gtag({event: 'location-field', action: 'change'});
 	}
 };
 
@@ -199,14 +199,14 @@ var prevCityValue = '';
 document.getElementById('city').onfocus = function (ev) {
 	document.body.classList.remove('error');
 	prevCityValue = ev.target.value;
-	gtag('location-field', {action: 'focus'});
+	gtag({event: 'location-field', action: 'focus'});
 	ev.target.value = '';
 };
 
 document.getElementById('my-location').onclick = function (ev) {
 	ev.preventDefault();
 	document.body.classList.remove('error');
-	gtag('my-location', {action: 'click'});
+	gtag({event: 'my-location', action: 'click'});
 	fetchMyLocationWeather();
 };
 

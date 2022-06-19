@@ -50,6 +50,8 @@ self.addEventListener('activate', function (event) {
 });
 
 self.addEventListener('fetch', async (evt) => {
+    // Pass non-GET requests to the network
+    if ((evt.request.method || '').toUpperCase() !== 'GET') return;
     // Cache typekit responses to EXT_CACHE and app sources and weather data to APP_CACHE.
     // Try cache and if it fails, go for the network copy.
     const cacheName = /^https:\/\/[^\.]*\.?typekit\.net\//.test(evt.request.url) ? EXT_CACHE : LIB_CACHE;

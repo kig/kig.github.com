@@ -19,8 +19,10 @@ document.getElementById('temperature').onmousedown = document.getElementById('te
 		localStorage.useUSAUnits = useUSAUnits.toString();
 		weatherUpdateTriggered = true;
 		lastTap = 0;
+		gtag('temperature', {action: 'USAUnits-' + useUSAUnits});
 	} else {
 		lastTap = Date.now();
+		gtag('temperature', {action: 'ignored-fast-tap'});
 	}
 }
 
@@ -78,8 +80,10 @@ var setWeather = function(elapsed) {
 			ev.preventDefault();
 			const c = document.getElementById('weather-graph');
 			if (c.style.display !== 'block') {
+				gtag('forecast', {action: 'opened'});
 				c.style.display = 'block';
 			} else {
+				gtag('forecast', {action: 'closed'});
 				c.style.display = 'none';
 			}
 		}
@@ -95,6 +99,12 @@ var setWeather = function(elapsed) {
 			if (!weatherGraph.ctx) {
 				weatherGraph.ctx = weatherGraph.getContext('2d');
 				weatherGraph.ctx.scale(2,2);
+				weatherGraph.onclick = function(ev) {
+					const box = weatherGraph.getBoundingClientRect();
+					const x = (ev.clientX - box.x) / box.width;
+					const y = (ev.clientY - box.y) / box.height;
+					gtag('weather-graph-click', {x: x, y: y});
+				};
 			}
 			const ctx = weatherGraph.ctx;
 			ctx.font = '700 24px "Roboto Condensed","roboto-condensed","Helvetica Neue","Segoe UI",sans-serif'

@@ -5,7 +5,7 @@ const DEBUG = false;
 
 self.addEventListener('install', (e) => {
     self.skipWaiting();
-    e.waitUntil(
+    e.waitUntil( 
         new Promise(async (resolve, reject) => {
             const lib = caches.open(LIB_CACHE)
             const app = caches.open(APP_CACHE);
@@ -51,7 +51,9 @@ self.addEventListener('activate', function (event) {
 
 self.addEventListener('fetch', async (evt) => {
     // Pass non-GET requests to the network
-    if ((evt.request.method || '').toUpperCase() !== 'GET') return;
+    if ((evt.request.method || '').toUpperCase() !== 'GET' ||
+        evt.request.url.startsWith('https://www.googletagmanager.com/')
+    ) return;
     // Cache typekit responses to EXT_CACHE and app sources and weather data to APP_CACHE.
     // Try cache and if it fails, go for the network copy.
     const cacheName = /^https:\/\/[^\.]*\.?typekit\.net\//.test(evt.request.url) ? EXT_CACHE : LIB_CACHE;

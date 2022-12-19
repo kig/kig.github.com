@@ -263,14 +263,13 @@ setInterval(function() {
 	clock.textContent = t.toLocaleTimeString(navigator.language, {hour:'numeric', minute:'numeric'});
 	date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
 }, 1000);
-clock.ondblclick = function(ev) {
+var timeData = document.getElementById('time-data')
+timeData.ondblclick = function(ev) {
 	ev.preventDefault();
-	if (clock.style.opacity === '0') {
-		clock.style.opacity = '0.8';
-		date.style.opacity = '0.8';
+	if (timeData.style.opacity === '0') {
+		timeData.style.opacity = '0.8';
 	} else {
-		clock.style.opacity = '0';
-		date.style.opacity = '0';
+		timeData.style.opacity = '0';
 	}
 };
 

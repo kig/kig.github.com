@@ -177,30 +177,22 @@ var fetchWeather = function (cityName, onerror) {
 window.currentLocation = false;
 
 document.getElementById('city').onchange = function (ev) {
+	document.body.classList.remove('error');
+	document.body.classList.remove('current-location');
 	if (ev.target.value === '') {
-		ev.target.value = prevCityValue;
 	} else {
 		var cityName = ev.target.value;
-		document.body.classList.remove('current-location');
 		fetchWeather(cityName);
 		ev.target.blur();
 		document.body.focus();
 		dataLayer.push({event: 'location-field', action: 'change'});
+		window.localStorage.currentLocation = JSON.stringify(cityName);
 	}
 };
 
-document.getElementById('city').onblur = function (ev) {
-	if (ev.target.value === '') {
-		ev.target.value = prevCityValue;
-	}
-};
-
-var prevCityValue = '';
 document.getElementById('city').onfocus = function (ev) {
 	document.body.classList.remove('error');
-	prevCityValue = ev.target.value;
 	dataLayer.push({event: 'location-field', action: 'focus'});
-	ev.target.value = '';
 };
 
 document.getElementById('my-location').onclick = function (ev) {
@@ -230,6 +222,7 @@ function fetchMyLocationWeather() {
 				document.getElementById('my-location').classList.remove('locating');
 				document.body.classList.add('current-location');
 				fetchWeather(pos.coords);
+				window.localStorage.currentLocation = JSON.stringify(pos.coords);
 			},
 			function (error) {
 				// Couldn't get location from geolocation, let's go back to geoip.
@@ -263,15 +256,45 @@ function fetchGeoIPWeather() {
 
 window.currentLocation = { "country_code": "HK", "country_name": "Hong Kong", "region_code": "", "region_name": "", "city": "Central District", "zip_code": "", "time_zone": "Asia/Hong_Kong", "latitude": 22.291, "longitude": 114.15, "metro_code": 0 };
 
-fetchGeoIPWeather();
+var clock = document.getElementById('clock');
+var date = document.getElementById('date');
+setInterval(function() {
+	var t = new Date();
+	clock.textContent = t.toLocaleTimeString(navigator.language, {hour:'numeric', minute:'numeric'});
+	date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
+}, 1000);
+clock.ondblclick = function(ev) {
+	ev.preventDefault();
+	if (clock.style.opacity === '0') {
+		clock.style.opacity = '0.8';
+		date.style.opacity = '0.8';
+	} else {
+		clock.style.opacity = '0';
+		date.style.opacity = '0';
+	}
+};
 
-if (navigator.geolocation && navigator.permissions) {
-	navigator.permissions.query({
-        name: 'geolocation'
-	}).then(permission => {
-        if (permission.state === "granted") {
-			fetchMyLocationWeather();
-		}
-	});
+var haveCurrentLocation = false;
+
+if (window.localStorage && window.localStorage.currentLocation) {
+	try {
+		window.currentLocation = JSON.parse(window.localStorage.currentLocation);
+		fetchWeather(window.currentLocation);
+		haveCurrentLocation = true;
+	} catch (e) {
+		console.error(e);
+	}
+}
+if (!haveCurrentLocation) {
+	fetchGeoIPWeather();
+	if (navigator.geolocation && navigator.permissions) {
+		navigator.permissions.query({
+			name: 'geolocation'
+		}).then(permission => {
+			if (permission.state === "granted") {
+				fetchMyLocationWeather();
+			}
+		});
+	}	
 }
 

@@ -561,8 +561,8 @@
 			var date = document.getElementById('date');
 			setInterval(function() {
 				var t = new Date();
-				clock.textContent = (t.getHours()+1) + ":" + (t.getMinutes().toString().padStart(2, "0"));
-				date.textContent = t.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
+				clock.textContent = t.toLocaleTimeString(navigator.language, {hour:'numeric', minute:'numeric'});
+				date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
 			}, 1000);
 		</script>
 		<div id="settings-toggle">

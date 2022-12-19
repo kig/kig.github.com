@@ -215,6 +215,14 @@ var setWeather = function(elapsed) {
 		document.body.classList.remove('daytime');		
 	}
 
+	if (shaderMat.uniforms.ufSunPosition.value > 0.05 && shaderMat.uniforms.ufSunPosition.value < 0.95 && // daytime
+		shaderMat.uniforms.ufSunPosition.value > (document.body.offsetHeight < 360 ? 0.05 : (aspect > 3/4 ? 0.5 : 0.08)) // tweak based on screen size
+	) {
+		document.body.classList.add('daytime-left');
+	} else {
+		document.body.classList.remove('daytime-left');		
+	}
+
 	wdOffTarget = (0.5-Math.random()) * windStrength / 20 * 0.4;
 	wdOff += 0.1 * (wdOffTarget - wdOff)
 

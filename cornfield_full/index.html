@@ -88,6 +88,9 @@
 			{
 				color: #000;
 			}
+			.daytime-left #clock {
+				color: #000;
+			}
 
 			.daytime hr {
 				background: rgba(0, 0, 0, 0.5);
@@ -108,26 +111,25 @@
 				stroke: #000;
 			}
 
-
 			#weather-data {
 				color: white;
 				position: absolute;
 				top: 38px;
-				right: 36px;
+				right: 50px;
 				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
 				font-weight: 100;
-				font-size: 15px;
+				font-size: 30px;
 				text-align: right;
 				box-sizing: border-box;
 				transition: 0.1s;
-				/*text-shadow: 0px 0px 30px rgba(0,0,0,0.2);*/
+				/* text-shadow: 0px 0px 30px rgba(0,0,0,0.2); */
 				z-index: 15;
 				opacity: 0.8;
 				margin-top: env(safe-area-inset-top);
 				margin-right: env(safe-area-inset-right);
 				min-width: 200px;
-				
 			}
+
 			.fade-out {
 				opacity: 0 !important;
 			}
@@ -141,7 +143,7 @@
 				color: white;
 				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
 				font-weight: 100;
-				font-size: 15px;
+				font-size: 30px;
 				text-align: right;
 				transition: 0.5s;
 				outline: 0 !important;
@@ -149,7 +151,6 @@
 				margin-bottom: -1px;
 				border-radius: 0;
 				width: 100%;
-				
 			}
 
 			#city:focus {
@@ -166,11 +167,15 @@
 
 			#my-location {
 				position: absolute;
-				right: -22px;
-				top: 1px;
+				right: -37px;
+				top: 4px;
 				transition: 0.5s;
 				opacity: 0.5;
 				cursor: pointer;
+			}
+			#my-location svg {
+				width: 30px;
+				height: 30px;
 			}
 			#my-location:hover,
 			.current-location #my-location
@@ -193,7 +198,7 @@
 			}
 
 			#temperature {
-				font-size: 72px;
+				font-size: 144px;
 				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
 				font-weight: bold;
 				margin-bottom: -17px;
@@ -210,6 +215,11 @@
 				display: inline-block;
 				vertical-align: middle;
 				margin-right: 5px;
+			}
+
+			#wind-direction svg {
+				width: 30px;
+				height: 30px;
 			}
 
 			hr {
@@ -396,41 +406,6 @@
 				opacity: 0;
 				pointer-events: none;
 			}
-			@media (max-width: 800px) {
-				#come-birds, #i-see-you, #fly-away {
-					width: 320px;
-
-					display: none;
-				}
-				#weather-data {
-					top: 28px;
-					transform: scale(0.75);
-				    transform-origin: top right;
-				}
-			}
-			@media (max-height: 278px) {
-				#fullscreen {
-					bottom: 16px;
-					right: 16px;
-				}
-			}
-			@media (max-height: 238px) {
-				#fullscreen {
-					display: none;
-				}
-			}
-
-			:fullscreen #fullscreen {
-				display: none;
-			}
-			:-webkit-full-screen #fullscreen {
-				display: none;
-			}
-			@media all and (display-mode: fullscreen) {
-				#fullscreen {
-					display: none;
-				}
-			}
 			#forecast {
 				vertical-align: top;
 				margin-bottom: 8px;
@@ -439,7 +414,7 @@
 			#forecast > span {
 				display: inline-block;
 				vertical-align: top;
-				width: 32px;
+				width: 64px;
 				margin-left: 7px;
 				text-align: center;
 			}
@@ -497,7 +472,58 @@
 			.mad a {
 				color: blue;
 			}
-			
+			#clock {
+				position: fixed;
+				left: 64px;
+				top: 62px;
+				font-size: 190px;
+				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: 700;
+				margin-bottom: -17px;
+				margin-top: -3px;
+				color: black;
+				opacity: 0.8;
+			}
+
+			@media (max-width: 800px) {
+				#come-birds, #i-see-you, #fly-away {
+					width: 320px;
+
+					display: none;
+				}
+				#weather-data {
+					top: 28px;
+					transform: scale(0.5);
+				    transform-origin: top right;
+					min-width: 380px;
+				}
+				#clock {
+					display: none;
+				}
+			}
+			@media (max-height: 278px) {
+				#fullscreen {
+					bottom: 16px;
+					right: 16px;
+				}
+			}
+			@media (max-height: 238px) {
+				#fullscreen {
+					display: none;
+				}
+			}
+
+			:fullscreen #fullscreen {
+				display: none;
+			}
+			:-webkit-full-screen #fullscreen {
+				display: none;
+			}
+			@media all and (display-mode: fullscreen) {
+				#fullscreen {
+					display: none;
+				}
+			}
 		</style>
 		<link rel="stylesheet" href="weather-icons/css/weather-icons.min.css">
 		<!-- Global site tag (gtag.js) - Google Analytics -->
@@ -511,6 +537,14 @@
 		</script>
 	</head>
 	<body>
+		<div id="clock">10:20</div>
+		<script>
+			var clock = document.getElementById('clock');
+			setInterval(function() {
+				var t = new Date();
+				clock.textContent = (t.getHours()+1) + ":" + (t.getMinutes().toString().padStart(2, "0"));
+			}, 1000);
+		</script>
 		<div id="settings-toggle">
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -256 1792 1792" fill="#fff"><g transform="matrix(1,0,0,-1,121.49153,1285.4237)"><path d="m 1024,640 q 0,106 -75,181 -75,75 -181,75 -106,0 -181,-75 -75,-75 -75,-181 0,-106 75,-181 75,-75 181,-75 106,0 181,75 75,75 75,181 z m 512,109 V 527 q 0,-12 -8,-23 -8,-11 -20,-13 l -185,-28 q -19,-54 -39,-91 35,-50 107,-138 10,-12 10,-25 0,-13 -9,-23 -27,-37 -99,-108 -72,-71 -94,-71 -12,0 -26,9 l -138,108 q -44,-23 -91,-38 -16,-136 -29,-186 -7,-28 -36,-28 H 657 q -14,0 -24.5,8.5 Q 622,-111 621,-98 L 593,86 q -49,16 -90,37 L 362,16 Q 352,7 337,7 323,7 312,18 186,132 147,186 q -7,10 -7,23 0,12 8,23 15,21 51,66.5 36,45.5 54,70.5 -27,50 -41,99 L 29,495 Q 16,497 8,507.5 0,518 0,531 v 222 q 0,12 8,23 8,11 19,13 l 186,28 q 14,46 39,92 -40,57 -107,138 -10,12 -10,24 0,10 9,23 26,36 98.5,107.5 72.5,71.5 94.5,71.5 13,0 26,-10 l 138,-107 q 44,23 91,38 16,136 29,186 7,28 36,28 h 222 q 14,0 24.5,-8.5 Q 914,1391 915,1378 l 28,-184 q 49,-16 90,-37 l 142,107 q 9,9 24,9 13,0 25,-10 129,-119 165,-170 7,-8 7,-22 0,-12 -8,-23 -15,-21 -51,-66.5 -36,-45.5 -54,-70.5 26,-50 41,-98 l 183,-28 q 13,-2 21,-12.5 8,-10.5 8,-23.5 z"/></g></svg>
 		</div>
@@ -537,7 +571,7 @@ Moscow</textarea><br>
 			<hr>
 			<div id="forecast"><span>1°C ☀️</span><span>9°C 🌤</span><span>3°C ☀️</span><span>3°C ⛈</span><span>0°C 🌧</span></div>
 			<div><span id="weather-desc"></span>, <span id="cloud-cover"><i class="wi wi-cloudy"></i> 0%</span></div>
-			<div id="wind-data"><span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='15' width='15'><g id='wind-direction-arrow' transform='rotate(220 7.5 7.5)'><polygon points="0.2,7.4 14.8,11.1 11.4,7.4 14.8,3.7 " fill="white"/></g></svg></span><span id="wind-speed">2.1 m/s <i class="wi wi-strong-wind"></i></span></div>
+			<div id="wind-data"><span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='15' width='15' viewBox="0 0 15 15"><g id='wind-direction-arrow' transform='rotate(220 7.5 7.5)'><polygon points="0.2,7.4 14.8,11.1 11.4,7.4 14.8,3.7 " fill="white"/></g></svg></span><span id="wind-speed">2.1 m/s <i class="wi wi-strong-wind"></i></span></div>
 			<canvas id="weather-graph" width="1200" height="1200"></canvas>
 		</div>
 		<div id="fullscreen"></div>

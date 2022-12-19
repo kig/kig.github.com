@@ -88,7 +88,9 @@
 			{
 				color: #000;
 			}
-			.daytime-left #clock {
+			.daytime-left #clock,
+			.daytime-left #date
+			{
 				color: #000;
 			}
 
@@ -118,7 +120,7 @@
 				right: 50px;
 				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
 				font-weight: 100;
-				font-size: 30px;
+				font-size: 24px;
 				text-align: right;
 				box-sizing: border-box;
 				transition: 0.1s;
@@ -143,7 +145,7 @@
 				color: white;
 				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
 				font-weight: 100;
-				font-size: 30px;
+				font-size: 24px;
 				text-align: right;
 				transition: 0.5s;
 				outline: 0 !important;
@@ -174,8 +176,8 @@
 				cursor: pointer;
 			}
 			#my-location svg {
-				width: 30px;
-				height: 30px;
+				width: 24px;
+				height: 24px;
 			}
 			#my-location:hover,
 			.current-location #my-location
@@ -198,7 +200,7 @@
 			}
 
 			#temperature {
-				font-size: 144px;
+				font-size: 120px;
 				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
 				font-weight: bold;
 				margin-bottom: -17px;
@@ -237,6 +239,7 @@
 			#fly-away,
 			#i-see-you
 			{
+				display: none;
 				position: absolute;
 				text-align: center;
 				left: 50%;
@@ -414,7 +417,7 @@
 			#forecast > span {
 				display: inline-block;
 				vertical-align: top;
-				width: 64px;
+				width: 52px;
 				margin-left: 7px;
 				text-align: center;
 			}
@@ -475,17 +478,30 @@
 			#clock {
 				position: fixed;
 				z-index: 1;
-				left: 43px;
-				top: -7px;
-				font-size: 237px;
+				left: 50px;
+				top: 70px;
+				font-size: 120px;
 				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
 				font-weight: 700;
 				margin-bottom: -17px;
 				margin-top: -3px;
-				color: black;
+				color: white;
 				opacity: 0.8;
 			}
-
+			#date {
+				position: fixed;
+				z-index: 1;
+				color: white;
+				top: 41px;
+				left: 57px;
+				font-size: 30px;
+				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: 100;
+				margin-bottom: -17px;
+				margin-top: -3px;
+				text-transform: uppercase;
+				opacity: 0.8;
+			}
 			@media (max-width: 800px) {
 				#come-birds, #i-see-you, #fly-away {
 					width: 320px;
@@ -538,12 +554,15 @@
 		</script>
 	</head>
 	<body>
-		<div id="clock">10:20</div>
+		<div id="clock"></div>
+		<div id="date"></div>
 		<script>
 			var clock = document.getElementById('clock');
+			var date = document.getElementById('date');
 			setInterval(function() {
 				var t = new Date();
 				clock.textContent = (t.getHours()+1) + ":" + (t.getMinutes().toString().padStart(2, "0"));
+				date.textContent = t.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
 			}, 1000);
 		</script>
 		<div id="settings-toggle">

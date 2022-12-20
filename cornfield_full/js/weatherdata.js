@@ -277,9 +277,11 @@ var haveCurrentLocation = false;
 
 if (window.localStorage && window.localStorage.currentLocation) {
 	try {
-		window.currentLocation = JSON.parse(window.localStorage.currentLocation);
-		fetchWeather(window.currentLocation);
-		haveCurrentLocation = true;
+		var currentLocation = JSON.parse(window.localStorage.currentLocation);
+		if (currentLocation) {
+			fetchWeather(window.currentLocation);
+			haveCurrentLocation = true;
+		}
 	} catch (e) {
 		console.error(e);
 	}

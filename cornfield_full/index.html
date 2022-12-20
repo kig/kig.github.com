@@ -139,8 +139,61 @@
 				opacity: 0.8;
 			}
 
-			.fade-out {
+			.spinner {
+				position: absolute;
+				top: 4px;
+				left: -37px;
+				opacity: 0;
+				display: inline-block;
+				width: 24px;
+				height: 24px;
+				background-position: 50% 50%;
+				background-size: contain;
+				background-repeat: no-repeat;
+				background-image: url('data:image/svg+xml,<svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12C2 6.47715 6.47715 2 12 2V5C8.13401 5 5 8.13401 5 12H2Z" fill="white"/></svg>');
+				animation: spin 0.5s;
+			}
+			.daytime .spinner {
+				background-image: url('data:image/svg+xml,<svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12C2 6.47715 6.47715 2 12 2V5C8.13401 5 5 8.13401 5 12H2Z" fill="black"/></svg>');
+			}
+			.fade-out .spinner {
+				opacity: 1;
+				transition: 0.5s;
+			}
+			@keyframes spin {
+				0% {
+					transform: rotate(0deg);
+				}
+				50% {
+					transform: rotate(180deg);
+				}
+				100% {
+					transform: rotate(360deg);
+				}
+			}
+
+			.fade-out hr {
 				opacity: 0 !important;
+				transition: 0.2s;
+			}
+			.fade-out #error {
+				opacity: 0 !important;
+				transition: 0.2s;
+			}
+			.fade-out #temperature,
+			.fade-out #weather-desc-container,
+			.fade-out #forecast,
+			.fade-out #wind-data,
+			.fade-out #weather-graph
+			{
+				opacity: 0 !important;
+				height: 0 !important;
+				overflow: hidden;
+				transition: 0.3s;
+			}
+
+			#weather-data > * {
+				transition: 0.5s;
 			}
 
 			#city {
@@ -573,11 +626,11 @@ Moscow</textarea><br>
 		</div>
 		<div id="weather-data" class="fade-out">
 			<div id="error"></div>
-			<div><input id="city" value="London" aria-label="Location"></input><span id="my-location"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><circle id="surround" fill="none" stroke="#000000" stroke-miterlimit="10" cx="7.6" cy="7.5" r="5.4"/><rect x="7" width="1" height="1.9"/><rect x="7" y="13.1" width="1" height="1.9"/><rect x="13.1" y="7" width="1.9" height="1"/><rect x="0" y="7" width="1.9" height="1"/><circle id="center" cx="7.6" cy="7.5" r="3.5"/></svg></span></div>
+			<div id="city-container"><div class="spinner"></div><input id="city" value="London" aria-label="Location"></input><span id="my-location"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><circle id="surround" fill="none" stroke="#000000" stroke-miterlimit="10" cx="7.6" cy="7.5" r="5.4"/><rect x="7" width="1" height="1.9"/><rect x="7" y="13.1" width="1" height="1.9"/><rect x="13.1" y="7" width="1.9" height="1"/><rect x="0" y="7" width="1.9" height="1"/><circle id="center" cx="7.6" cy="7.5" r="3.5"/></svg></span></div>
 			<div id="temperature">7°C</div>
 			<hr>
 			<div id="forecast"><span>1°C ☀️</span><span>9°C 🌤</span><span>3°C ☀️</span><span>3°C ⛈</span><span>0°C 🌧</span></div>
-			<div><span id="weather-desc"></span>, <span id="cloud-cover"><i class="wi wi-cloudy"></i> 0%</span></div>
+			<div id="weather-desc-container"><span id="weather-desc"></span>, <span id="cloud-cover"><i class="wi wi-cloudy"></i> 0%</span></div>
 			<div id="wind-data"><span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='15' width='15' viewBox="0 0 15 15"><g id='wind-direction-arrow' transform='rotate(220 7.5 7.5)'><polygon points="0.2,7.4 14.8,11.1 11.4,7.4 14.8,3.7 " fill="white"/></g></svg></span><span id="wind-speed">2.1 m/s <i class="wi wi-strong-wind"></i></span></div>
 			<canvas id="weather-graph" width="1200" height="1200"></canvas>
 		</div>

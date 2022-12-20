@@ -84,7 +84,7 @@
 			}
 
 			.daytime #weather-data,
-			.daytime #city,
+			.daytime #location,
 			.daytime #time-data
 			{
 				color: #000;
@@ -197,7 +197,7 @@
 				transition: 0.5s;
 			}
 
-			#city {
+			#location {
 				text-transform: uppercase;
 				background: transparent;
 				border: 0;
@@ -216,15 +216,15 @@
 				width: 100%;
 			}
 
-			#city:focus {
+			#location:focus {
 				border-bottom: 1px solid white;
 			}
-			#city::selection {
+			#location::selection {
 				background: #4489f1;
 				color: white;
 			}
 
-			.daytime #city:focus {
+			.daytime #location:focus {
 				border-bottom-color: #000;
 			}
 
@@ -271,7 +271,7 @@
 			}
 
 			#temperature .wi {
-				margin-right: 16px;
+				margin-right: 24px;
 			}
 
 			.min-temperature,
@@ -500,7 +500,7 @@
 				vertical-align: top;
 				margin-bottom: 8px;
 				cursor: pointer;
-				height: 96px;
+				height: 126px;
 				overflow: hidden;
 			}
 			#forecast > span {
@@ -524,14 +524,14 @@
 				border-radius: 4px;
 				color: #ff8f00;
 				margin-bottom: 8px;
-				margin-top: -4px;
+				margin-top: 7px;
 				font-variant: all-small-caps;
 				font-weight: bold;
 				position: absolute;
 				width: 173px;
 				right: 0px;
 				top: 15px;
-				font-size: 12px;
+				font-size: 15px;
 			}
 			.error #error {
 				display: inline-block;
@@ -655,7 +655,7 @@ Moscow</textarea><br>
 		</div>
 		<div id="weather-data" class="fade-out">
 			<div id="error"></div>
-			<div id="city-container"><div class="spinner"></div><input id="city" value="" aria-label="Location"></input><span id="my-location"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><circle id="surround" fill="none" stroke="#000000" stroke-miterlimit="10" cx="7.6" cy="7.5" r="5.4"/><rect x="7" width="1" height="1.9"/><rect x="7" y="13.1" width="1" height="1.9"/><rect x="13.1" y="7" width="1.9" height="1"/><rect x="0" y="7" width="1.9" height="1"/><circle id="center" cx="7.6" cy="7.5" r="3.5"/></svg></span></div>
+			<div id="city-container"><div class="spinner"></div><input id="location" value="" aria-label="Location"></input><span id="my-location"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><circle id="surround" fill="none" stroke="#000000" stroke-miterlimit="10" cx="7.6" cy="7.5" r="5.4"/><rect x="7" width="1" height="1.9"/><rect x="7" y="13.1" width="1" height="1.9"/><rect x="13.1" y="7" width="1.9" height="1"/><rect x="0" y="7" width="1.9" height="1"/><circle id="center" cx="7.6" cy="7.5" r="3.5"/></svg></span></div>
 			<div id="temperature">7°C</div>
 			<hr>
 			<div id="forecast"><span>1°C ☀️</span><span>9°C 🌤</span><span>3°C ☀️</span><span>3°C ⛈</span><span>0°C 🌧</span></div>

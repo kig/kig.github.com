@@ -36,14 +36,14 @@ const weatherCodePriority = [
 	520,
 	301,
 	300,
+	741,
+	800,
 	700,
 	721,
-	741,
-	804,
-	800,
-	803,
-	802,
 	801,
+	802,
+	803,
+	804,
 	900,
 ];
 
@@ -103,7 +103,7 @@ var setWeather = function(elapsed) {
 	if (weatherUpdateTriggered || (currentCityIndex === -1 && targetCityIndex !== -1)) {
 		weatherUpdateTriggered = false;
 		const c = cities[cityNames[currentCityIndex]] || cities[cityNames[targetCityIndex]] || zeroCity;
-		document.getElementById('city').value = (cityNames[currentCityIndex] || cityNames[targetCityIndex] || "").split(",")[0];
+		document.getElementById('location').value = (cityNames[currentCityIndex] || cityNames[targetCityIndex] || "").split(",")[0];
 		const tempString = formatTemperature(c.temperature);
 		const windString = formatWindSpeed(c.windStrength);
 
@@ -135,15 +135,15 @@ var setWeather = function(elapsed) {
 		forecastElem.innerHTML = '';
 		const days = {};
 		const myDay = new Date((c.weatherData.dt + c.weatherData.timezone) * 1e3).toISOString().split("T")[0];
-		days[myDay] = {minTemp: c.weatherData.main.feels_like, maxTemp: c.weatherData.main.feels_like, weatherCode: c.weatherData.weather[0].id};
+		days[myDay] = {minTemp: c.weatherData.main.temp, maxTemp: c.weatherData.main.temp, weatherCode: c.weatherData.weather[0].id};
 		if (fc.list.length > 0) {
 			fc.list.forEach(l => {
 				const itemDay = new Date((l.dt + fc.city.timezone) * 1e3).toISOString().split("T")[0];
 				if (!days[itemDay]) {
-					days[itemDay] = {minTemp: l.main.feels_like, maxTemp: l.main.feels_like, weatherCode: l.weather[0].id};
+					days[itemDay] = {minTemp: l.main.temp, maxTemp: l.main.temp, weatherCode: l.weather[0].id};
 				} else {
-					if (days[itemDay].minTemp > l.main.feels_like) days[itemDay].minTemp = l.main.feels_like;
-					if (days[itemDay].maxTemp < l.main.feels_like) days[itemDay].maxTemp = l.main.feels_like;
+					if (days[itemDay].minTemp > l.main.temp) days[itemDay].minTemp = l.main.temp;
+					if (days[itemDay].maxTemp < l.main.temp) days[itemDay].maxTemp = l.main.temp;
 					if (weatherCodeCompare(days[itemDay].weatherCode, l.weather[0].id) > 0) days[itemDay].weatherCode = l.weather[0].id;
 				}
 			});
@@ -158,10 +158,11 @@ var setWeather = function(elapsed) {
 			const tempString = formatTemperature(f.main.temp);
 			const minTempString = formatTemperature(day.minTemp);
 			const maxTempString = formatTemperature(day.maxTemp);
-			span.textContent = new Date((f.dt + fc.city.timezone) * 1e3).toLocaleDateString(navigator.language, { weekday: 'short' }) + ' ' + tempString;
+			span.textContent = new Date((f.dt + fc.city.timezone) * 1e3).toLocaleDateString(navigator.language, { weekday: 'short' }) + ' ' + maxTempString;
 			const icon = document.createElement('span');
 			icon.className = 'weather-icon wi wi-owm-' + day.weatherCode;
 			span.appendChild(icon);
+			span.appendChild(document.createTextNode(" " + minTempString));
 			forecastElem.appendChild(span);
 		});
 

@@ -137,6 +137,8 @@ var updateWeather = function (cityName, weatherData) {
 	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3 / 4);
 	c.forecast = weatherData.forecast || zeroCity.forecast;
 
+	document.getElementById('location').value = cityName.split(",")[0];
+
 	if (!document.body.classList.contains('loaded')) {
 		document.body.classList.add('loaded');
 	}
@@ -181,7 +183,7 @@ var fetchWeather = function (cityName, isRefresh) {
 
 window.currentLocation = false;
 
-document.getElementById('city').onchange = function (ev) {
+document.getElementById('location').onchange = function (ev) {
 	document.body.classList.remove('error');
 	document.body.classList.remove('current-location');
 	if (ev.target.value === '') {
@@ -195,7 +197,7 @@ document.getElementById('city').onchange = function (ev) {
 	}
 };
 
-document.getElementById('city').onfocus = function (ev) {
+document.getElementById('location').onfocus = function (ev) {
 	document.body.classList.remove('error');
 	dataLayer.push({event: 'location-field', action: 'focus'});
 };

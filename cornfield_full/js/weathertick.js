@@ -140,11 +140,12 @@ var setWeather = function(elapsed) {
 			fc.list.forEach(l => {
 				const itemDay = new Date((l.dt + fc.city.timezone) * 1e3).toISOString().split("T")[0];
 				if (!days[itemDay]) {
-					days[itemDay] = {minTemp: l.main.feels_like, maxTemp: l.main.feels_like};
+					days[itemDay] = {minTemp: l.main.feels_like, maxTemp: l.main.feels_like, weatherCode: l.weather[0].id};
+				} else {
+					if (days[itemDay].minTemp > l.main.feels_like) days[itemDay].minTemp = l.main.feels_like;
+					if (days[itemDay].maxTemp < l.main.feels_like) days[itemDay].maxTemp = l.main.feels_like;
+					if (weatherCodeCompare(days[itemDay].weatherCode, l.weather[0].id) > 0) days[itemDay].weatherCode = l.weather[0].id;
 				}
-				if (days[itemDay].minTemp > l.main.feels_like) days[itemDay].minTemp = l.main.feels_like;
-				if (days[itemDay].maxTemp < l.main.feels_like) days[itemDay].maxTemp = l.main.feels_like;
-				if (weatherCodeCompare(days[itemDay].weatherCode, l.weather[0].id) > 1) days[itemDay].weatherCode = l.weather[0].id;
 			});
 		}
 		minTempEl.textContent = formatTemperature(days[myDay].minTemp);

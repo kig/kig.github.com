@@ -254,6 +254,7 @@ function fetchGeoIPWeather() {
 	if (window.geoIPData && !window.geolocationFetched) {
 		window.currentLocation = window.geoIPData;
 		fetchWeather(window.geoIPData);
+		window.localStorage.currentLocation = JSON.stringify(window.geoIPData);
 	} else {
 		fetchWeather(window.currentLocation);
 	}

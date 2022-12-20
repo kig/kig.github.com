@@ -144,11 +144,11 @@ var updateWeather = function (cityName, weatherData) {
 
 var fetchInterval = 0;
 
-var fetchWeather = function (cityName, onerror) {
+var fetchWeather = function (cityName, isRefresh) {
 	// Update weather every hour
 	clearInterval(fetchInterval);
 	fetchInterval = setInterval(function () {
-		fetchWeather(cityName).then(() => weatherUpdateTriggered = true);
+		fetchWeather(cityName, true).then(() => weatherUpdateTriggered = true);
 	}, 60 * 60 * 1000);
 	var server = '//api.openweathermap.org/data/2.5/';
 	var units = '&units=metric';
@@ -160,6 +160,10 @@ var fetchWeather = function (cityName, onerror) {
 		: '?q=' + encodeURIComponent(cityName);
 	var cacheTime = '&' + Math.floor(Date.now() / 3.6e6); // Cache weather responses for 1 hour.
 
+	if (!isRefresh) {
+		document.getElementById('weather-data').classList.add('fade-out');
+	}
+
 	return Promise.all([
 		fetch(server+'weather'+location+units+appid+lang+cacheTime).then(res => res.json()),
 		fetch(server+'forecast'+location+units+appid+lang+cacheTime).then(res => res.json())
@@ -167,11 +171,12 @@ var fetchWeather = function (cityName, onerror) {
 		if (parseInt(weatherData.cod) !== 200) {
 			document.body.classList.add('error');
 			document.getElementById('error').textContent = weatherData.message;
+			document.getElementById('weather-data').classList.remove('fade-out');
 			return;
 		}
 		weatherData.forecast = (parseInt(forecast.cod) === 200 ? forecast : zeroCity.forecast);
 		updateWeather(weatherData.name, weatherData);
-	}).catch(onerror);
+	});
 };
 
 window.currentLocation = false;

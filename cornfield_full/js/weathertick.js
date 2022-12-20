@@ -244,7 +244,7 @@ var setWeather = function(elapsed) {
 			line(ctx, 'Cloud', '#888', 300, fc.list.map(f => f.clouds.all), dayIndexes, 0, 100);
 			line(ctx, 'Humid', '#49F', 360, fc.list.map(f => f.main.humidity), dayIndexes);
 
-			line(ctx, 'Vis', '#088', 420, fc.list.map(f => Math.round(f.visibility/1000)), dayIndexes);
+			// line(ctx, 'Vis', '#088', 420, fc.list.map(f => Math.round(f.visibility/1000)), dayIndexes);
 		}
 		// Update window title.
 		// if (currentCityIndex === 0) {

@@ -141,8 +141,8 @@
 
 			.spinner {
 				position: absolute;
-				top: 4px;
-				left: -37px;
+				top: 5px;
+				left: -35px;
 				opacity: 0;
 				display: inline-block;
 				width: 24px;
@@ -151,7 +151,7 @@
 				background-size: contain;
 				background-repeat: no-repeat;
 				background-image: url('data:image/svg+xml,<svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12C2 6.47715 6.47715 2 12 2V5C8.13401 5 5 8.13401 5 12H2Z" fill="white"/></svg>');
-				animation: spin 0.5s;
+				animation: spin 0.5s infinite linear;
 			}
 			.daytime .spinner {
 				background-image: url('data:image/svg+xml,<svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12C2 6.47715 6.47715 2 12 2V5C8.13401 5 5 8.13401 5 12H2Z" fill="black"/></svg>');
@@ -172,11 +172,10 @@
 				}
 			}
 
-			.fade-out hr {
-				opacity: 0 !important;
-				transition: 0.2s;
-			}
-			.fade-out #error {
+			.fade-out hr,
+			.fade-out #error,
+			.fade-out #my-location
+			{
 				opacity: 0 !important;
 				transition: 0.2s;
 			}
@@ -229,7 +228,7 @@
 
 			#my-location {
 				position: absolute;
-				right: -37px;
+				right: -35px;
 				top: 4px;
 				transition: 0.5s;
 				opacity: 0.5;
@@ -265,12 +264,20 @@
 				font-weight: bold;
 				margin-bottom: -17px;
 				margin-top: -3px;
-				
+				height: 144px;
+				overflow: hidden;
+			}
+
+			#weather-desc-container {
+				height: 32px;
+				overflow: hidden;
 			}
 
 			#wind-data {
 				margin-top: 6px;
 				margin-bottom: 15px;
+				height: 32px;
+				overflow: hidden;
 			}
 
 			#wind-direction {
@@ -473,6 +480,8 @@
 				vertical-align: top;
 				margin-bottom: 8px;
 				cursor: pointer;
+				height: 96px;
+				overflow: hidden;
 			}
 			#forecast > span {
 				display: inline-block;

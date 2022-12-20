@@ -278,6 +278,7 @@ var haveCurrentLocation = false;
 if (window.localStorage && window.localStorage.currentLocation) {
 	try {
 		var currentLocation = JSON.parse(window.localStorage.currentLocation);
+		if (typeof currentLocation === 'string') currentLocation = currentLocation.trim();
 		if (currentLocation) {
 			fetchWeather(window.currentLocation);
 			haveCurrentLocation = true;

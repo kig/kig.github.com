@@ -132,10 +132,10 @@ var setWeather = function(elapsed) {
 		const dayTemps = fc.list.filter(l => /(12|13|14):00:00.000Z$/.test(new Date((l.dt + fc.city.timezone) * 1e3).toISOString()));
 		const forecastElem = document.getElementById('forecast');
 		forecastElem.innerHTML = '';
+		const days = {};
+		const myDay = new Date((c.weatherData.dt + c.weatherData.timezone) * 1e3).toISOString().split("T")[0];
+		days[myDay] = {minTemp: c.weatherData.main.feels_like, maxTemp: c.weatherData.main.feels_like, weatherCode: c.weatherData.weather[0].id};
 		if (fc.list.length > 0) {
-			const days = {};
-			const myDay = new Date((c.weatherData.dt + c.weatherData.timezone) * 1e3).toISOString().split("T")[0];
-			days[myDay] = {minTemp: c.weatherData.main.feels_like, maxTemp: c.weatherData.main.feels_like, weatherCode: c.weatherData.weather[0].id};
 			fc.list.forEach(l => {
 				const itemDay = new Date((l.dt + fc.city.timezone) * 1e3).toISOString().split("T")[0];
 				if (!days[itemDay]) {
@@ -145,10 +145,10 @@ var setWeather = function(elapsed) {
 				if (days[itemDay].maxTemp < l.main.feels_like) days[itemDay].maxTemp = l.main.feels_like;
 				if (weatherCodeCompare(days[itemDay].weatherCode, l.weather[0].id) > 1) days[itemDay].weatherCode = l.weather[0].id;
 			});
-			minTempEl.textContent = formatTemperature(days[myDay].minTemp);
-			maxTempEl.textContent = formatTemperature(days[myDay].maxTemp);
-			weatherIcon.className = 'wi wi-owm-' + days[myDay].weatherCode;
 		}
+		minTempEl.textContent = formatTemperature(days[myDay].minTemp);
+		maxTempEl.textContent = formatTemperature(days[myDay].maxTemp);
+		weatherIcon.className = 'wi wi-owm-' + days[myDay].weatherCode;
 		dayTemps.forEach(f => {
 			const itemDay = new Date((f.dt + fc.city.timezone) * 1e3).toISOString().split("T")[0];
 			const day = days[itemDay];

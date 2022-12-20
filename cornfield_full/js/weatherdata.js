@@ -218,20 +218,20 @@ function addCityIfNeeded(name) {
 
 function fetchMyLocationWeather() {
 	document.getElementById('my-location').blur();
-	document.getElementById('my-location').classList.add('locating');
+	document.getElementById('weather-data').classList.add('locating');
 	if (navigator.geolocation) {
 		navigator.geolocation.getCurrentPosition(
 			function (pos) {
 				window.geolocationFetched = true;
 				window.currentLocation = pos.coords;
-				document.getElementById('my-location').classList.remove('locating');
+				document.getElementById('weather-data').classList.remove('locating');
 				document.body.classList.add('current-location');
 				fetchWeather(pos.coords);
 				window.localStorage.currentLocation = JSON.stringify(pos.coords);
 			},
 			function (error) {
 				// Couldn't get location from geolocation, let's go back to geoip.
-				document.getElementById('my-location').classList.remove('locating');
+				document.getElementById('weather-data').classList.remove('locating');
 				document.body.classList.add('current-location');
 				fetchGeoIPWeather();
 			},
@@ -243,7 +243,7 @@ function fetchMyLocationWeather() {
 		);
 	} else {
 		// Couldn't get location from geolocation, let's go back to geoip.
-		document.getElementById('my-location').classList.remove('locating');
+		document.getElementById('weather-data').classList.remove('locating');
 		document.body.classList.add('current-location');
 		fetchGeoIPWeather();
 	}

@@ -120,6 +120,7 @@ var setWeather = function(elapsed) {
 		maxTempEl.className = 'max-temperature';
 
 		const tempEl = document.getElementById('temperature');
+		tempEl.innerHTML = '';
 		tempEl.append(weatherIcon, temperatureTextEl, maxTempEl, minTempEl);
 		document.getElementById('cloud-cover').innerHTML = Math.floor(c.cloudCover*100) + '% <i class="wi wi-cloudy"></i>';
 		document.getElementById('wind-speed').innerHTML = windString + ' <i class="wi wi-strong-wind"></i>';

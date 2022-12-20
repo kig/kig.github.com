@@ -6,6 +6,53 @@ var wsOffTarget = 0;
 var windDirection = 0, windStrength = 0;
 var weatherTimer = 0;
 
+const weatherCodePriority = [
+	233,
+	202,
+	201,
+	200,
+	232,
+	231,
+	230,
+	602,
+	612,
+	511,
+	502,
+	522,
+	623,
+	622,
+	611,
+	610,
+	601,
+	621,
+	501,
+	711,
+	731,
+	751,
+	521,
+	600,
+	302,
+	500,
+	520,
+	301,
+	300,
+	700,
+	721,
+	741,
+	804,
+	800,
+	803,
+	802,
+	801,
+	900,
+];
+
+function weatherCodeCompare(a, b) {
+	const categoryPriority = weatherCodePriority.indexOf(a) - weatherCodePriority.indexOf(b);
+	if (categoryPriority !== 0) return categoryPriority;
+	return a - b;
+}
+
 var useUSAUnits = /^en-US$/i.test(navigator.language);
 if (localStorage.useUSAUnits !== undefined) {
 	useUSAUnits = localStorage.useUSAUnits === 'true';
@@ -35,6 +82,16 @@ function fractSample2DArray(arr, i, idx) {
 	return arr[Math.max(0,Math.min(arr.length-1, Math.floor(idx)))][i] * (1-t) + arr[Math.max(0,Math.min(arr.length-1, Math.ceil(idx)))][i] * t;
 }
 
+function formatTemperature(temperatureCelsius) {
+	if (useUSAUnits) return Math.round(temperatureCelsius * 1.8 + 32) + '°F';
+	return Math.round(temperatureCelsius) + '°C';
+}
+
+function formatWindSpeed(windSpeedMetersPerSecond) {
+	if (useUSAUnits) return  Math.floor(windSpeedMetersPerSecond * 2.237) + ' mph';
+	return Math.floor(windSpeedMetersPerSecond*10)/10 + ' m/s';
+}
+
 var setWeather = function(elapsed) {
 	weatherTimer += elapsed;
 	var fade = 0;
@@ -47,14 +104,23 @@ var setWeather = function(elapsed) {
 		weatherUpdateTriggered = false;
 		const c = cities[cityNames[currentCityIndex]] || cities[cityNames[targetCityIndex]] || zeroCity;
 		document.getElementById('city').value = (cityNames[currentCityIndex] || cityNames[targetCityIndex] || "").split(",")[0];
-		var tempString = Math.round(c.temperature) + '°C';
-		var windString = Math.floor(c.windStrength*10)/10 + ' m/s';
-		if (useUSAUnits) {
-			tempString = Math.round(c.temperature * 1.8 + 32) + '°F';
-			windString = Math.floor(c.windStrength * 2.237) + ' mph';
-		}
+		const tempString = formatTemperature(c.temperature);
+		const windString = formatWindSpeed(c.windStrength);
 
-		document.getElementById('temperature').textContent = tempString;
+		const weatherIcon = document.createElement('span');
+		weatherIcon.className = 'wi wi-owm-' + c.weatherData.weather[0].id;
+
+		const temperatureTextEl = document.createElement('span');
+		temperatureTextEl.textContent = tempString;
+
+		const minTempEl = document.createElement('span');
+		minTempEl.className = 'min-temperature';
+
+		const maxTempEl = document.createElement('span');
+		maxTempEl.className = 'max-temperature';
+
+		const tempEl = document.getElementById('temperature');
+		tempEl.append(weatherIcon, temperatureTextEl, maxTempEl, minTempEl);
 		document.getElementById('cloud-cover').innerHTML = Math.floor(c.cloudCover*100) + '% <i class="wi wi-cloudy"></i>';
 		document.getElementById('wind-speed').innerHTML = windString + ' <i class="wi wi-strong-wind"></i>';
 		document.getElementById('wind-direction-arrow').transform.baseVal.getItem(0).setRotate(c.windDirection, 7.5, 7.5);
@@ -66,12 +132,33 @@ var setWeather = function(elapsed) {
 		const dayTemps = fc.list.filter(l => /(12|13|14):00:00.000Z$/.test(new Date((l.dt + fc.city.timezone) * 1e3).toISOString()));
 		const forecastElem = document.getElementById('forecast');
 		forecastElem.innerHTML = '';
+		if (fc.list.length > 0) {
+			const days = {};
+			const myDay = new Date((c.weatherData.weatherData.dt + c.weatherData.timeZone) * 1e3).toISOString().split("T")[0];
+			days[myDay] = {minTemp: c.weatherData.main.feels_like, maxTemp: c.weatherData.main.feels_like, weatherCode: c.weatherData.weather[0].id};
+			fc.list.forEach(l => {
+				const itemDay = new Date((l.dt + fc.city.timeZone) * 1e3).toISOString().split("T")[0];
+				if (!days[itemDay]) {
+					days[itemDay] = {minTemp: l.main.feels_like, maxTemp: l.main.feels_like};
+				}
+				if (days[itemDay].minTemp > l.main.feels_like) days[itemDay].minTemp = l.main.feels_like;
+				if (days[itemDay].maxTemp < l.main.feels_like) days[itemDay].maxTemp = l.main.feels_like;
+				if (weatherCodeCompare(days[itemDay].weatherCode, l.weather[0].id) > 1) days[itemDay].weatherCode = l.weather[0].id;
+			});
+			minTempEl.textContent = formatTemperature(days[myDay].minTemp);
+			maxTempEl.textContent = formatTemperature(days[myDay].maxTemp);
+			weatherIcon.className = 'wi wi-owm-' + days[myDay].weatherCode;
+		}
 		dayTemps.forEach(f => {
+			const itemDay = new Date((f.dt + fc.city.timeZone) * 1e3).toISOString().split("T")[0];
+			const day = days[itemDay];
 			const span = document.createElement('span');
-			const tempString = useUSAUnits ? Math.round(f.main.temp * 1.8 + 32) + '°F' : Math.round(f.main.temp) + '°C';
+			const tempString = formatTemperature(f.main.temp);
+			const minTempString = formatTemperature(day.minTemp);
+			const maxTempString = formatTemperature(day.maxTemp);
 			span.textContent = new Date((f.dt + fc.city.timezone) * 1e3).toLocaleDateString(navigator.language, { weekday: 'short' }) + ' ' + tempString;
 			const icon = document.createElement('span');
-			icon.className = 'weather-icon wi wi-owm-' + f.weather[0].id;
+			icon.className = 'weather-icon wi wi-owm-' + day.weatherCode;
 			span.appendChild(icon);
 			forecastElem.appendChild(span);
 		});

@@ -139,6 +139,10 @@ var updateWeather = function (cityName, weatherData) {
 
 	document.getElementById('location').value = cityName.split(",")[0];
 
+	if (currentCityIndex === targetCityIndex) {
+		weatherUpdateTriggered = true;
+	}
+
 	if (!document.body.classList.contains('loaded')) {
 		document.body.classList.add('loaded');
 	}

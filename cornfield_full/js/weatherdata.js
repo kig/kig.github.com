@@ -204,6 +204,8 @@ document.getElementById('location').onchange = function (ev) {
 document.getElementById('location').onfocus = function (ev) {
 	document.body.classList.remove('error');
 	dataLayer.push({event: 'location-field', action: 'focus'});
+	ev.target.value = ev.target.value;
+	ev.target.setSelectionRange(0, ev.target.value.length);
 };
 
 document.getElementById('my-location').onclick = function (ev) {

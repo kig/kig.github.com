@@ -88,8 +88,8 @@ function formatTemperature(temperatureCelsius) {
 }
 
 function formatWindSpeed(windSpeedMetersPerSecond) {
-	if (useUSAUnits) return  Math.floor(windSpeedMetersPerSecond * 2.237) + ' mph';
-	return Math.floor(windSpeedMetersPerSecond*10)/10 + ' m/s';
+	if (useUSAUnits) return Math.round(windSpeedMetersPerSecond * 2.237) + ' mph';
+	return Math.round(windSpeedMetersPerSecond) + ' m/s';
 }
 
 var setWeather = function(elapsed) {

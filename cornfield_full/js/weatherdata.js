@@ -137,7 +137,7 @@ var updateWeather = function (cityName, weatherData) {
 	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3 / 4);
 	c.forecast = weatherData.forecast || zeroCity.forecast;
 
-	document.getElementById('location').value = cityName.split(",")[0];
+	document.getElementById('location').value = cityName;
 
 	if (currentCityIndex === targetCityIndex) {
 		weatherUpdateTriggered = true;

@@ -119,13 +119,31 @@
 				font-size: 24px;
 				text-align: right;
 				box-sizing: border-box;
-				transition: 0.1s;
+				transition: 0.1s opacity, 0.5s transform;
 				/* text-shadow: 0px 0px 30px rgba(0,0,0,0.2); */
 				z-index: 15;
 				opacity: 0.8;
 				margin-top: env(safe-area-inset-top);
 				margin-right: env(safe-area-inset-right);
 				min-width: 200px;
+			}
+
+			body {
+				perspective: 100vw;
+			}
+
+			#weather-data {
+				transform-origin: 50% 50%;
+			}
+			#weather-data.transition-start {
+				transition: 0;
+				transform: rotate3d(0.3, 1, 0.1, -35deg) translateX(44vw) translateY(5vh);
+			}
+			#weather-data.transition-show {
+				transform: rotate3d(0.3, 1, 0.1, -35deg) translateX(-20vw) translateY(5vh);
+			}
+			#weather-data.transition-end {
+				transform: rotate3d(0.0, 1, 0.0, 35deg) translateX(-100vw) translateZ(-50vw)
 			}
 
 			#time-data {

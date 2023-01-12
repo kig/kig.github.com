@@ -182,6 +182,9 @@ var fetchWeather = function (cityName, isRefresh) {
 		}
 		weatherData.forecast = (parseInt(forecast.cod) === 200 ? forecast : zeroCity.forecast);
 		updateWeather(weatherData.name, weatherData);
+		if (!isRefresh) {
+			window.localStorage.currentLocation = JSON.stringify(cityName);
+		}
 	});
 };
 
@@ -197,7 +200,6 @@ document.getElementById('location').onchange = function (ev) {
 		ev.target.blur();
 		document.body.focus();
 		dataLayer.push({event: 'location-field', action: 'change'});
-		window.localStorage.currentLocation = JSON.stringify(cityName);
 	}
 };
 
@@ -235,7 +237,6 @@ function fetchMyLocationWeather() {
 				document.getElementById('weather-data').classList.remove('locating');
 				document.body.classList.add('current-location');
 				fetchWeather(pos.coords);
-				window.localStorage.currentLocation = JSON.stringify(pos.coords);
 			},
 			function (error) {
 				// Couldn't get location from geolocation, let's go back to geoip.
@@ -262,7 +263,6 @@ function fetchGeoIPWeather() {
 	if (window.geoIPData && !window.geolocationFetched) {
 		window.currentLocation = window.geoIPData;
 		fetchWeather(window.geoIPData);
-		window.localStorage.currentLocation = JSON.stringify(window.geoIPData);
 	} else {
 		fetchWeather(window.currentLocation);
 	}

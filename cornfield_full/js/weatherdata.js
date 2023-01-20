@@ -244,7 +244,7 @@ function fetchMyLocationWeather() {
 				window.currentLocation = pos.coords;
 				document.getElementById('weather-data').classList.remove('locating');
 				document.body.classList.add('current-location');
-				fetchWeather(pos.coords);
+				fetchWeather({latitude: pos.coords.latitude, longitude: pos.coords.longitude});
 			},
 			function (error) {
 				// Couldn't get location from geolocation, let's go back to geoip.

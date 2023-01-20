@@ -294,7 +294,8 @@ if (window.localStorage && window.localStorage.currentLocation) {
 		var currentLocation = JSON.parse(window.localStorage.currentLocation);
 		if (typeof currentLocation === 'string') currentLocation = currentLocation.trim();
 		if (currentLocation) {
-			fetchWeather(window.currentLocation);
+			window.currentLocation = currentLocation;
+			fetchWeather(currentLocation);
 			haveCurrentLocation = true;
 		}
 	} catch (e) {

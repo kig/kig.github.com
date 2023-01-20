@@ -301,6 +301,12 @@ if (window.localStorage && window.localStorage.currentLocation) {
 	try {
 		var currentLocation = JSON.parse(window.localStorage.currentLocation);
 		if (typeof currentLocation === 'string') currentLocation = currentLocation.trim();
+		else if (typeof currentLocation === 'object' && !(isNaN(currentLocation.latitude) || isNaN(currentLocation.longitude))) {
+			// Ok, we can use this object.
+		} else {
+			// Bad currentLocation in localStorage.
+			currentLocation = false;
+		}
 		if (currentLocation) {
 			window.currentLocation = currentLocation;
 			fetchWeather(currentLocation);

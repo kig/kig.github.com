@@ -149,6 +149,7 @@ var updateWeather = function (cityName, weatherData) {
 };
 
 var fetchInterval = 0;
+var firstFetch = true;
 
 var fetchWeather = function (cityName, isRefresh) {
 	// Update weather every hour
@@ -175,11 +176,18 @@ var fetchWeather = function (cityName, isRefresh) {
 		fetch(server+'forecast'+location+units+appid+lang+cacheTime).then(res => res.json())
 	]).then(([weatherData, forecast]) => {
 		if (parseInt(weatherData.cod) !== 200) {
-			document.body.classList.add('error');
-			document.getElementById('error').textContent = weatherData.message;
-			document.getElementById('weather-data').classList.remove('fade-out');
+			if (firstFetch) { // Failed initial fetchWeather, fall back to geoIP.
+				firstFetch = false;
+				fetchGeoIPWeather();
+			} else {
+				document.body.classList.add('error');
+				document.getElementById('error').textContent = weatherData.message;
+				document.getElementById('weather-data').classList.remove('fade-out');
+			}
+			firstFetch = false;
 			return;
 		}
+		firstFetch = false;
 		weatherData.forecast = (parseInt(forecast.cod) === 200 ? forecast : zeroCity.forecast);
 		updateWeather(weatherData.name, weatherData);
 		if (!isRefresh) {

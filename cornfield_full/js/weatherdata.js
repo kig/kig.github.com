@@ -278,11 +278,20 @@ function fetchGeoIPWeather() {
 
 window.currentLocation = { "country_code": "HK", "country_name": "Hong Kong", "region_code": "", "region_name": "", "city": "Central District", "zip_code": "", "time_zone": "Asia/Hong_Kong", "latitude": 22.291, "longitude": 114.15, "metro_code": 0 };
 
+function formatTimeString(t, lang) {
+	var ts = t.toLocaleTimeString(lang, {hour:'numeric', minute:'numeric'});
+	ts = ts.replace(/( [^\d]+)$/i, '<small>$1</small>');
+	ts = ts.replace(/^([^\d]+)(\d)/i, '<small>$1</small>$2');
+	ts = ts.replace(/(.)(<small>[^<]{5})/i, '$1<br>$2');
+	ts = ts.replace(/^(<small>[^<]{5}[^<]*<\/small>)/i, '$1<br>');
+	return ts;
+}
+
 var clock = document.getElementById('clock');
 var date = document.getElementById('date');
 setInterval(function() {
 	var t = new Date();
-	clock.textContent = t.toLocaleTimeString(navigator.language, {hour:'numeric', minute:'numeric'});
+	clock.textContent = formatTimeString(t, navigator.language);
 	date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
 }, 1000);
 var timeData = document.getElementById('time-data')

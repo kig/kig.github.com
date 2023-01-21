@@ -184,7 +184,6 @@ var fetchWeather = function (cityName, isRefresh) {
 				document.getElementById('error').textContent = weatherData.message;
 				document.getElementById('weather-data').classList.remove('fade-out');
 			}
-			firstFetch = false;
 			return;
 		}
 		firstFetch = false;
@@ -291,7 +290,7 @@ var clock = document.getElementById('clock');
 var date = document.getElementById('date');
 setInterval(function() {
 	var t = new Date();
-	clock.textContent = formatTimeString(t, navigator.language);
+	clock.innerHTML = formatTimeString(t, navigator.language);
 	date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
 }, 1000);
 var timeData = document.getElementById('time-data')

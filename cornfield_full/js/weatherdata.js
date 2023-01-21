@@ -281,8 +281,8 @@ function formatTimeString(t, lang) {
 	var ts = t.toLocaleTimeString(lang, {hour:'numeric', minute:'numeric'});
 	ts = ts.replace(/( [^\d]+)$/i, '<small>$1</small>');
 	ts = ts.replace(/^([^\d]+)(\d)/i, '<small>$1</small>$2');
-	ts = ts.replace(/(.)(<small>[^<]{5})/i, '$1<br>$2');
-	ts = ts.replace(/^(<small>[^<]{5}[^<]*<\/small>)/i, '$1<br>');
+	ts = ts.replace(/(.)<small>([^<]{6})/i, '$1<small class="end">$2');
+	ts = ts.replace(/^<small>([^<]{6}[^<]*<\/small>)/i, '<small class="start">$1');
 	return ts;
 }
 
@@ -291,7 +291,7 @@ var date = document.getElementById('date');
 setInterval(function() {
 	var t = new Date();
 	clock.innerHTML = formatTimeString(t, navigator.language);
-	date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
+	date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })
 }, 1000);
 var timeData = document.getElementById('time-data')
 timeData.ondblclick = function(ev) {

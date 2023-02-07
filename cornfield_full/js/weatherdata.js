@@ -145,9 +145,8 @@ var fetchWeather = function (cityName, isRefresh) {
 
 	return Promise.all([
 		fetch(server+'weather'+location+units+appid+lang+cacheTime).then(res => res.json()),
-		fetch(server+'air_pollution/forecast'+location+units+appid+lang+cacheTime).then(res => res.json()),
 		fetch(server+'forecast'+location+units+appid+lang+cacheTime).then(res => res.json())
-	]).then(([weatherData, airQuality, forecast]) => {
+	]).then(([weatherData, forecast]) => {
 		if (parseInt(weatherData.cod) !== 200) {
 			if (firstFetch) { // Failed initial fetchWeather, fall back to geoIP.
 				firstFetch = false;
@@ -161,22 +160,25 @@ var fetchWeather = function (cityName, isRefresh) {
 		}
 		firstFetch = false;
 		weatherData.forecast = (parseInt(forecast.cod) === 200 ? forecast : zeroCity.forecast);
-		if (airQuality) {
-			weatherData.airQuality = airQuality.list[0];
-			airQuality.list.forEach((q,i) => {
-				if (weatherData.forecast.list[i]) {
-					weatherData.forecast.list[i].airQuality = q;
-				}
+		var coordsLocation = '?lat=' + encodeURIComponent(weatherData.coord.lat) + '&lon=' + encodeURIComponent(weatherData.coord.lon);
+		fetch(server+'air_pollution/forecast'+coordsLocation+units+appid+lang+cacheTime).then(res => res.json()).then(airQuality => {
+			if (airQuality && !airQuality.cod) {
+				weatherData.airQuality = airQuality.list[0];
+				airQuality.list.forEach((q,i) => {
+					if (weatherData.forecast.list[i]) {
+						weatherData.forecast.list[i].airQuality = q;
+					}
+				});
+			}
+			// Fill in possibly missing airQuality data.
+			weatherData.forecast.list.forEach(l => {
+				if (!l.airQuality) l.airQuality = {main: {aqi: -1}};
 			});
-		}
-		// Fill in possibly missing airQuality data.
-		weatherData.forecast.list.forEach(l => {
-			if (!l.airQuality) l.airQuality = {main: {aqi: -1}};
+			updateWeather(weatherData.name, weatherData);
+			if (!isRefresh) {
+				window.localStorage.currentLocation = JSON.stringify(cityName);
+			}
 		});
-		updateWeather(weatherData.name, weatherData);
-		if (!isRefresh) {
-			window.localStorage.currentLocation = JSON.stringify(cityName);
-		}
 	});
 };
 

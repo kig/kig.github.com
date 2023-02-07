@@ -155,8 +155,8 @@ var setWeather = function(elapsed) {
 				}
 			});
 		}
-		minTempEl.textContent = formatTemperature(days[myDay].minTemp);
-		maxTempEl.textContent = formatTemperature(days[myDay].maxTemp);
+		// minTempEl.textContent = formatTemperature(days[myDay].minTemp);
+		// maxTempEl.textContent = formatTemperature(days[myDay].maxTemp);
 		weatherIcon.className = 'wi wi-owm-' + days[myDay].weatherCode;
 		dayTemps.forEach(f => {
 			const itemDay = new Date((f.dt + fc.city.timezone) * 1e3).toISOString().split("T")[0];

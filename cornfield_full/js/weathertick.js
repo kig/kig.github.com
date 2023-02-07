@@ -141,7 +141,7 @@ var setWeather = function(elapsed) {
 		forecastElem.innerHTML = '';
 		const days = {};
 		const myDay = new Date((c.weatherData.dt + c.weatherData.timezone) * 1e3).toISOString().split("T")[0];
-		days[myDay] = {minTemp: c.weatherData.main.temp, maxTemp: c.weatherData.main.temp, weatherCode: c.weatherData.weather[0].id};
+		days[myDay] = {minTemp: c.weatherData.main.temp, maxTemp: c.weatherData.main.temp, maxAQI: c.weatherData.airQuality.main.aqi, weatherCode: c.weatherData.weather[0].id};
 		if (fc.list.length > 0) {
 			fc.list.forEach(l => {
 				const itemDay = new Date((l.dt + fc.city.timezone) * 1e3).toISOString().split("T")[0];

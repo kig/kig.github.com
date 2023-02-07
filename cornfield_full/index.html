@@ -284,10 +284,10 @@
 				font-size: 120px;
 				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
 				font-weight: bold;
-				margin-bottom: -17px;
+				margin-bottom: 0px;
 				margin-top: -3px;
 				width: 600px;
-				height: 144px;
+				height: 196px;
 				overflow-y: hidden;
 				overflow-x: visible;
 			}
@@ -306,6 +306,84 @@
 			.max-temperature {
 				position: absolute;
 				margin-top: 19px;
+			}
+
+			.air-quality {
+				display: block;
+				font-size: 20px;
+				text-align: right;
+				clear: both;
+			}
+
+			#temperature .aqi--1 {
+				border-bottom: 1px solid hsl(0deg 0% 90%);
+				color: transparent;
+			}
+			#temperature .aqi-0 {
+				border-bottom: 1px solid hsl(0deg 0% 90%);
+			}
+			#temperature .aqi-1 {
+				border-bottom: 6px solid hsl(143deg 90% 49%);
+			}
+			#temperature .aqi-2 {
+				border-bottom: 6px solid hsl(78deg 90% 49%);
+			}
+			#temperature .aqi-3 {
+				border-bottom: 6px solid hsl(50deg 90% 49%);
+			}
+			#temperature .aqi-4 {
+				border-bottom: 6px solid hsl(25deg 90% 49%);
+			}
+			#temperature .aqi-5 {
+				border-bottom: 6px solid hsl(280deg 90% 49%);
+			}
+
+			.air-quality {
+				font-size: 20px;
+				width: 287px;
+				margin: 0;
+				position: absolute;
+				right: 0;
+			}
+
+			#forecast .weather-icon::after {
+				content: "";
+				width: 10px;
+				height: 10px;
+				display: inline-block;
+				position: absolute;
+				margin-left: 9px;
+				margin-top: -27px;
+				border-radius: 5px;
+				font-size: 16px;
+				text-indent: 11px;
+				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
+			}
+
+			#forecast .weather-icon.aqi--1::after {
+				background: transparent;
+			}
+			#forecast .weather-icon.aqi-0::after {
+				background: hsl(0deg 0% 90%);
+			}
+			#forecast .weather-icon.aqi-1::after {
+				background: hsl(143deg 90% 49%);
+			}
+			#forecast .weather-icon.aqi-2::after {
+				background: hsl(78deg 90% 49%);
+			}
+			#forecast .weather-icon.aqi-3::after {
+				background: hsl(50deg 90% 49%);
+			}
+			#forecast .weather-icon.aqi-4::after {
+				background: hsl(25deg 90% 49%);
+			}
+			#forecast .weather-icon.aqi-5::after {
+				background: hsl(280deg 90% 49%);
+			}
+
+			#forecast span:last-child .weather-icon::after {
+				content: "AQI";
 			}
 
 			#weather-desc-container {
@@ -629,7 +707,14 @@
 			}
 			@media (max-width: 900px) {
 				#time-data {
-					display: none;
+					top: 13px;
+					transform: scale(0.15);
+					transform-origin: 0% 0%;
+					left: 10px;
+					width: 1000px;
+				}
+				#date {
+				    font-size: 80px;
 				}
 			}
 			@media (max-width: 800px) {
@@ -643,9 +728,6 @@
 					transform: scale(0.65);
 				    transform-origin: 100% 0%;
 					min-width: 380px;
-				}
-				#time-data {
-					display: none;
 				}
 			}
 			@media (max-height: 278px) {
@@ -711,7 +793,6 @@ Moscow</textarea><br>
 			<div id="error"></div>
 			<div id="city-container"><div class="spinner"></div><input id="location" value="" aria-label="Location" spellcheck="false"></input><span id="my-location"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><circle id="surround" fill="none" stroke="#000000" stroke-miterlimit="10" cx="7.6" cy="7.5" r="5.4"/><rect x="7" width="1" height="1.9"/><rect x="7" y="13.1" width="1" height="1.9"/><rect x="13.1" y="7" width="1.9" height="1"/><rect x="0" y="7" width="1.9" height="1"/><circle id="center" cx="7.6" cy="7.5" r="3.5"/></svg></span></div>
 			<div id="temperature"></div>
-			<hr>
 			<div id="forecast"></div>
 			<div id="weather-desc-container"><span id="weather-desc"></span>, <span id="cloud-cover"><i class="wi wi-cloudy"></i></span></div>
 			<div id="wind-data"><span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='15' width='15' viewBox="0 0 15 15"><g id='wind-direction-arrow' transform='rotate(220 7.5 7.5)'><polygon points="0.2,7.4 14.8,11.1 11.4,7.4 14.8,3.7 " fill="white"/></g></svg></span><span id="wind-speed"><i class="wi wi-strong-wind"></i></span></div>

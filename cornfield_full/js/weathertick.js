@@ -113,15 +113,21 @@ var setWeather = function(elapsed) {
 		const temperatureTextEl = document.createElement('span');
 		temperatureTextEl.textContent = tempString;
 
+		/*
 		const minTempEl = document.createElement('span');
 		minTempEl.className = 'min-temperature';
 
 		const maxTempEl = document.createElement('span');
 		maxTempEl.className = 'max-temperature';
+		*/
+
+		const aqEl = document.createElement('div');
+		aqEl.className = 'air-quality aqi-' + c.weatherData.airQuality.main.aqi;
+		aqEl.textContent = 'AQI ' + c.weatherData.airQuality.main.aqi;
 
 		const tempEl = document.getElementById('temperature');
 		tempEl.innerHTML = '';
-		tempEl.append(weatherIcon, temperatureTextEl, maxTempEl, minTempEl);
+		tempEl.append(weatherIcon, temperatureTextEl, /* maxTempEl, minTempEl, */ aqEl);
 		document.getElementById('cloud-cover').innerHTML = Math.floor(c.cloudCover*100) + '% <i class="wi wi-cloudy"></i>';
 		document.getElementById('wind-speed').innerHTML = windString + ' <i class="wi wi-strong-wind"></i>';
 		document.getElementById('wind-direction-arrow').transform.baseVal.getItem(0).setRotate(c.windDirection, 7.5, 7.5);
@@ -140,10 +146,11 @@ var setWeather = function(elapsed) {
 			fc.list.forEach(l => {
 				const itemDay = new Date((l.dt + fc.city.timezone) * 1e3).toISOString().split("T")[0];
 				if (!days[itemDay]) {
-					days[itemDay] = {minTemp: l.main.temp, maxTemp: l.main.temp, weatherCode: l.weather[0].id};
+					days[itemDay] = {minTemp: l.main.temp, maxTemp: l.main.temp, maxAQI: l.airQuality.main.aqi, weatherCode: l.weather[0].id};
 				} else {
 					if (days[itemDay].minTemp > l.main.temp) days[itemDay].minTemp = l.main.temp;
 					if (days[itemDay].maxTemp < l.main.temp) days[itemDay].maxTemp = l.main.temp;
+					if (days[itemDay].maxAQI < l.airQuality.main.aqi) days[itemDay].maxAQI = l.airQuality.main.aqi;
 					if (weatherCodeCompare(days[itemDay].weatherCode, l.weather[0].id) > 0) days[itemDay].weatherCode = l.weather[0].id;
 				}
 			});
@@ -160,7 +167,7 @@ var setWeather = function(elapsed) {
 			const maxTempString = formatTemperature(day.maxTemp);
 			span.textContent = new Date((f.dt + fc.city.timezone) * 1e3).toLocaleDateString(navigator.language, { weekday: 'short' }) + ' ' + maxTempString;
 			const icon = document.createElement('span');
-			icon.className = 'weather-icon wi wi-owm-' + day.weatherCode;
+			icon.className = 'weather-icon wi wi-owm-' + day.weatherCode + ' aqi-' + day.maxAQI;
 			span.appendChild(icon);
 			span.appendChild(document.createTextNode(" " + minTempString));
 			forecastElem.appendChild(span);

@@ -1,65 +1,37 @@
 /*
 
-To set up a weather visualisation, you create a W3.Visualiser object and feed it weather data using
-W3.Visualiser#setWeatherForLocation.
+Tasks
 
-If you want to cycle through multiple locations, use W3.Visualiser#setLocation whenever
-you wish to change the location. If you haven't set the weather for the set location yet,
-you'll get blank weather with a loading screen. When you set the weather for the current location,
-the visualiser animates to the newly set weather data.
+	- [] Wanted utility features
+		- [] Multiple locations
+			- [] Location list editor
+			- [] My Location
+			- [] Swipe to navigate between locations
+			- [] Slideshow mode to cycle through locations
+		- [] Show current time at location
+		- [] AQI - air quality data for locations
+		- [] Mobile layout for time display
+		- [] Sunrise & sunset times
 
-If you don't call setLocation, the weather visualiser will display the weather for the location
-specified in the first call to W3.Visualiser#setWeatherForLocation.
+	- [] Local features (i.e. no API, have to do custom integrations)
+		- [] Weather signals (typhoons, fire hazard, cold/hot weather warning, rain signals)
+		- [] Textual weather report
+		- [] Rain radar (... how to make it pretty? Do it like the weather map artwork?)
 
+	- [] In a world where everything takes no time, this functionality would be fun to explore.
+		- [] Location info
+		- [] Event info
+		- [] Transportation
+		- [] Exercise info
+		- [] Food
+		- [] Weather Pay
+		- [] Weather Store
+		- [] Weather Marketplace
+		- [] wPhone
+		- [] Monopoly on Weather
+		- [] Weather Tax
+		- [] Every breath you take should be a financial transaction and we should take a 30% cut of it
 
-For convenience, the W3.WeatherSource class implements a handy way to load and periodically update
-weather data for a given list of locations.
-
-
-The W3.Visualiser comes with a number of plugins for adding graphics effects to the visualiser
-and for controlling the visualisation.
-
-
-The bundled graphics plugins are:
-
-	- W3.LakeBackground, the default background that's set on a placid lake with sun and clouds driven by weather data.
-	- W3.Cornfield, a randomly-generated field of corn growing out of the lake. The corn sways with the wind. The height and density of the corn can be controlled.
-	- W3.Birds, a flock of birds flying around when the weather is fine. The birds can be scared away or attracted to the screen.
-	- W3.Rain, a rain particle field that reacts to the rain and wind data.
-	- W3.Stars, a star particle field that appears on fine nights.
-	- W3.Fluff, a particle field of flying fluff that appears on fine days.
-
-
-The bundled controller plugins are:
-
-	- W3.Kinect, implements a couple of Kinect-driven gestures for controlling the visualiser.
-	- W3.Microphone, implements a simple Web Audio API -based microphone control to monitor the ambient volume.
-	- W3.Keyboard, simple keyboard controls.
-	- W3.Touch, touch controls.
-
-
-
-var vis = new WeatherVisualiser(document.body);
-var weatherSource = new WeatherSource();
-
-var locations = [currentLocation].concat(cities);
-
-locations.forEach(l => weatherSource.addLocation(l));
-vis.setLocation(currentLocation);
-
-weatherSource.addEventListener('load', function(ev) {
-	vis.setWeatherForLocation(ev.data.location, ev.data.weather);
-});
-
-weatherSource.updateFrequency = 15 * 60 * 1000;
-weatherSource.startUpdating();
-
-var locationDuration = 30 * 1000;
-
-setInterval(function() {
-	locationIndex = (locationIndex + 1) % locations.length;
-	vis.setLocation(locations[locationIndex]);
-}, locationDuration);
 
 */
 
@@ -173,8 +145,9 @@ var fetchWeather = function (cityName, isRefresh) {
 
 	return Promise.all([
 		fetch(server+'weather'+location+units+appid+lang+cacheTime).then(res => res.json()),
+		fetch(server+'air_pollution/forecast'+location+units+appid+lang+cacheTime).then(res => res.json()),
 		fetch(server+'forecast'+location+units+appid+lang+cacheTime).then(res => res.json())
-	]).then(([weatherData, forecast]) => {
+	]).then(([weatherData, airQuality, forecast]) => {
 		if (parseInt(weatherData.cod) !== 200) {
 			if (firstFetch) { // Failed initial fetchWeather, fall back to geoIP.
 				firstFetch = false;
@@ -188,6 +161,18 @@ var fetchWeather = function (cityName, isRefresh) {
 		}
 		firstFetch = false;
 		weatherData.forecast = (parseInt(forecast.cod) === 200 ? forecast : zeroCity.forecast);
+		if (airQuality) {
+			weatherData.airQuality = airQuality.list[0];
+			airQuality.list.forEach((q,i) => {
+				if (weatherData.forecast.list[i]) {
+					weatherData.forecast.list[i].airQuality = q;
+				}
+			});
+		}
+		// Fill in possibly missing airQuality data.
+		weatherData.forecast.list.forEach(l => {
+			if (!l.airQuality) l.airQuality = {main: {aqi: -1}};
+		});
 		updateWeather(weatherData.name, weatherData);
 		if (!isRefresh) {
 			window.localStorage.currentLocation = JSON.stringify(cityName);
@@ -290,6 +275,11 @@ var clock = document.getElementById('clock');
 var date = document.getElementById('date');
 setInterval(function() {
 	var t = new Date();
+	if (cityNames[currentCityIndex]) {
+		var tzOff = cities[cityNames[currentCityIndex]].weatherData.timezone;
+		tzOff += t.getTimezoneOffset() * 60;
+		t = new Date(Date.now() + tzOff * 1000);
+	}
 	clock.innerHTML = formatTimeString(t, navigator.language);
 	date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })
 }, 1000);

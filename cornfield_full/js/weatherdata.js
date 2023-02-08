@@ -8,9 +8,9 @@ Tasks
 			- [] My Location
 			- [] Swipe to navigate between locations
 			- [] Slideshow mode to cycle through locations
-		- [] Show current time at location
-		- [] AQI - air quality data for locations
-		- [] Mobile layout for time display
+		- [x] Show current time at location
+		- [x] AQI - air quality data for locations
+		- [x] Mobile layout for time display
 		- [] Sunrise & sunset times
 
 	- [] Local features (i.e. no API, have to do custom integrations)

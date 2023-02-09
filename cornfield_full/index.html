@@ -251,7 +251,7 @@
 			#my-location {
 				position: absolute;
 				right: -35px;
-				top: 4px;
+				top: 2px;
 				transition: 0.5s;
 				opacity: 0.5;
 				cursor: pointer;
@@ -674,7 +674,7 @@
 				font-size: 120px;
 				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
 				font-weight: 700;
-				margin-bottom: -17px;
+				margin-bottom: 2px;
 				margin-top: -3px;
 				text-transform: uppercase;
 			}
@@ -694,6 +694,97 @@
 			#time-data small {
 				font-size: 50%;
 			}
+
+			#sunrise, #sunset {
+				font-size: 24px;
+				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: 700;
+				margin-bottom: 3px;
+				margin-top: -3px;
+				text-transform: uppercase;
+				display: inline-block;
+				margin-right: 0px;
+			}
+
+			#sunrise .weather-icon, #sunset .weather-icon {
+				font-size: 20px;
+			}
+
+			#sunrise span, #sunset span {
+				display: inline-block;
+				text-align: center;
+				margin-right: 8px;
+			}
+
+			#city-list {
+				display: none;
+				text-transform: uppercase;
+				margin-top: 0;
+			}
+
+			#city-list ul {
+				list-style-type: none;
+			}
+
+			#city-list li {
+				margin-bottom: 36px;
+			}
+
+			#city-list li > span.temp {
+				width: 300px;
+			}
+
+			#city-list li > span {
+				display: inline-block;
+				width: 178px;
+			}
+
+			#city-list span.weather-icon {
+				margin-left: 6px;
+				margin-right: 12px;
+			}
+
+			#city-list .weather-icon::after {
+				margin-top: -2px;
+				margin-left: 1px;
+			}
+
+			#city-list li span.name {
+				min-width: 166px;
+			}
+
+			#city-list li:first-child span.name::after {
+				content: "";
+			}
+
+			#city-list span.name::after {
+				content: "-";
+				position: absolute;
+				margin-left: 15px;
+				font-size: 70px;
+				line-height: 23px;
+			}
+			#city-list .add-city {
+				background: #8cff8a;
+				color: black;
+				width: 129px;
+				display: inline-block;
+				font-size: 24px;
+				padding-right: 8px;
+				line-height: 24px;
+			}
+
+			.in-city-list .city-list {
+				display: block;
+			}
+
+			.in-city-list #weather-data {
+				display: none;
+			}
+			.in-city-list #time-data {
+				display: none;
+			}
+
 			@media (max-width: 1030px) {
 				#time-data {
 					top: 28px;
@@ -717,6 +808,19 @@
 				}
 				#date {
 				    font-size: 80px;
+				}
+				#sunrise, #sunset {
+					font-size: 90px;
+					font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
+					font-weight: 100;
+					margin-bottom: 14px;
+					margin-top: 0px;
+				}
+				#sunrise .weather-icon, #sunset .weather-icon {
+					font-size: 90px;
+				}
+				#sunrise span, #sunset span {
+					margin-right: 15px;
 				}
 			}
 			@media (max-width: 800px) {
@@ -776,6 +880,8 @@
 		<div id="time-data">
 			<div id="date"></div>
 			<div id="clock"></div>
+			<div id="sunrise"><span class="weather-icon wi wi-sunrise"></span><span class="time"></span></div>
+			<div id="sunset"><span class="weather-icon wi wi-sunset"></span><span class="time"></span></div>
 		</div>
 		<div id="settings-toggle">
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -256 1792 1792" fill="#fff"><g transform="matrix(1,0,0,-1,121.49153,1285.4237)"><path d="m 1024,640 q 0,106 -75,181 -75,75 -181,75 -106,0 -181,-75 -75,-75 -75,-181 0,-106 75,-181 75,-75 181,-75 106,0 181,75 75,75 75,181 z m 512,109 V 527 q 0,-12 -8,-23 -8,-11 -20,-13 l -185,-28 q -19,-54 -39,-91 35,-50 107,-138 10,-12 10,-25 0,-13 -9,-23 -27,-37 -99,-108 -72,-71 -94,-71 -12,0 -26,9 l -138,108 q -44,-23 -91,-38 -16,-136 -29,-186 -7,-28 -36,-28 H 657 q -14,0 -24.5,8.5 Q 622,-111 621,-98 L 593,86 q -49,16 -90,37 L 362,16 Q 352,7 337,7 323,7 312,18 186,132 147,186 q -7,10 -7,23 0,12 8,23 15,21 51,66.5 36,45.5 54,70.5 -27,50 -41,99 L 29,495 Q 16,497 8,507.5 0,518 0,531 v 222 q 0,12 8,23 8,11 19,13 l 186,28 q 14,46 39,92 -40,57 -107,138 -10,12 -10,24 0,10 9,23 26,36 98.5,107.5 72.5,71.5 94.5,71.5 13,0 26,-10 l 138,-107 q 44,23 91,38 16,136 29,186 7,28 36,28 h 222 q 14,0 24.5,-8.5 Q 914,1391 915,1378 l 28,-184 q 49,-16 90,-37 l 142,107 q 9,9 24,9 13,0 25,-10 129,-119 165,-170 7,-8 7,-22 0,-12 -8,-23 -15,-21 -51,-66.5 -36,-45.5 -54,-70.5 26,-50 41,-98 l 183,-28 q 13,-2 21,-12.5 8,-10.5 8,-23.5 z"/></g></svg>
@@ -795,6 +901,12 @@ Berlin
 Rio de Janeiro
 Moscow</textarea><br>
 			<input type="checkbox" id="show-weather" checked onclick="document.body.classList.toggle('weather')"> <label for="show-weather">Show weather text</label><br>
+		</div>
+		<div id="city-list">
+			<ul>
+				<li><span class="time">23.54</span><span class="temp"></span><span class="name">My Location</span></li>
+				<li class="add-city">+</li>
+			</ul>
 		</div>
 		<div id="weather-data" class="fade-out">
 			<div id="error"></div>

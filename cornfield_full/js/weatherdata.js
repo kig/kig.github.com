@@ -11,7 +11,7 @@ Tasks
 		- [x] Show current time at location
 		- [x] AQI - air quality data for locations
 		- [x] Mobile layout for time display
-		- [] Sunrise & sunset times
+		- [x] Sunrise & sunset times
 
 	- [] Local features (i.e. no API, have to do custom integrations)
 		- [] Weather signals (typhoons, fire hazard, cold/hot weather warning, rain signals)
@@ -275,12 +275,25 @@ function formatTimeString(t, lang) {
 
 var clock = document.getElementById('clock');
 var date = document.getElementById('date');
+var sunriseEl = document.getElementById('sunrise');
+var sunsetEl = document.getElementById('sunset');
 setInterval(function() {
 	var t = new Date();
 	if (cityNames[currentCityIndex]) {
-		var tzOff = cities[cityNames[currentCityIndex]].weatherData.timezone;
+		var wd = cities[cityNames[currentCityIndex]].weatherData;
+		var tzOff = wd.timezone;
 		tzOff += t.getTimezoneOffset() * 60;
 		t = new Date(Date.now() + tzOff * 1000);
+
+		var sunrise = new Date(wd.sys.sunrise * 1000 + tzOff * 1000);
+		var sunset = new Date(wd.sys.sunset * 1000 + tzOff * 1000);
+		sunriseEl.querySelector('.time').textContent = sunrise.toLocaleTimeString(navigator.language, {hour:'numeric', minute:'numeric'});
+		sunsetEl.querySelector('.time').textContent = sunset.toLocaleTimeString(navigator.language, {hour:'numeric', minute:'numeric'});
+		sunriseEl.style.visibility = 'visible';
+		sunsetEl.style.visibility = 'visible';
+	} else {
+		sunriseEl.style.visibility = 'hidden';
+		sunsetEl.style.visibility = 'hidden';
 	}
 	clock.innerHTML = formatTimeString(t, navigator.language);
 	date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })
@@ -329,3 +342,70 @@ if (!haveCurrentLocation) {
 	}	
 }
 
+/*
+
+function swipeLeft() {
+	const newCityIndex = (cityIndex+1) % cities.length;
+	cityIndex = newCityIndex;
+	fillNextCityElement(cities[cityIndex]);
+	animateNextCityInFromRight().then(() => {
+		fillCurrentCityElement(cities[cityIndex]);
+		clearNextCityElement();
+	});
+}
+
+function swipeRight() {
+	if (cityIndex === 0) cityIndex = cities.length;
+	const newCityIndex = (cityIndex-1);
+	cityIndex = newCityIndex;
+	fillNextCityElement(cities[cityIndex]);
+	animateNextCityInFromLeft().then(() => {
+		fillCurrentCityElement(cities[cityIndex]);
+		clearNextCityElement();
+	});
+}
+
+const listButton = window.getElementById('toggle-city-list');
+listButton.onclick = function(ev) {
+	document.body.classList.toggle('in-city-list');
+}
+
+const cityList = window.getElementById('city-list');
+
+const addButton = cityList.querySelector('.add-city');
+
+function wireUpCityEditor(el) {
+	// Make it draggable.
+	// Make the city name editable.
+	// Load city weather data when you finish editing.
+}
+
+cityList.onclick = function(ev) { 
+	const outside = (ev.clientX > ev.target.getBoundingClientRect().right);
+	const isMyLocation = ev.target.parentElement.parentElement.firstElementChild === ev.target.parentElement;
+	if (outside && !isMyLocation && ev.target.classList.contains('name')) {
+		// Remove this city
+		removeCity(this.textContent);
+		ev.target.parentElement.remove();
+	}
+}
+
+addButton.onclick = function(ev) {
+	const btn = this;
+	ev.preventDefault();
+	const el = btn.previousElementSibling.cloneNode(true);
+	wireUpCityEditor(el);
+	btn.parentElement.insertBefore(el, btn);
+};
+
+function addCityEditor(city) {
+
+}
+
+function addMyLocationCity() {
+
+}
+
+addMyLocationCity();
+cities.forEach(c => addCityEditor(c));
+*/

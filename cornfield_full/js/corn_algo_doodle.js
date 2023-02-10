@@ -17,6 +17,10 @@ if (hiDpi) {
 	document.body.appendChild(renderer.domElement);
 }
 
+renderer.domElement.addEventListener('webglcontextlost', function() {
+	document.location.reload();
+});
+
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0xffffff, 0.0);
 

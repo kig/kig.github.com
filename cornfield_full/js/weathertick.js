@@ -165,7 +165,8 @@ var setWeather = function(elapsed) {
 			const tempString = formatTemperature(f.main.temp);
 			const minTempString = formatTemperature(day.minTemp);
 			const maxTempString = formatTemperature(day.maxTemp);
-			span.textContent = new Date((f.dt + fc.city.timezone) * 1e3).toLocaleDateString(navigator.language, { weekday: 'short' }) + ' ' + maxTempString;
+			span.textContent = new Date((f.dt + fc.city.timezone) * 1e3).toLocaleDateString(navigator.language, { weekday: 'short' })
+			span.innerHTML += '<br>' + maxTempString;
 			const icon = document.createElement('span');
 			icon.className = 'weather-icon wi wi-owm-' + day.weatherCode + ' aqi-' + day.maxAQI;
 			span.appendChild(icon);

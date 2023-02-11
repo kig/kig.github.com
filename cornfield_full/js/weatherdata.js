@@ -141,6 +141,7 @@ var fetchWeather = function (cityName, isRefresh) {
 
 	if (!isRefresh) {
 		document.getElementById('weather-data').classList.add('fade-out');
+		document.getElementById('time-data').classList.add('fade-out');
 	}
 
 	return Promise.all([
@@ -155,6 +156,7 @@ var fetchWeather = function (cityName, isRefresh) {
 				document.body.classList.add('error');
 				document.getElementById('error').textContent = weatherData.message;
 				document.getElementById('weather-data').classList.remove('fade-out');
+				document.getElementById('time-data').classList.remove('fade-out');
 			}
 			return;
 		}

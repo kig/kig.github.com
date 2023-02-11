@@ -282,6 +282,7 @@ var setWeather = function(elapsed) {
 			wd.classList.remove('transition-0');
 		}
 		wd.classList.remove('fade-out');
+		document.getElementById('time-data').classList.remove('fade-out');
 
 	}
 
@@ -290,6 +291,7 @@ var setWeather = function(elapsed) {
 		fade = 0.5 - 0.5*Math.cos(fade*Math.PI);
 		if (currentCityIndex !== -1) {
 			document.getElementById('weather-data').classList.add('fade-out');
+			document.getElementById('time-data').classList.add('fade-out');
 		}
 	}
 

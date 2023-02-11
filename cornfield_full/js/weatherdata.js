@@ -279,7 +279,7 @@ var clock = document.getElementById('clock');
 var date = document.getElementById('date');
 var sunriseEl = document.getElementById('sunrise');
 var sunsetEl = document.getElementById('sunset');
-setInterval(function() {
+var updateClock = function() {
 	var t = new Date();
 	if (cityNames[currentCityIndex]) {
 		var wd = cities[cityNames[currentCityIndex]].weatherData;
@@ -294,7 +294,9 @@ setInterval(function() {
 	}
 	clock.innerHTML = formatTimeString(t, navigator.language);
 	date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })
-}, 1000);
+};
+setInterval(updateClock, 1000);
+updateClock();
 var timeData = document.getElementById('time-data')
 timeData.ondblclick = function(ev) {
 	ev.preventDefault();

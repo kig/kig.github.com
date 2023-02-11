@@ -704,7 +704,17 @@
 				text-transform: uppercase;
 				display: inline-block;
 				margin-right: 0px;
-				visibility: hidden;
+				overflow-y: hidden;
+				height: 28px;
+				opacity: 1;
+				transition: 0.3s;
+			}
+
+			.fade-out #sunrise,
+			.fade-out #sunset
+			{
+				opacity: 0 !important;
+				height: 0px !important;
 			}
 
 			#sunrise .weather-icon, #sunset .weather-icon {
@@ -817,6 +827,7 @@
 					margin-bottom: 14px;
 					margin-top: 0px;
 					display: block;
+					height: 106px;
 				}
 				#sunrise .weather-icon, #sunset .weather-icon {
 					font-size: 90px;

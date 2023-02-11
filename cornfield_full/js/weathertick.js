@@ -262,6 +262,19 @@ var setWeather = function(elapsed) {
 		// 	document.title = temp + ', ' + desc + ' - ' + cityNames[currentCityIndex] + ' Weather';
 		// }
 
+		var sunriseEl = document.getElementById('sunrise');
+		var sunsetEl = document.getElementById('sunset');
+
+		var t = new Date();
+		var tzOff = c.weatherData.timezone;
+		tzOff += t.getTimezoneOffset() * 60;
+		t = new Date(Date.now() + tzOff * 1000);
+
+		var sunrise = new Date(c.weatherData.sys.sunrise * 1000 + tzOff * 1000);
+		var sunset = new Date(c.weatherData.sys.sunset * 1000 + tzOff * 1000);
+		sunriseEl.querySelector('.time').textContent = sunrise.toLocaleTimeString(navigator.language, {hour:'numeric', minute:'numeric'});
+		sunsetEl.querySelector('.time').textContent = sunset.toLocaleTimeString(navigator.language, {hour:'numeric', minute:'numeric'});
+
 		const wd = document.getElementById('weather-data');
 		if (currentCityIndex === -1) {
 			wd.classList.add('transition-0');

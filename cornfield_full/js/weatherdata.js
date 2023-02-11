@@ -289,11 +289,6 @@ setInterval(function() {
 		var sunset = new Date(wd.sys.sunset * 1000 + tzOff * 1000);
 		sunriseEl.querySelector('.time').textContent = sunrise.toLocaleTimeString(navigator.language, {hour:'numeric', minute:'numeric'});
 		sunsetEl.querySelector('.time').textContent = sunset.toLocaleTimeString(navigator.language, {hour:'numeric', minute:'numeric'});
-		sunriseEl.style.visibility = 'visible';
-		sunsetEl.style.visibility = 'visible';
-	} else {
-		sunriseEl.style.visibility = 'hidden';
-		sunsetEl.style.visibility = 'hidden';
 	}
 	clock.innerHTML = formatTimeString(t, navigator.language);
 	date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })
@@ -343,6 +338,48 @@ if (!haveCurrentLocation) {
 }
 
 /*
+
+var wd = document.querySelector('#weather-data');
+var wd2 = wd.cloneNode(true);
+
+dragStart = { x: 0, y: 0, down: false };
+window.addEventListener('mousedown', ev => {
+	if (ev.target.tagName !== 'CANVAS') return;
+	dragStart.x = ev.clientX;
+	dragStart.y = ev.clientY;
+	dragStart.down = true;
+	ev.preventDefault();
+});
+
+window.addEventListener('mousemove', function (ev) {
+	if (!dragStart.down) return;
+	var dx = ev.clientX - dragStart.x;
+	wd.style.transition = wd2.style.transition = '0s';
+	wd.style.transform = 'translateX(' + (dx) + 'px)';
+	wd.style.opacity = 1 - Math.min(1, Math.max(0, dx * dx / (200 * 200)));
+	wd2.style.transform = 'translateX(' + (Math.abs(dx) >= 200 ? 0 : ((dx > 0 ? -1 : 1) * 200 + dx)) + 'px';
+	wd2.style.opacity = 1 - wd.style.opacity;
+});
+
+window.addEventListener('mouseup', function (ev) {
+	if (!dragStart.down) return;
+	var dx = ev.clientX - dragStart.x;
+	dragStart.down = false;
+	ev.preventDefault();
+	wd2.style.transition = '0.3s';
+	wd.style.transition = '0.3s';
+	if (Math.abs(dx) < 50) {
+		wd.style.opacity = 1;
+		wd2.style.opacity = 0;
+		wd.style.transform = 'translateX(0px)';
+		wd2.style.transform = 'translateX(' + (dx > 0 ? 200 : -200) + 'px)';
+	} else {
+		wd.style.opacity = 0;
+		wd2.style.opacity = 1;
+		wd.style.transform = 'translateX(' + (dx > 0 ? 200 : -200) + 'px)';
+		wd2.style.transform = 'translateX(0px)';
+	}
+});
 
 function swipeLeft() {
 	const newCityIndex = (cityIndex+1) % cities.length;

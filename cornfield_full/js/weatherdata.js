@@ -558,7 +558,7 @@ window.addEventListener('mousemove', function (ev) {
 	wd2.style.opacity = 1 - wd.style.opacity;
 	var idx = LocationList.locations.indexOf(wd.querySelector('#location').value);
 	var nextLocation = LocationList.locations[0];
-	var previousLocation = LocationList[LocationList.length - 1];
+	var previousLocation = LocationList.locations[LocationList.locations.length - 1];
 	if (idx !== -1) {
 		nextLocation = LocationList.locations[(idx+1) % LocationList.locations.length];
 		previousLocation = LocationList.locations[((idx-1) % LocationList.locations.length) + LocationList.locations.length];

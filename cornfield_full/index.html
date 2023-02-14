@@ -742,6 +742,8 @@
 				list-style: none;
 				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
 				color: white;
+				margin-top: env(safe-area-inset-top);
+			    margin-right: env(safe-area-inset-right);
 			}
 			.daytime #city-list {
 				color: black;
@@ -751,9 +753,6 @@
 			}
 			.show-add-location #add-location-form {
 				display: block;
-			}
-			#toggle-city-list {
-				cursor: pointer;
 			}
 
 			#city-list ul {
@@ -876,6 +875,8 @@
 				cursor: pointer;
 				opacity: 0.3;
 				transition: 0.2s;
+				margin-top: env(safe-area-inset-top);
+			    margin-right: env(safe-area-inset-right);
 			}
 
 			.in-city-list #toggle-city-list {

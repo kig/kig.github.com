@@ -14,6 +14,15 @@ Tasks
 
 	- Cool beans
 		- [] Slideshow mode to cycle through locations
+		- [] Animate the forecast graph
+			- [] Play button
+			- [] Sampling function to sample continuous time from the forecast
+			- [] Animate by setting the displayed weather to the sampled weather for the frame
+			- [] Display a scrubber line on the forecast graph
+		- [] AQI by hour forecast visualization (replace dot with a color strip under the icon?)
+		- [] AQI params in the forecast graph
+		- [] Zoom-scroll-full window overlay forecast graph
+		- [] Use SVG for forecast graph instead of canvas
 
 	- Local features (i.e. no API, have to do custom integrations)
 		- [] Weather signals (typhoons, fire hazard, cold/hot weather warning, rain signals)

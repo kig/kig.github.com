@@ -519,6 +519,9 @@ cityList.onmouseup = function(ev) {
 const addButton = cityList.querySelector('.add-city');
 addButton.onclick = function(ev) {
 	cityList.classList.toggle('show-add-location');
+	var newLocationInput = document.getElementById('new-location-name');
+	newLocationInput.focus();
+	newLocationInput.setSelectionRange(0, newLocationInput.value.length);
 };
 
 document.getElementById('add-location-form').onsubmit = function(ev) {
@@ -526,11 +529,13 @@ document.getElementById('add-location-form').onsubmit = function(ev) {
 	var location = document.getElementById('new-location-name').value;
 	if (location) {
 		LocationList.add(location);
-		document.getElementById('new-location-name').value = '';
+		var newLocationInput = document.getElementById('new-location-name');
+		newLocationInput.value = '';
+		newLocationInput.focus();
 	}
 }
 
-var wd = document.querySelector('#weather-data');
+var wd = document.querySelector('#weather-data-container');
 var wd2 = wd.cloneNode(true);
 
 dragStart = { x: 0, y: 0, down: false };
@@ -552,10 +557,14 @@ window.addEventListener('mousemove', function (ev) {
 	wd2.style.transform = 'translateX(' + (Math.abs(dx) >= 200 ? 0 : ((dx > 0 ? -1 : 1) * 200 + dx)) + 'px';
 	wd2.style.opacity = 1 - wd.style.opacity;
 	var idx = LocationList.locations.indexOf(wd.querySelector('#location').value);
-	var nextLocation = LocationList.locations[(idx+1) % LocationList.locations.length];
-	var previousLocation = LocationList.locations[((idx-1) % LocationList.locations.length) + LocationList.locations.length];
-	if (idx === LocationList.locations.length-1) nextLocation = 'My Location';
-	if (idx === 0) previousLocation = 'My Location';
+	var nextLocation = LocationList.locations[0];
+	var previousLocation = LocationList[LocationList.length - 1];
+	if (idx !== -1) {
+		nextLocation = LocationList.locations[(idx+1) % LocationList.locations.length];
+		previousLocation = LocationList.locations[((idx-1) % LocationList.locations.length) + LocationList.locations.length];
+		if (idx === LocationList.locations.length-1) nextLocation = 'My Location';
+		if (idx === 0) previousLocation = 'My Location';
+	}
 	wd2.querySelector('#location').value = dx < 0 ? nextLocation : previousLocation;
 });
 
@@ -571,21 +580,30 @@ window.addEventListener('mouseup', function (ev) {
 		wd2.style.opacity = 0;
 		wd.style.transform = 'translateX(0px)';
 		wd2.style.transform = 'translateX(' + (dx > 0 ? 200 : -200) + 'px)';
+		setTimeout(function() {
+			wd.style.transition = '0s';
+			wd.style.transform = 'translateX(0px)';
+			wd2.remove();
+			setTimeout(function() {
+				wd.removeAttribute('style');
+			}, 10);
+		}, 300);
 	} else {
 		wd.style.opacity = 0;
 		wd2.style.opacity = 1;
 		wd.style.transform = 'translateX(' + (dx > 0 ? 200 : -200) + 'px)';
 		wd2.style.transform = 'translateX(0px)';
-	}
-	setTimeout(function() {
-		wd.style.transition = '0s';
-		wd.style.transform = 'translateX(0px)';
-		wd2.remove();
-		setLocation(wd2.querySelector('#location').value);
 		setTimeout(function() {
-			wd.removeAttribute('style');
-		}, 10);
-	}, 300);
+			wd.style.transition = '0s';
+			wd.style.transform = 'translateX(0px)';
+			wd.querySelector('#location').value = wd2.querySelector('#location').value;
+			wd2.remove();
+			setLocation(wd2.querySelector('#location').value);
+			setTimeout(function() {
+				wd.removeAttribute('style');
+			}, 10);
+		}, 300);
+	}
 });
 
 /*

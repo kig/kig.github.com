@@ -2,23 +2,25 @@
 
 Tasks
 
-	- [] Wanted utility features
-		- [] Multiple locations
+	- [x] Wanted utility features
+		- [x] Multiple locations
 			- [x] Location list editor
 			- [x] My Location
-			- [] Swipe to navigate between locations
-			- [] Slideshow mode to cycle through locations
+			- [x] Swipe to navigate between locations
 		- [x] Show current time at location
 		- [x] AQI - air quality data for locations
 		- [x] Mobile layout for time display
 		- [x] Sunrise & sunset times
 
-	- [] Local features (i.e. no API, have to do custom integrations)
+	- Cool beans
+		- [] Slideshow mode to cycle through locations
+
+	- Local features (i.e. no API, have to do custom integrations)
 		- [] Weather signals (typhoons, fire hazard, cold/hot weather warning, rain signals)
 		- [] Textual weather report
 		- [] Rain radar (... how to make it pretty? Do it like the weather map artwork?)
 
-	- [] In a world where everything takes no time, this functionality would be fun to explore.
+	- In a world where everything takes no time, this functionality would be fun to explore.
 		- [] Location info
 		- [] Event info
 		- [] Transportation
@@ -419,18 +421,22 @@ listButton.onclick = function(ev) {
 
 const cityList = document.getElementById('city-list');
 
+function setLocation(location) {
+	var locationInput = document.getElementById('location');
+	locationInput.value = location;
+	if (location.toLowerCase().trim() === 'my location') {
+		document.getElementById('my-location').click();
+	} else {
+		locationInput.onchange({target: locationInput});
+	}
+}
+
 cityList.onclick = function(ev) { 
 	if (ev.target.classList.contains('delete')) {
 		LocationList.remove(ev.target.previousElementSibling.textContent);
 	}
 	if (ev.target.classList.contains('name')) {
-		if (ev.target.textContent.toLowerCase().trim() === 'my location') {
-			document.getElementById('my-location').click();
-		} else {
-			var locationInput = document.getElementById('location');
-			locationInput.value = ev.target.textContent;
-			locationInput.onchange({target: locationInput});
-		}
+		setLocation(ev.target.textContent);
 		listButton.onclick();
 	}
 };
@@ -515,14 +521,13 @@ document.getElementById('add-location-form').onsubmit = function(ev) {
 	}
 }
 
-/*
-
 var wd = document.querySelector('#weather-data');
 var wd2 = wd.cloneNode(true);
 
 dragStart = { x: 0, y: 0, down: false };
 window.addEventListener('mousedown', ev => {
-	if (ev.target.tagName !== 'CANVAS') return;
+	if (ev.target.tagName !== 'CANVAS' || LocationList.locations.length === 0) return;
+	wd.parentElement.insertBefore(wd2, wd);
 	dragStart.x = ev.clientX;
 	dragStart.y = ev.clientY;
 	dragStart.down = true;
@@ -537,6 +542,12 @@ window.addEventListener('mousemove', function (ev) {
 	wd.style.opacity = 1 - Math.min(1, Math.max(0, dx * dx / (200 * 200)));
 	wd2.style.transform = 'translateX(' + (Math.abs(dx) >= 200 ? 0 : ((dx > 0 ? -1 : 1) * 200 + dx)) + 'px';
 	wd2.style.opacity = 1 - wd.style.opacity;
+	var idx = LocationList.locations.indexOf(wd.querySelector('#location').value);
+	var nextLocation = LocationList.locations[(idx+1) % LocationList.locations.length];
+	var previousLocation = LocationList.locations[((idx-1) % LocationList.locations.length) + LocationList.locations.length];
+	if (idx === LocationList.locations.length-1) nextLocation = 'My Location';
+	if (idx === 0) previousLocation = 'My Location';
+	wd2.querySelector('#location').value = dx < 0 ? nextLocation : previousLocation;
 });
 
 window.addEventListener('mouseup', function (ev) {
@@ -557,7 +568,18 @@ window.addEventListener('mouseup', function (ev) {
 		wd.style.transform = 'translateX(' + (dx > 0 ? 200 : -200) + 'px)';
 		wd2.style.transform = 'translateX(0px)';
 	}
+	setTimeout(function() {
+		wd.style.transition = '0s';
+		wd.style.transform = 'translateX(0px)';
+		wd2.remove();
+		setLocation(wd2.querySelector('#location').value);
+		setTimeout(function() {
+			wd.removeAttribute('style');
+		}, 10);
+	}, 300);
 });
+
+/*
 
 function swipeLeft() {
 	const newCityIndex = (cityIndex+1) % cities.length;

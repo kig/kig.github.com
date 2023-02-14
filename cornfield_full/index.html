@@ -732,21 +732,46 @@
 				display: none;
 				text-transform: uppercase;
 				margin-top: 0;
+				text-transform: uppercase;
+				margin-top: 0;
+				position: absolute;
+				top: 28px;
+				right: 50px;
+				z-index: 1;
+				text-align: right;
+				list-style: none;
+				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
+				color: white;
+			}
+			.daytime #city-list {
+				color: black;
+			}
+			#add-location-form {
+				display: none;
+			}
+			.show-add-location #add-location-form {
+				display: block;
+			}
+			#toggle-city-list {
+				cursor: pointer;
 			}
 
 			#city-list ul {
 				list-style-type: none;
+				line-height: 1;
+				margin: 0;
+				padding: 0;
 			}
-
 			#city-list li {
-				margin-bottom: 36px;
+				position: relative;
+				height: 32px;
+				transition: 0.1s;
 			}
 
-			#city-list li > span.temp {
-				width: 300px;
+			#city-list li span.temp {
 			}
 
-			#city-list li > span {
+			#city-list li span {
 				display: inline-block;
 				width: 178px;
 			}
@@ -763,18 +788,37 @@
 
 			#city-list li span.name {
 				min-width: 166px;
+				cursor: pointer;
+			}
+			#city-list ul li span.name {
+				cursor: move;
 			}
 
-			#city-list li:first-child span.name::after {
-				content: "";
+			.dragging {
+				transition: 0s !important;
+				opacity: 0.5;
 			}
 
-			#city-list span.name::after {
-				content: "-";
+			#city-list .delete {
+				cursor: pointer;
 				position: absolute;
-				margin-left: 15px;
-				font-size: 70px;
-				line-height: 23px;
+				top: 0px;
+				right: -29px;
+				width: 14px;
+				height: 14px;
+			}
+			#city-list .delete::after {
+				content: "";
+				background: white;
+				width: 100%;
+				height: 4px;
+				position: absolute;
+				right: 0;
+				top: 50%;
+				margin-top: -2px;
+			}
+			.daytime #city-list .delete::after {
+				background: black;
 			}
 			#city-list .add-city {
 				background: #8cff8a;
@@ -784,9 +828,33 @@
 				font-size: 24px;
 				padding-right: 8px;
 				line-height: 24px;
+				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
+				font-weight: 700;
 			}
 
-			.in-city-list .city-list {
+			#new-location-name {
+				vertical-align: top;
+				height: 18px;
+				border: 0;
+				outline: 0;
+			}
+			#add-location-button {
+				background: #8cff8a;
+				color: black;
+				width: 46px;
+				display: inline-block;
+				font-size: 14px;
+				padding-right: 8px;
+				line-height: 18px;
+				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
+				text-transform: uppercase;
+				font-weight: 700;
+				border: 0;
+				outline: 0;
+				vertical-align: top;
+			}
+
+			.in-city-list #city-list {
 				display: block;
 			}
 
@@ -795,6 +863,23 @@
 			}
 			.in-city-list #time-data {
 				display: none;
+			}
+
+			#toggle-city-list {
+				position: absolute;
+				z-index: 10;
+				width: 19px;
+				height: 19px;
+				right: 17px;
+				top: 13px;
+				background: linear-gradient(0deg, black 0%, black 20%, transparent 20%, transparent 40%, black 40%, black 60%, transparent 60%, transparent 80%, black 80%);
+				cursor: pointer;
+				opacity: 0.3;
+				transition: 0.2s;
+			}
+
+			.in-city-list #toggle-city-list {
+				opacity: 1;
 			}
 
 			@media (max-width: 1030px) {
@@ -808,6 +893,12 @@
 					transform: scale(0.9);
 				    transform-origin: 100% 0%;
 					min-width: 380px;
+				}
+				#toggle-city-list {
+					width: 16px;
+					height: 15px;
+					right: 21px;
+					top: 10px;
 				}
 			}
 			@media (max-width: 900px) {
@@ -854,6 +945,47 @@
 					right: 36px;
 					bottom: 36px;
 				}
+				#toggle-city-list {
+					width: 12px;
+					height: 10px;
+					right: 15px;
+					top: 11px;
+				}
+				#city-list li span {
+					width: 128px;
+					overflow: hidden;
+				}
+				#city-list li span.name {
+					min-width: 96px;
+				}
+			}
+			@media (max-width: 480px) {
+				#city-list li span {
+					width: 58px;
+				}
+			}
+			@media (max-width: 390px) {
+				#sunrise {
+					margin-top: 672px;
+				}
+			}
+			@media (max-width: 314px) {
+				#temperature .wi {
+					display: none;
+				}
+				#sunrise {
+					margin-top: 0px;
+				}
+			}
+			@media (max-width: 288px) {
+				#city-list li span {
+					width: 38px;
+				}
+			}
+			@media (max-width: 240px) {
+				#city-list li span {
+					width: 0px;
+				}
 			}
 			@media (max-height: 278px) {
 				#fullscreen {
@@ -878,6 +1010,7 @@
 					display: none;
 				}
 			}
+
 		</style>
 		<link rel="stylesheet" href="weather-icons/css/weather-icons.min.css">
 		<!-- Global site tag (gtag.js) - Google Analytics -->
@@ -916,11 +1049,15 @@ Rio de Janeiro
 Moscow</textarea><br>
 			<input type="checkbox" id="show-weather" checked onclick="document.body.classList.toggle('weather')"> <label for="show-weather">Show weather text</label><br>
 		</div>
+		<div id="toggle-city-list"></div>
 		<div id="city-list">
+			<li><span class="time"></span><span class="temp"></span><span class="name">My Location</span></li>
 			<ul>
-				<li><span class="time">23.54</span><span class="temp"></span><span class="name">My Location</span></li>
-				<li class="add-city">+</li>
 			</ul>
+			<form id="add-location-form">
+				<input id="new-location-name"><button id="add-location-button">Add</button>
+			</form>
+			<div class="add-city">+</div>
 		</div>
 		<div id="weather-data" class="fade-out">
 			<div id="error"></div>

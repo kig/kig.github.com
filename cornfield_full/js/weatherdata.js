@@ -4,8 +4,8 @@ Tasks
 
 	- [] Wanted utility features
 		- [] Multiple locations
-			- [] Location list editor
-			- [] My Location
+			- [x] Location list editor
+			- [x] My Location
 			- [] Swipe to navigate between locations
 			- [] Slideshow mode to cycle through locations
 		- [x] Show current time at location
@@ -342,6 +342,180 @@ if (!haveCurrentLocation) {
 }
 
 /*
+	Location list.
+	
+	An editable list of locations, saved in the user profile.
+	When you swipe left/right, the weather changes to the next/previous location.
+
+	LocationList.add(location)
+	LocationList.remove(location)
+	LocationList.move(location, newIndex)
+
+	LocationList.indexOf(location)
+	LocationList.save()
+	LocationList.load()
+*/
+var LocationList = {
+	locations: [],
+
+	makeLocationElement: function(location) {
+		var li = document.createElement('li');
+		li.innerHTML = '<span class="time"></span><span class="temp"></span><span class="name"></span><span class="delete"></span>';
+		li.querySelector('.name').textContent = location;
+		return li;
+	},
+
+	add: function(location) {
+		if (this.locations.indexOf(location) > -1) return;
+		this.locations.push(location);
+		document.querySelector('#city-list ul').append(this.makeLocationElement(location));
+		this.save();
+	},
+
+	remove: function(location) {
+		var idx = this.locations.indexOf(location);
+		if (idx === -1) return;
+		this.locations.splice(idx, 1);
+		document.querySelector('#city-list ul').children[idx].remove();
+		this.save();
+	},
+
+	move: function(location, newIndex) {
+		var idx = this.locations.indexOf(location);
+		if (idx === -1) return;
+		this.locations.splice(idx, 1);
+		if (idx < newIndex) {
+			newIndex--;
+		}
+		this.locations.splice(newIndex, 0, location);
+		this.save();
+	},
+
+	save: function() {
+		window.localStorage['weather-location-list'] = JSON.stringify(this.locations);
+	},
+
+	load: function() {
+		if (window.localStorage['weather-location-list']) {
+			try {
+				var locations = JSON.parse(window.localStorage['weather-location-list']);
+				if (locations && locations instanceof Array) {
+					var self = this;
+					locations.forEach(function(location) {
+						self.add(location);
+					});
+				}
+			} catch (error) {}
+		}
+	}
+};
+
+LocationList.load();
+
+const listButton = document.getElementById('toggle-city-list');
+listButton.onclick = function(ev) {
+	document.body.classList.toggle('in-city-list');
+}
+
+const cityList = document.getElementById('city-list');
+
+cityList.onclick = function(ev) { 
+	if (ev.target.classList.contains('delete')) {
+		LocationList.remove(ev.target.previousElementSibling.textContent);
+	}
+	if (ev.target.classList.contains('name')) {
+		if (ev.target.textContent.toLowerCase().trim() === 'my location') {
+			document.getElementById('my-location').click();
+		} else {
+			var locationInput = document.getElementById('location');
+			locationInput.value = ev.target.textContent;
+			locationInput.onchange({target: locationInput});
+		}
+		listButton.onclick();
+	}
+};
+var dragTarget = null;
+var dragStartY = 0;
+var dragInProgress = false;
+cityList.onmousedown = function(ev) {
+	if (ev.target.classList.contains('name') && ev.target.parentNode.parentNode.tagName === 'UL') {
+		ev.preventDefault();
+		dragTarget = ev.target.parentNode;
+		dragStartY = ev.clientY;
+		dragInProgress = false;
+	}
+};
+cityList.onmousemove = function(ev) {
+	if (dragTarget) {
+		ev.preventDefault();
+		var dy = ev.clientY - dragStartY;
+		if (Math.abs(dy) > 3 && !dragInProgress) {
+			dragInProgress = true;
+			dragTarget.classList.add('dragging');
+		}
+		if (!dragInProgress) return;
+		dragTarget.style.transform = 'translateY('+dy+'px)';
+		var cc = Array.from(dragTarget.parentNode.children);
+		var dragTargetBBox = dragTarget.getBoundingClientRect();
+		var dragTargetY = dragTargetBBox.top + dragTargetBBox.height/2;
+		var overlapAbove = true;
+		for (var i = 0; i < cc.length; i++) {
+			if (cc[i] === dragTarget) {
+				overlapAbove = false;
+				continue;
+			}
+			var bbox = cc[i].getBoundingClientRect();
+			if ((bbox.top < dragTargetY || i === 0) && (bbox.bottom > dragTargetY || i === cc.length-1)) {
+				// On top of this element, or above first element or below last element.
+				var midPoint = bbox.top + bbox.height/2;
+				if (overlapAbove) {
+					if (midPoint > dragTargetY) {
+						// Move dragTarget before the element.
+						dragTarget.parentNode.insertBefore(dragTarget, cc[i]);
+						dragStartY = ev.clientY + (midPoint - dragTargetY);
+						var dy = ev.clientY - dragStartY;
+						dragTarget.style.transform = 'translateY('+dy+'px)';
+						break;
+					}
+				} else {
+					if (midPoint < dragTargetY) {
+						// Move dragTarget after the element.
+						dragTarget.parentNode.insertBefore(dragTarget, cc[i+1]);
+						dragStartY = ev.clientY + (midPoint - dragTargetY);
+						var dy = ev.clientY - dragStartY;
+						dragTarget.style.transform = 'translateY('+dy+'px)';
+						break;
+					}
+				}
+			}
+		}
+	}
+};
+cityList.onmouseup = function(ev) {
+	if (dragTarget) {
+		ev.preventDefault();
+		dragTarget.classList.remove('dragging');
+		dragTarget.style.transform = '';
+		dragTarget = null;
+	}
+};
+
+
+const addButton = cityList.querySelector('.add-city');
+addButton.onclick = function(ev) {
+	cityList.classList.toggle('show-add-location');
+};
+
+document.getElementById('add-location-form').onsubmit = function(ev) {
+	ev.preventDefault();
+	var location = document.getElementById('new-location-name').value;
+	if (location) {
+		LocationList.add(location);
+		document.getElementById('new-location-name').value = '';
+	}
+}
+
+/*
 
 var wd = document.querySelector('#weather-data');
 var wd2 = wd.cloneNode(true);
@@ -406,29 +580,10 @@ function swipeRight() {
 	});
 }
 
-const listButton = window.getElementById('toggle-city-list');
-listButton.onclick = function(ev) {
-	document.body.classList.toggle('in-city-list');
-}
-
-const cityList = window.getElementById('city-list');
-
-const addButton = cityList.querySelector('.add-city');
-
 function wireUpCityEditor(el) {
 	// Make it draggable.
 	// Make the city name editable.
 	// Load city weather data when you finish editing.
-}
-
-cityList.onclick = function(ev) { 
-	const outside = (ev.clientX > ev.target.getBoundingClientRect().right);
-	const isMyLocation = ev.target.parentElement.parentElement.firstElementChild === ev.target.parentElement;
-	if (outside && !isMyLocation && ev.target.classList.contains('name')) {
-		// Remove this city
-		removeCity(this.textContent);
-		ev.target.parentElement.remove();
-	}
 }
 
 addButton.onclick = function(ev) {

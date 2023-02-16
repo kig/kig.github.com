@@ -368,6 +368,7 @@ if (!haveCurrentLocation) {
 */
 var LocationList = {
 	locations: [],
+	currentLocation: '',
 
 	makeLocationElement: function(location) {
 		var li = document.createElement('li');
@@ -556,7 +557,7 @@ window.addEventListener('pointermove', function (ev) {
 	wd.style.opacity = 1 - Math.min(1, Math.max(0, dx * dx / (200 * 200)));
 	wd2.style.transform = 'translateX(' + (Math.abs(dx) >= 200 ? 0 : ((dx > 0 ? -1 : 1) * 200 + dx)) + 'px';
 	wd2.style.opacity = 1 - wd.style.opacity;
-	var idx = LocationList.locations.indexOf(wd.querySelector('#location').value);
+	var idx = LocationList.locations.indexOf(LocationList.currentLocation);
 	var nextLocation = LocationList.locations[0];
 	var previousLocation = LocationList.locations[LocationList.locations.length - 1];
 	if (idx !== -1) {
@@ -598,9 +599,10 @@ window.addEventListener('pointerup', function (ev) {
 		setTimeout(function() {
 			wd.style.transition = '0s';
 			wd.style.transform = 'translateX(0px)';
-			wd.querySelector('#location').value = wd2.querySelector('#location').value;
+			LocationList.currentLocation = wd2.querySelector('#location').value;
+			wd.querySelector('#location').value = LocationList.currentLocation;
 			wd2.remove();
-			setLocation(wd2.querySelector('#location').value);
+			setLocation(LocationList.currentLocation);
 			setTimeout(function() {
 				wd.removeAttribute('style');
 			}, 10);

@@ -1119,6 +1119,11 @@ Moscow</textarea><br>
 			} catch(e) {
 				console.error(e);
 			}
+			// Prevent scrolling and eating of pointer move events
+			window.addEventListener('touchstart', function(ev) { ev.preventDefault(); });
+			window.addEventListener('touchmove', function(ev) {
+				ev.preventDefault();
+			}, { passive: false });
 		</script>
 		<script type="text/glsl-vertex" id="corn-vert">
 			attribute float afStalkIndex;

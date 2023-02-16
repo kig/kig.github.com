@@ -539,7 +539,7 @@ var wd = document.querySelector('#weather-data-container');
 var wd2 = wd.cloneNode(true);
 
 dragStart = { x: 0, y: 0, down: false };
-window.addEventListener('mousedown', ev => {
+window.addEventListener('pointerdown', ev => {
 	if (ev.target.tagName !== 'CANVAS' || LocationList.locations.length === 0) return;
 	wd.parentElement.insertBefore(wd2, wd);
 	dragStart.x = ev.clientX;
@@ -548,7 +548,7 @@ window.addEventListener('mousedown', ev => {
 	ev.preventDefault();
 });
 
-window.addEventListener('mousemove', function (ev) {
+window.addEventListener('pointermove', function (ev) {
 	if (!dragStart.down) return;
 	var dx = ev.clientX - dragStart.x;
 	wd.style.transition = wd2.style.transition = '0s';
@@ -570,7 +570,7 @@ window.addEventListener('mousemove', function (ev) {
 	wd2.querySelector('#location').value = dx < 0 ? nextLocation : previousLocation;
 });
 
-window.addEventListener('mouseup', function (ev) {
+window.addEventListener('pointerup', function (ev) {
 	if (!dragStart.down) return;
 	var dx = ev.clientX - dragStart.x;
 	dragStart.down = false;

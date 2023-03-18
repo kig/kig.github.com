@@ -92,6 +92,36 @@ function formatWindSpeed(windSpeedMetersPerSecond) {
 	return Math.round(windSpeedMetersPerSecond) + ' m/s';
 }
 
+// 0 = left = 6:00, 0.5 = up = 12:00, 1 = right = 18:00, 1.5 = down = 24:00
+function getSunPosition(c) {
+	var t = Date.now() / 1000;
+	var lengthOfDay = c.sunset-c.sunrise;
+	if (Math.abs(lengthOfDay) >= 86400) {
+		// Polar day / night.
+		if (t > c.sunrise && t < c.sunset) {
+			return (t-c.sunrise) / (c.sunset-c.sunrise); // 0..1 sunrise..sunset
+		} else {
+			return 1.5; // midnight
+		}
+	}
+	if (t >= c.sunrise && t <= c.sunset) {
+		return (t-c.sunrise) / (c.sunset-c.sunrise); // 0..1 sunrise..sunset
+	}
+	var lengthOfNight = 86400 - lengthOfDay;
+	var timeSinceSunset = (t - c.sunset) % 86400;
+	if (timeSinceSunset < 0) timeSinceSunset += 86400;
+	return 1 + (timeSinceSunset / lengthOfNight);
+}
+// a 0..2, b 0..2, t 0..1
+function angleLerp(src, dst, t) {
+	if (t <= 0) return src;
+	if (t >= 1) return dst;
+	var d = (dst - src) % 2;
+	if (d < -1) d += 2;
+	if (d > 1) d -= 2;
+	return src + d * t;
+}
+
 var setWeather = function(elapsed) {
 	weatherTimer += elapsed;
 	var fade = 0;
@@ -303,17 +333,9 @@ var setWeather = function(elapsed) {
 	rainShaderMat.uniforms.ufRainAmount.value = c1.rainAmount * fade + c0.rainAmount * (1-fade);
 
 	windStrength = (c1.windStrength * fade + c0.windStrength * (1-fade));
-	windDirection = (c1.windDirection * fade + c0.windDirection * (1-fade));
+	windDirection = angleLerp(c0.windDirection/180, c1.windDirection/180, fade) * 180;
 
-	var sunrise = c1.sunrise * fade + c0.sunrise * (1-fade);
-	var sunset = c1.sunset * fade + c0.sunset * (1-fade);
-
-	var lengthOfDay = sunset-sunrise;
-	var noon = (sunrise + lengthOfDay/2);
-	var zeroHour = noon - 12 * 3600;
-	var timeOfDay = (-6 * 3600 + Date.now() / 1000 - zeroHour);
-	shaderMat.uniforms.ufSunPosition.value = 2*timeOfDay / 86400; // 0 = left = 6:00, 0.5 = up = 12:00, 1 = right = 18:00, 1.5 = down = 24:00
-	// shaderMat.uniforms.ufSunPosition.value = (Date.now() / 3000) % 2;
+	shaderMat.uniforms.ufSunPosition.value = angleLerp(getSunPosition(c0), getSunPosition(c1), fade);
 
 	// Base dark text mode on screen width:
 	//  - narrow screens need dark text most of the day

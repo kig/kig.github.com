@@ -213,7 +213,10 @@ document.getElementById('location').onchange = function (ev) {
 document.getElementById('location').onfocus = function (ev) {
 	document.body.classList.remove('error');
 	dataLayer.push({event: 'location-field', action: 'focus'});
-	ev.target.value = ev.target.value;
+	ev.target.setSelectionRange(0, ev.target.value.length);
+};
+document.getElementById('location').onmouseup = function (ev) {
+	ev.preventDefault();
 	ev.target.setSelectionRange(0, ev.target.value.length);
 };
 
@@ -441,7 +444,7 @@ function setLocation(location) {
 	}
 }
 
-cityList.onclick = function(ev) { 
+cityList.onclick = function(ev) {
 	if (ev.target.classList.contains('delete')) {
 		LocationList.remove(ev.target.previousElementSibling.textContent);
 	}
@@ -529,6 +532,7 @@ document.getElementById('add-location-form').onsubmit = function(ev) {
 	ev.preventDefault();
 	var location = document.getElementById('new-location-name').value;
 	if (location) {
+
 		LocationList.add(location);
 		var newLocationInput = document.getElementById('new-location-name');
 		newLocationInput.value = '';

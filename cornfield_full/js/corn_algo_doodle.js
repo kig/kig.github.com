@@ -69,6 +69,7 @@ var shaderMat = new THREE.ShaderMaterial({
 		ufCloudCover: { type: "f", value: 0 },
 		ufRainAmount: { type: "f", value: 0 },
 		ufWindDirection: { type: "f", value: 0 },
+		uv3WindOffset: { type: "v3", value: new THREE.Vector3() },
 		ufPixelRatio: { type: "f", value: bgRenderer.domElement.width / renderer.domElement.width },
 		ufWindStrength: { type: "f", value: 0 },
 		usRandomTex: { type: "t", value: tex }

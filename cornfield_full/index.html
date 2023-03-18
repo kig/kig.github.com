@@ -1409,6 +1409,7 @@ Moscow</textarea><br>
 			uniform vec2 uv2Resolution;
 			uniform mat4 um4CameraMatrix;
 			uniform vec3 uv3CameraPosition;
+			uniform vec3 uv3WindOffset;
 
 			uniform float ufCloudCover;
 			uniform float ufRainAmount;
@@ -1430,7 +1431,7 @@ Moscow</textarea><br>
 			}
 
 			float map(vec3 p) {
-			    vec3 q = vec3(0.2)*p + vec3(-cos(ufWindDirection), -0.2, -sin(ufWindDirection))*(ufGlobalTime*10.0*ufWindStrength);
+			    vec3 q = vec3(0.2)*p + uv3WindOffset;
 			    float n = 0.0, f = 0.5;
 			    n += f*noise(q); q *= 3.001; f *= 0.333;
 			    n += f*noise(q); q *= 3.002; f *= 0.332;

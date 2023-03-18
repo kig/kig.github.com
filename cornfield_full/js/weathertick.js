@@ -367,6 +367,13 @@ var setWeather = function(elapsed) {
 	// Wind direction is the direction from where the wind blows.
 	shaderMat.uniforms.ufWindDirection.value = Math.PI + windDirection / 180 * Math.PI;
 	shaderMat.uniforms.ufWindStrength.value = windStrength / 20 * 0.4;
+
+	var windFactor = (elapsed / 1000) * (10.0 * shaderMat.uniforms.ufWindStrength.value);
+	windOffset.x += -Math.cos(shaderMat.uniforms.ufWindDirection.value) * windFactor;
+	windOffset.y += -0.2 * windFactor;
+	windOffset.z += -Math.sin(shaderMat.uniforms.ufWindDirection.value) * windFactor;
+	shaderMat.uniforms.uv3WindOffset.value = windOffset;
+
 	// Add ground effect noise to wind for the rain & grass.
 	rainShaderMat.uniforms.ufWindDirection.value = Math.PI + windDirection / 180 * Math.PI + wdOff;
 	rainShaderMat.uniforms.ufWindStrength.value = windStrength / 20 * 0.4 + wsOff;
@@ -375,3 +382,4 @@ var setWeather = function(elapsed) {
 	cornShaderMat.uniforms.ufImpulse.value = 0.00; // Math.max(-1, -0.5*Math.cos(Math.PI*((2*timeOfDay / 86400) % 2)) - 0.5);
 };
 
+var windOffset = new THREE.Vector3();

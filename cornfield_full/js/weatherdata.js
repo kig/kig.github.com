@@ -210,14 +210,23 @@ document.getElementById('location').onchange = function (ev) {
 	}
 };
 
+var eatLocationMouseup = false;
 document.getElementById('location').onfocus = function (ev) {
+	this.spellcheck = 'true';
 	document.body.classList.remove('error');
 	dataLayer.push({event: 'location-field', action: 'focus'});
 	ev.target.setSelectionRange(0, ev.target.value.length);
+	eatLocationMouseup = true;
 };
 document.getElementById('location').onmouseup = function (ev) {
-	ev.preventDefault();
-	ev.target.setSelectionRange(0, ev.target.value.length);
+	if (eatLocationMouseup) {
+		eatLocationMouseup = false;
+		ev.preventDefault();
+		ev.target.setSelectionRange(0, ev.target.value.length);
+	}
+};
+document.getElementById('location').onblur = function (ev) {
+	this.spellcheck = 'false';
 };
 
 document.getElementById('my-location').onclick = function (ev) {

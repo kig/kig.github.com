@@ -49,6 +49,8 @@ Tasks
 var cities = {};
 var cityNames = [];
 
+var currentLocationName = '';
+
 var currentCityIndex = -1;
 var targetCityIndex = -1;
 
@@ -101,15 +103,13 @@ var parseRainAmount = function (weatherData) {
 	return rainAmount;
 };
 
-var updateWeather = function (cityName, weatherData) {
-	targetCityIndex = addCityIfNeeded(cityName);
-	weatherTimer = 0;
-
+var updateWeatherCache = function (cityName, weatherData) {
 	var c = cities[cityName];
 	if (!c) {
 		c = cities[cityName] = {};
 	}
 	weatherData = weatherData || {};
+	c.name = weatherData.name;
 	c.weatherData = weatherData;
 	c.cloudCover = weatherData.clouds ? (weatherData.clouds.all || 0) / 100 : 0;
 	c.windDirection = (weatherData.wind && weatherData.wind.deg) || 0;
@@ -119,6 +119,13 @@ var updateWeather = function (cityName, weatherData) {
 	c.sunrise = (weatherData.sys && weatherData.sys.sunrise) || (86400 * 1 / 4);
 	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3 / 4);
 	c.forecast = weatherData.forecast || zeroCity.forecast;
+}
+
+var updateWeather = function (cityName, weatherData) {
+	targetCityIndex = addCityIfNeeded(cityName);
+	weatherTimer = 0;
+
+	updateWeatherCache(cityName, weatherData);
 
 	document.getElementById('location').value = cityName;
 
@@ -133,13 +140,9 @@ var updateWeather = function (cityName, weatherData) {
 
 var fetchInterval = 0;
 var firstFetch = true;
+var instantWeatherDataRefresh = false;
 
-var fetchWeather = function (cityName, isRefresh) {
-	// Update weather every hour
-	clearInterval(fetchInterval);
-	fetchInterval = setInterval(function () {
-		fetchWeather(cityName, true).then(() => weatherUpdateTriggered = true);
-	}, 60 * 60 * 1000);
+var networkWeatherFetch = function(cityName, onSuccess, onFailure) {
 	var server = '//api.openweathermap.org/data/2.5/';
 	var units = '&units=metric';
 	var appid = '&APPID=1271d12e99b5bdc1e4d563a61e467190';
@@ -149,29 +152,15 @@ var fetchWeather = function (cityName, isRefresh) {
 		? '?lat=' + encodeURIComponent(cityName.latitude) + '&lon=' + encodeURIComponent(cityName.longitude)
 		: '?q=' + encodeURIComponent(cityName);
 	var cacheTime = '&' + Math.floor(Date.now() / 3.6e6); // Cache weather responses for 1 hour.
-
-	if (!isRefresh) {
-		document.getElementById('weather-data').classList.add('fade-out');
-		document.getElementById('time-data').classList.add('fade-out');
-	}
-
+	// Fetch the current weather, forecast and air pollution forecast.
 	return Promise.all([
 		fetch(server+'weather'+location+units+appid+lang+cacheTime).then(res => res.json()),
 		fetch(server+'forecast'+location+units+appid+lang+cacheTime).then(res => res.json())
 	]).then(([weatherData, forecast]) => {
 		if (parseInt(weatherData.cod) !== 200) {
-			if (firstFetch) { // Failed initial fetchWeather, fall back to geoIP.
-				firstFetch = false;
-				fetchGeoIPWeather();
-			} else {
-				document.body.classList.add('error');
-				document.getElementById('error').textContent = weatherData.message;
-				document.getElementById('weather-data').classList.remove('fade-out');
-				document.getElementById('time-data').classList.remove('fade-out');
-			}
+			onFailure(weatherData);
 			return;
 		}
-		firstFetch = false;
 		weatherData.forecast = (parseInt(forecast.cod) === 200 ? forecast : zeroCity.forecast);
 		var coordsLocation = '?lat=' + encodeURIComponent(weatherData.coord.lat) + '&lon=' + encodeURIComponent(weatherData.coord.lon);
 		fetch(server+'air_pollution/forecast'+coordsLocation+units+appid+lang+cacheTime).then(res => res.json()).then(airQuality => {
@@ -187,12 +176,48 @@ var fetchWeather = function (cityName, isRefresh) {
 			weatherData.forecast.list.forEach(l => {
 				if (!l.airQuality) l.airQuality = {main: {aqi: -1}};
 			});
-			updateWeather(weatherData.name, weatherData);
-			if (!isRefresh) {
-				window.localStorage.currentLocation = JSON.stringify(cityName);
-			}
+			onSuccess(weatherData);
 		});
 	});
+
+};
+
+var fetchWeather = function (cityName, isRefresh) {
+	// Update weather every hour
+	clearInterval(fetchInterval);
+	fetchInterval = setInterval(function () {
+		fetchWeather(cityName, true).then(() => weatherUpdateTriggered = true);
+	}, 60 * 60 * 1000);
+
+	if (!isRefresh) {
+		document.getElementById('weather-data').classList.add('fade-out');
+		document.getElementById('time-data').classList.add('fade-out');
+	}
+
+	return networkWeatherFetch(cityName, 
+		function onSuccess(weatherData) {
+			firstFetch = false;
+			updateWeather(weatherData.name, weatherData);
+			if (isRefresh) {
+				instantWeatherDataRefresh = true;
+				weatherUpdateTriggered = true;
+			} else {
+				window.localStorage.currentLocation = JSON.stringify(cityName);
+				currentLocationName = weatherData.name;
+			}
+		}, 
+		function onFailure(weatherData) {
+			if (firstFetch) { // Failed initial fetchWeather, fall back to geoIP.
+				firstFetch = false;
+				fetchGeoIPWeather();
+			} else {
+				document.body.classList.add('error');
+				document.getElementById('error').textContent = weatherData.message;
+				document.getElementById('weather-data').classList.remove('fade-out');
+				document.getElementById('time-data').classList.remove('fade-out');
+			}
+		}
+	);
 };
 
 window.currentLocation = false;
@@ -393,6 +418,9 @@ var LocationList = {
 		if (this.locations.indexOf(location) > -1) return;
 		this.locations.push(location);
 		document.querySelector('#city-list ul').append(this.makeLocationElement(location));
+		networkWeatherFetch(location, function onSuccess(weatherData) {
+			updateWeatherCache(location, weatherData);
+		}, function onFailure() {});
 		this.save();
 	},
 
@@ -424,10 +452,8 @@ var LocationList = {
 			try {
 				var locations = JSON.parse(window.localStorage['weather-location-list']);
 				if (locations && locations instanceof Array) {
-					var self = this;
-					locations.forEach(function(location) {
-						self.add(location);
-					});
+					locations.forEach(location => this.add(location));
+					this.currentLocation = document.getElementById('location').value;
 				}
 			} catch (error) {}
 		}
@@ -449,7 +475,7 @@ function setLocation(location) {
 	if (location.toLowerCase().trim() === 'my location') {
 		document.getElementById('my-location').click();
 	} else {
-		locationInput.onchange({target: locationInput});
+		fetchWeather(location, true);
 	}
 }
 
@@ -549,13 +575,15 @@ document.getElementById('add-location-form').onsubmit = function(ev) {
 	}
 }
 
-var wd = document.querySelector('#weather-data-container');
-var wd2 = wd.cloneNode(true);
+var weatherDataElement = document.querySelector('#weather-data-container');
+var wd2 = weatherDataElement.cloneNode(true);
+Array.from(wd2.querySelectorAll('.fade-out')).forEach(e => e.classList.remove('fade-out'));
 
 dragStart = { x: 0, y: 0, down: false };
 window.addEventListener('pointerdown', ev => {
 	if (ev.target.tagName !== 'CANVAS' || LocationList.locations.length === 0) return;
-	wd.parentElement.insertBefore(wd2, wd);
+	wd2.style.display = 'none';
+	weatherDataElement.parentElement.insertBefore(wd2, weatherDataElement);
 	dragStart.x = ev.clientX;
 	dragStart.y = ev.clientY;
 	dragStart.down = true;
@@ -565,11 +593,11 @@ window.addEventListener('pointerdown', ev => {
 window.addEventListener('pointermove', function (ev) {
 	if (!dragStart.down) return;
 	var dx = ev.clientX - dragStart.x;
-	wd.style.transition = wd2.style.transition = '0s';
-	wd.style.transform = 'translateX(' + (dx) + 'px)';
-	wd.style.opacity = 1 - Math.min(1, Math.max(0, dx * dx / (200 * 200)));
+	weatherDataElement.style.transition = wd2.style.transition = '0s';
+	weatherDataElement.style.transform = 'translateX(' + (dx) + 'px)';
+	weatherDataElement.style.opacity = 1 - Math.min(1, Math.max(0, dx * dx / (200 * 200)));
 	wd2.style.transform = 'translateX(' + (Math.abs(dx) >= 200 ? 0 : ((dx > 0 ? -1 : 1) * 200 + dx)) + 'px';
-	wd2.style.opacity = 1 - wd.style.opacity;
+	wd2.style.opacity = 1 - weatherDataElement.style.opacity;
 	var idx = LocationList.locations.indexOf(LocationList.currentLocation);
 	var nextLocation = LocationList.locations[0];
 	var previousLocation = LocationList.locations[LocationList.locations.length - 1];
@@ -578,10 +606,15 @@ window.addEventListener('pointermove', function (ev) {
 		var prevIdx = ((idx-1) % LocationList.locations.length);
 		if (prevIdx < 0) prevIdx += LocationList.locations.length;
 		previousLocation = LocationList.locations[prevIdx];
-		if (idx === LocationList.locations.length-1) nextLocation = 'My Location';
-		if (idx === 0) previousLocation = 'My Location';
+		if (idx === LocationList.locations.length-1) nextLocation = currentLocationName || 'my location';
+		if (idx === 0) previousLocation = currentLocationName || 'my location';
 	}
-	wd2.querySelector('#location').value = dx < 0 ? nextLocation : previousLocation;
+	LocationList.swipeLocation = dx < 0 ? nextLocation : previousLocation;
+	if (wd2.querySelector('#location').value !== LocationList.swipeLocation) {
+		wd2.style.display = 'block';
+		wd2.querySelector('#location').value = LocationList.swipeLocation;
+		populateWeatherElement(wd2, cities[LocationList.swipeLocation]);
+	}
 });
 
 window.addEventListener('pointerup', function (ev) {
@@ -590,34 +623,35 @@ window.addEventListener('pointerup', function (ev) {
 	dragStart.down = false;
 	ev.preventDefault();
 	wd2.style.transition = '0.3s';
-	wd.style.transition = '0.3s';
+	weatherDataElement.style.transition = '0.3s';
 	if (Math.abs(dx) < 50) {
-		wd.style.opacity = 1;
+		weatherDataElement.style.opacity = 1;
 		wd2.style.opacity = 0;
-		wd.style.transform = 'translateX(0px)';
+		weatherDataElement.style.transform = 'translateX(0px)';
 		wd2.style.transform = 'translateX(' + (dx > 0 ? 200 : -200) + 'px)';
 		setTimeout(function() {
-			wd.style.transition = '0s';
-			wd.style.transform = 'translateX(0px)';
+			weatherDataElement.style.transition = '0s';
+			weatherDataElement.style.transform = 'translateX(0px)';
 			wd2.remove();
 			setTimeout(function() {
-				wd.removeAttribute('style');
+				weatherDataElement.removeAttribute('style');
 			}, 10);
 		}, 300);
 	} else {
-		wd.style.opacity = 0;
+		weatherDataElement.style.opacity = 0;
 		wd2.style.opacity = 1;
-		wd.style.transform = 'translateX(' + (dx > 0 ? 200 : -200) + 'px)';
+		weatherDataElement.style.transform = 'translateX(' + (dx > 0 ? 200 : -200) + 'px)';
 		wd2.style.transform = 'translateX(0px)';
 		setTimeout(function() {
-			wd.style.transition = '0s';
-			wd.style.transform = 'translateX(0px)';
-			LocationList.currentLocation = wd2.querySelector('#location').value;
-			wd.querySelector('#location').value = LocationList.currentLocation;
-			wd2.remove();
-			setLocation(LocationList.currentLocation);
+			LocationList.currentLocation = LocationList.swipeLocation;
+			weatherDataElement.querySelector('#location').value = LocationList.currentLocation;
+			populateWeatherElement(weatherDataElement, cities[LocationList.currentLocation]);
+			weatherDataElement.style.transition = '0s';
+			weatherDataElement.style.transform = 'translateX(0px)';
 			setTimeout(function() {
-				wd.removeAttribute('style');
+				weatherDataElement.removeAttribute('style');
+				wd2.remove();
+				setLocation(LocationList.currentLocation);
 			}, 10);
 		}, 300);
 	}

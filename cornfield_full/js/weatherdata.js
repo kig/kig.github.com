@@ -19,7 +19,7 @@ Tasks
 			- [] Sampling function to sample continuous time from the forecast
 			- [] Animate by setting the displayed weather to the sampled weather for the frame
 			- [] Display a scrubber line on the forecast graph
-		- [] AQI by hour forecast visualization (replace dot with a color strip under the icon?)
+		- [x] AQI by hour forecast visualization (replace dot with a color strip under the icon?)
 		- [] AQI params in the forecast graph
 		- [] Zoom-scroll-full window overlay forecast graph
 		- [] Use SVG for forecast graph instead of canvas
@@ -119,6 +119,18 @@ var updateWeatherCache = function (cityName, weatherData) {
 	c.sunrise = (weatherData.sys && weatherData.sys.sunrise) || (86400 * 1 / 4);
 	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3 / 4);
 	c.forecast = weatherData.forecast || zeroCity.forecast;
+
+	var locations = document.querySelectorAll('#city-list ul .name');
+	for (var i = 0; i < locations.length; i++) {
+		var location = locations[i];
+		if (location.textContent === cityName) {
+			var li = location.parentNode;
+			li.querySelector('.temp').textContent = Math.round(c.temperature) + '°C';
+			var timeEl = li.querySelector('.time');
+			timeEl.dataset.tz = weatherData.timezone;
+			li.querySelector('.weather-icon').className = 'weather-icon wi wi-owm-' + weatherData.weather[0].id;
+		}
+	}
 }
 
 var updateWeather = function (cityName, weatherData) {
@@ -329,11 +341,12 @@ var sunriseEl = document.getElementById('sunrise');
 var sunsetEl = document.getElementById('sunset');
 var updateClock = function() {
 	var t = new Date();
+	var now = Date.now();
+	var localTzOff = t.getTimezoneOffset() * 60;
 	if (cityNames[currentCityIndex]) {
 		var wd = cities[cityNames[currentCityIndex]].weatherData;
-		var tzOff = wd.timezone;
-		tzOff += t.getTimezoneOffset() * 60;
-		t = new Date(Date.now() + tzOff * 1000);
+		var tzOff = wd.timezone + localTzOff;
+		t = new Date(now + tzOff * 1000);
 
 		var sunrise = new Date(wd.sys.sunrise * 1000 + tzOff * 1000);
 		var sunset = new Date(wd.sys.sunset * 1000 + tzOff * 1000);
@@ -342,6 +355,16 @@ var updateClock = function() {
 	}
 	clock.innerHTML = formatTimeString(t, navigator.language);
 	date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })
+
+	var timeEls = document.querySelectorAll('#city-list .time');
+	for (var i = 0; i < timeEls.length; i++) {
+		var timeEl = timeEls[i];
+		if (timeEl.dataset.tz !== undefined) {
+			var tzOff = parseInt(timeEl.dataset.tz) + localTzOff;
+			var t2 = new Date(now + tzOff * 1000);
+			timeEl.textContent = t2.toLocaleDateString(navigator.language, { weekday: 'short'}) + " " + t2.toLocaleTimeString(navigator.language, {hour:'numeric', minute:'numeric'});
+		}
+	}
 };
 setInterval(updateClock, 1000);
 updateClock();
@@ -409,7 +432,7 @@ var LocationList = {
 
 	makeLocationElement: function(location) {
 		var li = document.createElement('li');
-		li.innerHTML = '<span class="time"></span><span class="temp"></span><span class="name"></span><span class="delete"></span>';
+		li.innerHTML = '<span class="time"></span><span class="weather-icon"></span><span class="temp"></span><span class="name"></span><span class="delete"></span>';
 		li.querySelector('.name').textContent = location;
 		return li;
 	},
@@ -491,7 +514,7 @@ cityList.onclick = function(ev) {
 var dragTarget = null;
 var dragStartY = 0;
 var dragInProgress = false;
-cityList.onmousedown = function(ev) {
+cityList.onpointerdown = function(ev) {
 	if (ev.target.classList.contains('name') && ev.target.parentNode.parentNode.tagName === 'UL') {
 		ev.preventDefault();
 		dragTarget = ev.target.parentNode;
@@ -499,7 +522,7 @@ cityList.onmousedown = function(ev) {
 		dragInProgress = false;
 	}
 };
-cityList.onmousemove = function(ev) {
+cityList.onpointermove = function(ev) {
 	if (dragTarget) {
 		ev.preventDefault();
 		var dy = ev.clientY - dragStartY;
@@ -545,7 +568,7 @@ cityList.onmousemove = function(ev) {
 		}
 	}
 };
-cityList.onmouseup = function(ev) {
+cityList.onpointerup = function(ev) {
 	if (dragTarget) {
 		ev.preventDefault();
 		dragTarget.classList.remove('dragging');

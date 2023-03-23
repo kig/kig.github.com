@@ -588,15 +588,19 @@ addButton.onclick = function(ev) {
 
 document.getElementById('add-location-form').onsubmit = function(ev) {
 	ev.preventDefault();
-	var location = document.getElementById('new-location-name').value;
-	if (location) {
+	const newLocation = document.getElementById('new-location-name');
+	newLocation.onchange({target: newLocation});
+}
 
+document.getElementById('new-location-name').onchange = function(ev) {
+	var location = ev.target.value;
+	if (location) {
 		LocationList.add(location);
 		var newLocationInput = document.getElementById('new-location-name');
 		newLocationInput.value = '';
 		newLocationInput.focus();
 	}
-}
+};
 
 var weatherDataElement = document.querySelector('#weather-data-container');
 var wd2 = weatherDataElement.cloneNode(true);

@@ -255,6 +255,19 @@
 				border-bottom-color: #000;
 			}
 
+			#suggestions div {
+				white-space: nowrap;
+			}
+
+			#suggestions .selected {
+				background: white;
+				color: black;
+			}
+			.daytime #suggestions .selected {
+				background: black;
+				color: white;
+			}
+
 			#my-location {
 				position: absolute;
 				display: none;
@@ -422,25 +435,25 @@
 				stroke: hsl(280deg 90% 49%);
 			}
 
-			#forecast .weather-icon.aqi--1::after {
+			.weather-icon.aqi--1::after {
 				background: transparent;
 			}
-			#forecast .weather-icon.aqi-0::after {
+			.weather-icon.aqi-0::after {
 				background: hsl(0deg 0% 90%);
 			}
-			#forecast .weather-icon.aqi-1::after {
+			.weather-icon.aqi-1::after {
 				background: hsl(143deg 90% 49%);
 			}
-			#forecast .weather-icon.aqi-2::after {
+			.weather-icon.aqi-2::after {
 				background: hsl(78deg 90% 49%);
 			}
-			#forecast .weather-icon.aqi-3::after {
+			.weather-icon.aqi-3::after {
 				background: hsl(50deg 90% 49%);
 			}
-			#forecast .weather-icon.aqi-4::after {
+			.weather-icon.aqi-4::after {
 				background: hsl(25deg 90% 49%);
 			}
-			#forecast .weather-icon.aqi-5::after {
+			.weather-icon.aqi-5::after {
 				background: hsl(280deg 90% 49%);
 			}
 
@@ -486,7 +499,6 @@
 				transition: 0.2s 0.2s;
 			}
 
-
 			#come-birds,
 			#fly-away,
 			#i-see-you
@@ -512,25 +524,6 @@
 			{
 				top: 10px;
 				font-size: 36px;
-			}
-
-			#cities {
-				display: none;
-				position: absolute;
-				top: 10px;
-				left: 10px;
-				opacity: 0;
-				transition: 1s;
-				color: white;
-				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
-				font-weight: 200;
-				font-size: 14px;
-				z-index: 3;
-				
-			}
-
-			#cities:hover {
-				opacity: 1;
 			}
 
 			#city-names {
@@ -845,8 +838,10 @@
 			}
 
 			#city-list .weather-icon::after {
-				margin-top: -2px;
-				margin-left: 1px;
+				margin-top: 19px;
+			    margin-left: -14px;
+				width: 10px;
+			    height: 4px;
 			}
 
 			#city-list li span.name {
@@ -1124,33 +1119,20 @@
 		<div id="info-toggle" onclick="document.body.classList.toggle('hide-text')">
 			<svg viewBox="-50 150 920 713" xmlns="http://www.w3.org/2000/svg" fill="#fff"><path d="M468.75 772.25l0 -348.75l-121.25 0l0 348.75l121.25 0zm-61.25 -410c40 0 71.25 -31.25 71.25 -72.5 0 -38.75 -31.25 -70 -71.25 -70s-71.25 31.25 -71.25 70c0 40 31.25 72.5 71.25 72.5zm-1.25 -268.75c223.75 0 406.25 181.25 406.25 406.25 0 223.75 -182.5 406.25 -406.25 406.25 -225 0 -406.25 -182.5 -406.25 -406.25 0 -225 181.25 -406.25 406.25 -406.25z"/></svg>
 		</div>
-		<div id="cities">
-<textarea id="city-names">London
-New York
-Shanghai
-Mumbai
-Tokyo
-Paris
-San Francisco
-Berlin
-Rio de Janeiro
-Moscow</textarea><br>
-			<input type="checkbox" id="show-weather" checked onclick="document.body.classList.toggle('weather')"> <label for="show-weather">Show weather text</label><br>
-		</div>
 		<div id="toggle-city-list"></div>
 		<div id="city-list">
 			<li><span class="time"></span><span class="temp"></span><span class="name">My Location</span></li>
 			<ul>
 			</ul>
 			<form id="add-location-form">
-				<input id="new-location-name" autocomplete="address-level2"><button id="add-location-button">Add</button>
+				<input id="new-location-name" autocomplete="off"><button id="add-location-button">Add</button>
 			</form>
 			<div class="add-city">+</div>
 		</div>
 		<div id="weather-data-container">
 			<div id="weather-data" class="fade-out">
 				<div id="error"></div>
-				<div id="city-container"><div class="spinner"></div><input id="location" value="" aria-label="Location" autocomplete="address-level2"></input><span id="my-location"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><circle id="surround" fill="none" stroke="#000000" stroke-miterlimit="10" cx="7.6" cy="7.5" r="5.4"/><rect x="7" width="1" height="1.9"/><rect x="7" y="13.1" width="1" height="1.9"/><rect x="13.1" y="7" width="1.9" height="1"/><rect x="0" y="7" width="1.9" height="1"/><circle id="center" cx="7.6" cy="7.5" r="3.5"/></svg></span></div>
+				<div id="city-container"><div class="spinner"></div><input id="location" value="" aria-label="Location" autocomplete="off"></input><span id="my-location"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><circle id="surround" fill="none" stroke="#000000" stroke-miterlimit="10" cx="7.6" cy="7.5" r="5.4"/><rect x="7" width="1" height="1.9"/><rect x="7" y="13.1" width="1" height="1.9"/><rect x="13.1" y="7" width="1.9" height="1"/><rect x="0" y="7" width="1.9" height="1"/><circle id="center" cx="7.6" cy="7.5" r="3.5"/></svg></span></div>
 				<span class="weather-data-elements">
 					<div id="temperature"></div>
 					<div id="forecast"></div>
@@ -1607,5 +1589,6 @@ Moscow</textarea><br>
 		<!-- <script src="js/kinect-ws.js"></script> -->
 		<!-- <script src="js/microphone.js"></script> -->
 		<script src="js/corn_algo_doodle.js"></script>
+		<script src="js/cities.js"></script>
 	</body>
 </html>

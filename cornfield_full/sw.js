@@ -1,5 +1,5 @@
-const APP_CACHE = 'cornfield-cache-v201';
-const LIB_CACHE = 'cornfield-lib-cache-v6';
+const APP_CACHE = 'cornfield-cache-v209';
+const LIB_CACHE = 'cornfield-lib-cache-v24';
 const EXT_CACHE = 'cornfield-ext-cache';
 const DEBUG = false;
 
@@ -20,6 +20,7 @@ self.addEventListener('install', (e) => {
                 './js/corn_worker.js',
                 './js/corn_algo_doodle.js',
                 './js/birds.js',
+                './js/cities.js',
             ]);
             const appAdd = (await app).addAll([
                 './',

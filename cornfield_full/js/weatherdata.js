@@ -128,7 +128,7 @@ var updateWeatherCache = function (cityName, weatherData) {
 			li.querySelector('.temp').textContent = Math.round(c.temperature) + '°C';
 			var timeEl = li.querySelector('.time');
 			timeEl.dataset.tz = weatherData.timezone;
-			li.querySelector('.weather-icon').className = 'weather-icon wi wi-owm-' + weatherData.weather[0].id;
+			li.querySelector('.weather-icon').className = 'weather-icon wi wi-owm-' + weatherData.weather[0].id + ' aqi-' + weatherData.airQuality.main.aqi;
 		}
 	}
 }

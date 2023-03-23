@@ -355,7 +355,29 @@
 				right: 0;
 			}
 
-			/* #forecast .weather-icon::after {
+			.wi-owm-500:before,
+			.wi-owm-501:before
+			{
+				color: #91c5ff;
+			}
+
+			.daytime .wi-owm-500:before,
+			.daytime .wi-owm-501:before
+			{
+				color: #0a2ad4;
+			}
+
+			.wi-owm-800:before
+			{
+				color: #ffff81;
+			}
+
+			.daytime .wi-owm-800:before
+			{
+				color: #ffff00;
+			}
+
+			#city-list .weather-icon::after {
 				content: "";
 				width: 10px;
 				height: 10px;
@@ -367,7 +389,7 @@
 				font-size: 16px;
 				text-indent: 11px;
 				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
-			} */
+			}
 
 			#forecast .weather-icon {
 				position: relative;
@@ -803,6 +825,7 @@
 				position: relative;
 				height: 32px;
 				transition: 0.1s;
+				white-space: nowrap;
 			}
 
 			#city-list li span.temp {
@@ -813,9 +836,11 @@
 				display: inline-block;
 			}
 
+			#city-list span.time {
+				width: 100px;
+			}
+
 			#city-list span.weather-icon {
-				margin-left: 12px;
-				margin-right: 12px;
 				width: 30px;
 			}
 
@@ -1027,9 +1052,6 @@
 				}
 			}
 			@media (max-width: 480px) {
-				#city-list li span {
-					width: 58px;
-				}
 			}
 			@media (max-width: 390px) {
 				#sunrise {

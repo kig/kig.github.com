@@ -380,7 +380,7 @@ timeData.ondblclick = function(ev) {
 
 var haveCurrentLocation = false;
 
-if (window.localStorage && window.localStorage.currentLocation) {
+if (false && (window.localStorage && window.localStorage.currentLocation)) {
 	try {
 		var currentLocation = JSON.parse(window.localStorage.currentLocation);
 		if (typeof currentLocation === 'string') currentLocation = currentLocation.trim();
@@ -390,7 +390,7 @@ if (window.localStorage && window.localStorage.currentLocation) {
 			// Bad currentLocation in localStorage.
 			currentLocation = false;
 		}
-		if (currentLocation) {
+		if (currentLoclation) {
 			window.currentLocation = currentLocation;
 			fetchWeather(currentLocation);
 			haveCurrentLocation = true;

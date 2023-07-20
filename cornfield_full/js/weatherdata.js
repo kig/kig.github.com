@@ -25,24 +25,18 @@ Tasks
 		- [] Use SVG for forecast graph instead of canvas
 
 	- Local features (i.e. no API, have to do custom integrations)
-		- [] Weather signals (typhoons, fire hazard, cold/hot weather warning, rain signals)
-		- [] Textual weather report
-		- [] Rain radar (... how to make it pretty? Do it like the weather map artwork?)
+		- [] Hong Kong [pull from https://www.hko.gov.hk/en/index.html]
+			- [] Weather signals (typhoons, fire hazard, cold/hot weather warning, rain signals)
+			- [] Textual weather report
+			- [] Rain radar (... how to make it pretty? Do it like the weather map artwork?)
+		- [] London
 
-	- In a world where everything takes no time, this functionality would be fun to explore.
+	- In a world of AI where everything takes no time, this functionality would be fun to explore.
 		- [] Location info
 		- [] Event info
 		- [] Transportation
 		- [] Exercise info
 		- [] Food
-		- [] Weather Pay
-		- [] Weather Store
-		- [] Weather Marketplace
-		- [] wPhone
-		- [] Monopoly on Weather
-		- [] Weather Tax
-		- [] Every breath you take should be a financial transaction and we should take a 30% cut of it
-
 
 */
 
@@ -683,6 +677,29 @@ window.addEventListener('pointerup', function (ev) {
 		}, 300);
 	}
 });
+
+function stripTags(s) {
+    return (s||'').replace(/<[^>]+>/g, '');
+}
+
+async function fetchWeather() {
+    const weather = await (await fetch('https://www.hko.gov.hk/wxinfo/json/one_json.xml')).json();
+    return (
+        `The temperature is ${parseInt(weather.hko.Temperature)} with a high of ${weather.hko.HomeMaxTemperature} and a low of ${weather.hko.HomeMinTemperature}. ` +
+        stripTags(weather.FLW.GeneralSituation) +
+        stripTags(' Forecast: ' + weather.FLW.ForecastDesc) +
+        stripTags(' Outlook: ' + weather.FLW.OutlookContent) + ' ' + stripTags(weather.FLW.TCInfo || '')
+	);
+}
+
+async function say(text, options) {
+	return new Promise((resolve, reject) => {
+		const u = new SpeechSynthesisUtterance(text);
+		if (options) Object.assign(u, options);
+		u.onend = resolve;
+		speechSynthesis.speak(u); 
+	});
+}
 
 /*
 

@@ -802,7 +802,7 @@
 				color: black;
 			}
 			#add-location-form {
-				display: none;
+				/* display: none; */
 			}
 			.show-add-location #add-location-form {
 				display: block;
@@ -816,13 +816,14 @@
 			}
 			#city-list li {
 				position: relative;
-				height: 32px;
+				height: 48px;
 				transition: 0.1s;
 				white-space: nowrap;
+				font-size: 24px;
 			}
 
 			#city-list li span.temp {
-				width: 40px;
+				width: 50px;
 			}
 
 			#city-list li span {
@@ -834,7 +835,7 @@
 			}
 
 			#city-list span.weather-icon {
-				width: 30px;
+				width: 50px;
 			}
 
 			#city-list .weather-icon::after {
@@ -860,7 +861,7 @@
 			#city-list .delete {
 				cursor: pointer;
 				position: absolute;
-				top: 0px;
+				top: 5px;
 				right: -28px;
 				width: 14px;
 				height: 14px;
@@ -893,6 +894,7 @@
 				font-weight: 700;
 				margin-top: 1px;
 				border-top-right-radius: 0;
+				display: none;
 			}
 
 			#new-location-name {
@@ -900,29 +902,31 @@
 				height: 18px;
 				border: 0;
 				outline: 0;
-				height: 20px;
-				border-top-right-radius: 9px;
-				border-bottom-left-radius: 9px;
+				height: 40px;
+				border-radius: 9px;
 				padding-left: 9px;
 				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
+				width: calc(100% - 68px);
+				box-sizing: border-box;
+				margin-right: 8px;
 			}
 			#add-location-button {
 				background: #8cff8a;
 				color: black;
-				width: 46px;
-				height: 20px;
+				width: 60px;
+				height: 40px;
 				display: inline-block;
 				font-size: 14px;
 				padding-right: 8px;
-				line-height: 18px;
+				line-height: 40px;
 				font-family: 'Proxima Nova', "proxima-nova", Helvetica Neue, Segoe UI, sans-serif;
 				text-transform: uppercase;
 				font-weight: 700;
 				border: 0;
 				outline: 0;
 				vertical-align: top;
-				border-top-left-radius: 9px;
-				display: none;
+				border-radius: 9px;
+				box-sizing: border-box;
 			}
 
 			.in-city-list #city-list {
@@ -942,7 +946,7 @@
 				width: 18px;
 				height: 18px;
 				right: 18px;
-				top: 45px;
+				top: 51px;
 				background: linear-gradient(0deg, white 0%, white 20%, transparent 20%, transparent 40%, white 40%, white 60%, transparent 60%, transparent 80%, white 80%);
 				cursor: pointer;
 				opacity: 0.65;
@@ -974,7 +978,7 @@
 					width: 16px;
 					height: 15px;
 					right: 21px;
-					top: 35px;
+					top: 40px;
 				}
 				#city-list {
 					top: 32px;
@@ -1028,14 +1032,14 @@
 					width: 12px;
 					height: 10px;
 					right: 15px;
-					top: 33px;
+					top: 39px;
 				}
 				#city-list {
 					top: 28px;
 					right: 42px;
 				}
 				#city-list li span {
-					width: 128px;
+					width: 168px;
 					overflow: hidden;
 				}
 				#city-list li span.name {

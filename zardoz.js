@@ -209,10 +209,8 @@ var init = function() {
 		var iResolution = vec3(glc.width, glc.height, 1.0);
 
 		var resize = function() {
-			// Disabled HiDPI because those machines don't have enough FLOPS per pixel. 
-			// FIXME Re-enable in 2016.
-			glc.width = window.innerWidth; // * (window.mobile ? 1 : (window.devicePixelRatio || 1));
-			glc.height = window.innerHeight; // * (window.mobile ? 1 : (window.devicePixelRatio || 1));
+			glc.width = window.innerWidth * window.devicePixelRatio;
+			glc.height = window.innerHeight * window.devicePixelRatio;
 			iResolution[0] = glc.width;
 			iResolution[1] = glc.height;
 			gl.viewport(0,0, glc.width, glc.height);

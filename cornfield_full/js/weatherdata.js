@@ -578,7 +578,6 @@ document.getElementById('add-location-form').onsubmit = function(ev) {
 	const location = newLocationInput.value;
 	if (location) {
 		LocationList.add(location);
-		var newLocationInput = document.getElementById('new-location-name');
 		newLocationInput.value = '';
 		newLocationInput.focus();
 	}

@@ -803,9 +803,15 @@
 			}
 			#add-location-form {
 				/* display: none; */
+				position: relative;
 			}
 			.show-add-location #add-location-form {
 				display: block;
+			}
+			#add-location-form #suggestions {
+				position: absolute;
+				right: 0;
+				top: 48px;
 			}
 
 			#city-list ul {
@@ -831,7 +837,9 @@
 			}
 
 			#city-list span.time {
-				width: 100px;
+				width: auto;
+				overflow: visible;
+				text-align: right;
 			}
 
 			#city-list span.weather-icon {
@@ -1131,7 +1139,6 @@
 			<form id="add-location-form">
 				<input id="new-location-name" autocomplete="off"><button id="add-location-button">Add</button>
 			</form>
-			<div class="add-city">+</div>
 		</div>
 		<div id="weather-data-container">
 			<div id="weather-data" class="fade-out">

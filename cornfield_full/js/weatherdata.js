@@ -572,29 +572,18 @@ cityList.onpointerup = function(ev) {
 };
 
 
-const addButton = cityList.querySelector('.add-city');
-addButton.onclick = function(ev) {
-	cityList.classList.toggle('show-add-location');
-	var newLocationInput = document.getElementById('new-location-name');
-	newLocationInput.focus();
-	newLocationInput.setSelectionRange(0, newLocationInput.value.length);
-};
-
 document.getElementById('add-location-form').onsubmit = function(ev) {
 	ev.preventDefault();
-	const newLocation = document.getElementById('new-location-name');
-	newLocation.onchange({target: newLocation});
-}
-
-document.getElementById('new-location-name').onchange = function(ev) {
-	var location = ev.target.value;
+	const newLocationInput = document.getElementById('new-location-name');
+	const location = newLocationInput.value;
 	if (location) {
 		LocationList.add(location);
 		var newLocationInput = document.getElementById('new-location-name');
 		newLocationInput.value = '';
 		newLocationInput.focus();
 	}
-};
+	newLocation.onchange({target: newLocation});
+}
 
 var weatherDataElement = document.querySelector('#weather-data-container');
 var wd2 = weatherDataElement.cloneNode(true);

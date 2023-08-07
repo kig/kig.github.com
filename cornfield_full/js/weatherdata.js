@@ -581,7 +581,6 @@ document.getElementById('add-location-form').onsubmit = function(ev) {
 		newLocationInput.value = '';
 		newLocationInput.focus();
 	}
-	newLocation.onchange({target: newLocation});
 }
 
 var weatherDataElement = document.querySelector('#weather-data-container');

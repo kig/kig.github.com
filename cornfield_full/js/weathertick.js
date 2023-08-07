@@ -358,7 +358,7 @@ function populateWeatherElement(el, weatherData) {
 
 		line(ctx, 'Wind', ['#840','#C80'], 120, fc.list.map(f => [f.wind.speed,f.wind.gust]), dayIndexes);
 		
-		line(ctx, 'Rain', '#44C', 180, fc.list.map(f => f.rain ? f.rain['3h'] : 0), dayIndexes, 0, 12);
+		line(ctx, 'Rain', '#44C', 180, fc.list.map(f => f.rain ? f.rain['3h'] : 0), dayIndexes, 0, 2);
 		line(ctx, 'Pres', '#4C8', 240, fc.list.map(f => f.main.pressure), dayIndexes);		
 		line(ctx, 'Cloud', '#888', 300, fc.list.map(f => f.clouds.all), dayIndexes, 0, 100);
 		line(ctx, 'Humid', '#49F', 360, fc.list.map(f => f.main.humidity), dayIndexes);

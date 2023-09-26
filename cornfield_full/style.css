@@ -1022,6 +1022,9 @@ hr {
     #city-list li span.temp {
         width: 40px;
     }
+    #city-list span.weather-icon {
+        width: 45px;
+    }
 }
 @media (max-width: 314px) {
     #temperature .wi {

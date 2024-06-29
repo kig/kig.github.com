@@ -380,6 +380,16 @@
 				color: #0a2ad4;
 			}
 
+			.wi-owm-502:before
+			{
+				color: #d191ff;
+			}
+
+			.daytime .wi-owm-502:before
+			{
+				color: #8d09b4;
+			}
+
 			.wi-owm-800:before
 			{
 				color: #ffff81;
@@ -403,6 +413,106 @@
 				text-indent: 11px;
 				font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
 			}
+
+			#hourly-forecast {
+				display: inline-block;
+			}
+			.forecast-container {
+				position: relative;
+				height: 74px;
+				width: 286px;
+				overflow: hidden;
+			}
+			.forecast-item {
+				position: absolute;
+				top: 0;
+			}
+			.forecast-bg {
+				position: absolute;
+				top: 38px;
+				left: 0;
+				width: 100%;
+				height: 8px;
+				background: rgba(0,0,0);
+			}
+			.forecast-day {
+				position: absolute;
+				top: -4px;
+				left: 0;
+				font-size: 14px;
+				border-left: 1px solid white;
+				padding-left: 2px;
+				height: 50px;
+			}
+			.forecast-time {
+				position: absolute;
+				top: 10px;
+				left: 3px;
+				font-size: 14px;
+			}
+			.forecast-item span {
+				position: absolute;
+				top: 49px;
+				left: 0;
+				font-size: 20px;
+			}
+
+			.Thunderstorm {
+				background: #ffcb20;
+			}
+			.Drizzle {
+				background: #4dafb6;
+			}
+			.Rain {
+				background: #0841df;
+			}
+			.Snow {
+				background: #ffffff;
+			}
+			.Mist {
+				background: #d6d6d6;
+			}
+			.Smoke {
+				background: #8b8b8b;
+			}
+			.Haze {
+				background: #b7c9cf;
+			}
+			.Dust {
+				background: #cec8b4;
+			}
+			.Fog {
+				background: #d6d6d6;
+			}
+			.Sand {
+				background: #e7d69f;
+			}
+			.Ash {
+				background: #5f5f5f;
+			}
+			.Squall {
+				background: #b7c9cf;
+			}
+			.Tornado {
+				background: #5f5f5f;
+			}
+			.Clear {
+				background: #ffcb20;
+			}
+			.Clouds {
+				background: #b7c9cf;
+			}
+
+			.i-1 {
+				opacity: 0.3;
+			}
+			.i-2 {
+				opacity: 0.6;
+			}
+			.i-3 {
+				opacity: 1;
+			}
+
 
 			#forecast .weather-icon {
 				position: relative;
@@ -1146,6 +1256,7 @@
 				<div id="city-container"><div class="spinner"></div><input id="location" value="" aria-label="Location" autocomplete="off"></input><span id="my-location"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><circle id="surround" fill="none" stroke="#000000" stroke-miterlimit="10" cx="7.6" cy="7.5" r="5.4"/><rect x="7" width="1" height="1.9"/><rect x="7" y="13.1" width="1" height="1.9"/><rect x="13.1" y="7" width="1.9" height="1"/><rect x="0" y="7" width="1.9" height="1"/><circle id="center" cx="7.6" cy="7.5" r="3.5"/></svg></span></div>
 				<span class="weather-data-elements">
 					<div id="temperature"></div>
+					<div id="hourly-forecast"></div>
 					<div id="forecast"></div>
 					<div id="weather-desc-container"><span id="weather-desc"></span>, <span id="cloud-cover"><i class="wi wi-cloudy"></i></span></div>
 					<div id="wind-data"><span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='15' width='15' viewBox="0 0 15 15"><g id='wind-direction-arrow' transform='rotate(220 7.5 7.5)'><polygon points="0.2,7.4 14.8,11.1 11.4,7.4 14.8,3.7 " fill="white"/></g></svg></span><span id="wind-speed"><i class="wi wi-strong-wind"></i></span></div>

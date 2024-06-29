@@ -48,6 +48,66 @@ const weatherCodePriority = [
 	900,
 ];
 
+const weatherCodeNames = {
+	200: {group: 'Thunderstorm', title: 'thunderstorm with light rain', intensity: 1},
+	201: {group: 'Thunderstorm', title: 'thunderstorm with rain', intensity: 2},
+	202: {group: 'Thunderstorm', title: 'thunderstorm with heavy rain', intensity: 3},
+	210: {group: 'Thunderstorm', title: 'light thunderstorm', intensity: 1},
+	211: {group: 'Thunderstorm', title: 'thunderstorm', intensity: 2},
+	212: {group: 'Thunderstorm', title: 'heavy thunderstorm', intensity: 3},
+	221: {group: 'Thunderstorm', title: 'ragged thunderstorm', intensity: 2},
+	230: {group: 'Thunderstorm', title: 'thunderstorm with light drizzle', intensity: 1},
+	231: {group: 'Thunderstorm', title: 'thunderstorm with drizzle', intensity: 2},
+	232: {group: 'Thunderstorm', title: 'thunderstorm with heavy drizzle', intensity: 3},
+	300: {group: 'Drizzle', title: 'light intensity drizzle', intensity: 1},
+	301: {group: 'Drizzle', title: 'drizzle', intensity: 2},
+	302: {group: 'Drizzle', title: 'heavy intensity drizzle', intensity: 3},
+	310: {group: 'Drizzle', title: 'light intensity drizzle rain', intensity: 1},
+	311: {group: 'Drizzle', title: 'drizzle rain', intensity: 2},
+	312: {group: 'Drizzle', title: 'heavy intensity drizzle rain', intensity: 3},
+	313: {group: 'Drizzle', title: 'shower rain and drizzle', intensity: 2},
+	314: {group: 'Drizzle', title: 'heavy shower rain and drizzle', intensity: 3},
+	321: {group: 'Drizzle', title: 'shower drizzle', intensity: 2},
+	500: {group: 'Rain', title: 'light rain', intensity: 1},
+	501: {group: 'Rain', title: 'rain', intensity: 2},
+	502: {group: 'Rain', title: 'heavy rain', intensity: 3},
+	503: {group: 'Rain', title: 'very heavy rain', intensity: 4},
+	504: {group: 'Rain', title: 'extreme rain', intensity: 5},
+	511: {group: 'Rain', title: 'freezing rain', intensity: 3},
+	520: {group: 'Rain', title: 'light intensity shower rain', intensity: 1},
+	521: {group: 'Rain', title: 'shower rain', intensity: 2},
+	522: {group: 'Rain', title: 'heavy intensity shower rain', intensity: 3},
+	531: {group: 'Rain', title: 'ragged shower rain', intensity: 2},
+	600: {group: 'Snow', title: 'light snow', intensity: 1},
+	601: {group: 'Snow', title: 'snow', intensity: 2},
+	602: {group: 'Snow', title: 'heavy snow', intensity: 3},
+	611: {group: 'Snow', title: 'sleet', intensity: 2},
+	612: {group: 'Snow', title: 'shower sleet', intensity: 2},
+	615: {group: 'Snow', title: 'light rain and snow', intensity: 2},
+	616: {group: 'Snow', title: 'rain and snow', intensity: 3},
+	620: {group: 'Snow', title: 'light shower snow', intensity: 2},
+	621: {group: 'Snow', title: 'shower snow', intensity: 3},
+	622: {group: 'Snow', title: 'heavy shower snow', intensity: 4},
+
+	701: {group: 'Mist', title: 'mist', intensity: 1},
+	711: {group: 'Smoke', title: 'smoke', intensity: 1},
+	721: {group: 'Haze', title: 'haze', intensity: 1},
+	731: {group: 'Dust', title: 'dust', intensity: 1},
+	741: {group: 'Fog', title: 'fog', intensity: 1},
+	751: {group: 'Sand', title: 'sand', intensity: 1},
+	761: {group: 'Dust', title: 'dust', intensity: 1},
+	762: {group: 'Ash', title: 'volcanic ash', intensity: 1},
+	771: {group: 'Squall', title: 'squalls', intensity: 1},
+	781: {group: 'Tornado', title: 'tornado', intensity: 1},
+
+	800: {group: 'Clear', title: 'clear sky', intensity: 0},
+
+	801: {group: 'Clouds', title: 'few clouds', intensity: 1},
+	802: {group: 'Clouds', title: 'scattered clouds', intensity: 1},
+	803: {group: 'Clouds', title: 'broken clouds', intensity: 1},
+	804: {group: 'Clouds', title: 'overcast clouds', intensity: 1},
+};
+
 function weatherCodeCompare(a, b) {
 	const categoryPriority = weatherCodePriority.indexOf(a) - weatherCodePriority.indexOf(b);
 	if (categoryPriority !== 0) return categoryPriority;
@@ -364,6 +424,153 @@ function populateWeatherElement(el, weatherData) {
 		line(ctx, 'Humid', '#49F', 360, fc.list.map(f => f.main.humidity), dayIndexes);
 
 		// line(ctx, 'Vis', '#088', 420, fc.list.map(f => Math.round(f.visibility/1000)), dayIndexes);
+	}
+
+	// Weather warnings. Log to console for now.
+	// The weather warnings are for things like thunderstorms, heavy rain, heavy snow, hot weather, high winds and cold weather.
+	// If the feels_like temperature is above 40C, there's a hot weather warning.
+	// If the feels_like temperature is above 45C, there's an extreme heat warning.
+	// If the feels_like temperature is above 50C, there's a deadly heat warning.
+	// If the feels_like temperature is below -20C, there's a cold weather warning.
+	// If the feels_like temperature is below -30C, there's a extreme cold warning.
+	// If the feels_like temperature is below -60C, there's a penguin.
+	// If the wind speed is above 15 m/s, there's a high wind warning.
+	// If the wind speed is above 20 m/s, there's a storm warning.
+	// If the wind speed is above 30 m/s, there's a typhoon warning.
+	// If the rain amount is above 30 mm/h, there's a yellow rain warning.
+	// If the rain amount is above 50 mm/h, there's a red rain warning.
+	// If the rain amount is above 70 mm/h, there's a black rain warning.
+	{
+		const warnings = [];
+		if (c.weatherData.weather.some(wd => wd.id >= 200 && wd.id < 300)) warnings.push('thunderstorm');
+		// console.log(c.weatherData);
+		// heat
+		if (c.weatherData.feels_like > 40) warnings.push('hot');
+		if (c.weatherData.feels_like > 45) warnings.push('extreme heat');
+		if (c.weatherData.feels_like > 50) warnings.push('deadly heat');
+		// cold
+		if (c.weatherData.feels_like < -20) warnings.push('cold');
+		if (c.weatherData.feels_like < -30) warnings.push('extreme cold');
+		if (c.weatherData.feels_like < -60) warnings.push('penguin');
+		// wind
+		if (c.weatherData.wind.speed > 15) warnings.push('high wind');
+		if (c.weatherData.wind.speed > 20) warnings.push('storm');
+		if (c.weatherData.wind.speed > 30) warnings.push('typhoon');
+		// rain
+		if (c.weatherData.rain && c.weatherData.rain['3h'] > 3*30) warnings.push('yellow rain');
+		if (c.weatherData.rain && c.weatherData.rain['3h'] > 3*50) warnings.push('red rain');
+		if (c.weatherData.rain && c.weatherData.rain['3h'] > 3*70) warnings.push('black rain');
+		if (warnings.length > 0) {
+			console.log("Warnings", warnings);
+		}
+	}
+
+	// Hourly forecast.
+	// The hourly forecast buckets contiguous similar weather together.
+	// The buckets are separated by a change in weather.
+	// E.g. {start: 12, weather: 800, temp: 20, wind: 5}, {start: 21, weather: 501, temp: 16, wind: 3}, ...
+	// To give you important information front and center, the visualization de-emphasizes clear and cloudy weather and emphasizes warnings, rain, thunder, etc.
+	{
+		// This is a string of hours formatted as [+-]0000-2359 (-2359, -2358, ..., -0100, -0000, +0000, +0100, ..., +2359)
+		const timeZoneMinutesInt = Math.round(fc.city.timezone / 60);
+		let timeZoneMinutes = timeZoneMinutesInt % 60;
+		if (timeZoneMinutes < 0) timeZoneMinutes += 60;
+		const timeZoneHoursInt = Math.floor(Math.abs(timeZoneMinutesInt) / 60) * Math.sign(timeZoneMinutesInt);
+
+		const timeZone = (timeZoneHoursInt >= 0 ? '+' : '-') + Math.abs(timeZoneHoursInt).toString().padStart(2, '0') + timeZoneMinutes.toString().padStart(2, '0');
+
+		const forecast = [
+			{start: c.weatherData.dt, weather: c.weatherData.weather[0].id, temp: c.weatherData.main.temp, wind: c.weatherData.wind.speed, elapsed: (c.weatherData.dt-Math.round(Date.now()/1e3)) / 3600}
+		];
+		fc.list.forEach((l, i) => {
+			const prev = fc.list[i-1] || c.weatherData;
+			const prevFC = forecast[forecast.length-1];
+			if (!prev || l.weather[0].id !== prev.weather[0].id || Math.abs(l.main.temp - prevFC.temp) > 3 || Math.abs(l.wind.speed - prevFC.wind) > 3) {
+				forecast.push({start: l.dt, weather: l.weather[0].id, temp: l.main.temp, wind: l.wind.speed, elapsed: (l.dt-Math.round(Date.now()/1e3)) / 3600});
+			}
+		});
+		
+		// For debugging and testing title condensing logic.
+		const condensedForecast = [];
+		forecast.forEach((f, i) => {
+			const wd = weatherCodeNames[f.weather];
+			// If the previous weather belongs to the same group and has intensity below 3, skip this weather.
+			if (i > 0 && weatherCodeNames[forecast[i-1].weather].group === wd.group && weatherCodeNames[forecast[i-1].weather].intensity < 3 && wd.intensity < 3) {
+				return;
+			}
+			const dayOfWeekString = new Date(f.start * 1e3).toLocaleDateString(navigator.language, { weekday: 'short', timeZone });
+			const date = new Date((f.start + fc.city.timezone) * 1e3);
+			condensedForecast.push({
+				start: f.start, hour: date.getUTCHours(), day: dayOfWeekString, 
+				weather: f.weather, title: wd.title, intensity: wd.intensity, group: wd.group,
+				temp: f.temp, wind: f.wind, elapsed: f.elapsed
+			});
+		});
+
+		// Add end times to the forecast items. This is the start time of the next item or +3 hours for the last one.
+		forecast.forEach((f, i) => {
+			f.end = forecast[i+1] ? forecast[i+1].start : f.start + 3*3600;
+		});
+		condensedForecast.forEach((f, i) => {
+			f.end = condensedForecast[i+1] ? condensedForecast[i+1].start : f.start + 3*3600;
+		});
+
+		// Create a visualization of the forecast.
+		// This is a color bar with the weather code color, a title and time at condensed forecast start.
+		// Above the bar is the time, under is the weather icon.
+		// One hour is 10px wide, the bar is 8px tall.
+		const container = document.createElement('div');
+		container.className = 'forecast-container';
+		let currentLeft = 0;
+		forecast.forEach((f,i) => {
+			const div = document.createElement('div');
+			div.className = `forecast-item`;
+			const bg = document.createElement('div');
+			bg.className = `forecast-bg ${weatherCodeNames[f.weather].group} i-${weatherCodeNames[f.weather].intensity}`;
+			div.appendChild(bg);
+			div.style.left = currentLeft + 'px';
+			const width = Math.floor((f.end - f.start) / 3600) * 11;
+			div.style.width = width + 'px';
+			currentLeft += width;
+			container.appendChild(div);
+			const wd = weatherCodeNames[f.weather];
+			if (i > 0 && weatherCodeNames[forecast[i-1].weather].group === wd.group && weatherCodeNames[forecast[i-1].weather].intensity < 3 && wd.intensity < 3) {
+				return;
+			}
+			const date = new Date((f.start + fc.city.timezone) * 1e3);
+			// Add the time.
+			const time = document.createElement('div');
+			time.className = 'forecast-time';
+			time.textContent = date.getUTCHours();
+			div.appendChild(time);
+			// Add the weather icon.
+			const icon = document.createElement('span');
+			// If the intensity is 1, use the intensity 2 icon if one exists.
+			let iconNumber = f.weather;
+			if (wd.intensity === 1 && weatherCodeNames[f.weather+1] && weatherCodeNames[f.weather+1].intensity === 2) {
+				iconNumber = f.weather + 1;
+			}
+			icon.className = 'wi wi-owm-' + iconNumber;
+			div.appendChild(icon);
+		});
+		// Create day labels for the forecast.
+		let dayTime = forecast[0].start;
+		while (dayTime < forecast[forecast.length-1].end) {
+			const dayOfWeekString = new Date(dayTime * 1e3).toLocaleDateString(navigator.language, { weekday: 'short', timeZone });
+			const div = document.createElement('div');
+			div.className = 'forecast-day';
+			div.textContent = dayOfWeekString;
+			div.style.left = Math.floor((dayTime - forecast[0].start) / 3600) * 11 + 'px';
+			container.appendChild(div);
+
+			dayTime = new Date((dayTime + fc.city.timezone) * 1e3).setUTCHours(24).valueOf() / 1e3 - fc.city.timezone;
+		}
+
+		const wg = el.querySelector('#hourly-forecast');
+		wg.innerHTML = '';
+		wg.appendChild(container);
+
+		// console.log("Hourly forecast", forecast, condensedForecast, container);
 	}
 }
 

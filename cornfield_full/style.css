@@ -152,6 +152,7 @@ body {
     transition: 0.15s;
 }
 .fade-out #temperature,
+.fade-out #hourly-forecast,
 .fade-out #weather-desc-container,
 .fade-out #forecast,
 .fade-out #wind-data,
@@ -314,13 +315,16 @@ body {
 
 
 #hourly-forecast {
-    display: inline-block;
+    display: block;
+    height: 74px;
+    text-align: right;
+    overflow: hidden;
 }
 .forecast-container {
+    display: inline-block;
     position: relative;
     height: 74px;
     width: 286px;
-    overflow: hidden;
 }
 .forecast-item {
     position: absolute;

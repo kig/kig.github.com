@@ -171,7 +171,7 @@ var networkWeatherFetch = function(cityName, onSuccess, onFailure) {
 		var coordsLocation = '?lat=' + encodeURIComponent(weatherData.coord.lat) + '&lon=' + encodeURIComponent(weatherData.coord.lon);
 		fetch(server+'air_pollution/forecast'+coordsLocation+units+appid+lang+cacheTime).then(res => res.json()).then(airQuality => {
 			if (airQuality && !airQuality.cod) {
-				weatherData.airQuality = airQuality.list[0];
+				weatherData.airQuality = airQuality.list[0] || {main: {aqi: -1}};
 				airQuality.list.forEach((q,i) => {
 					if (weatherData.forecast.list[i]) {
 						weatherData.forecast.list[i].airQuality = q;
@@ -669,8 +669,8 @@ function stripTags(s) {
     return (s||'').replace(/<[^>]+>/g, '');
 }
 
-async function fetchWeather() {
-    const weather = await (await fetch('https://www.hko.gov.hk/wxinfo/json/one_json.xml')).json();
+async function fetchWeatherHK() {
+    const weather = await (await fetch('https://office.heichen.hk/weather/hong_kong.json')).json();
     return (
         `The temperature is ${parseInt(weather.hko.Temperature)} with a high of ${weather.hko.HomeMaxTemperature} and a low of ${weather.hko.HomeMinTemperature}. ` +
         stripTags(weather.FLW.GeneralSituation) +
@@ -686,6 +686,12 @@ async function say(text, options) {
 		u.onend = resolve;
 		speechSynthesis.speak(u); 
 	});
+}
+
+async function speakRegionalWeather(latitude, longitude) {
+	if (latitude > 22 + 8/60 && latitude < 22 + 35/60 && longitude > 113+49/60 && longitude < 114+31/60) {
+		await say(await fetchWeatherHK())
+	}
 }
 
 /*

@@ -1,5 +1,5 @@
-const APP_CACHE = 'cornfield-cache-v243';
-const LIB_CACHE = 'cornfield-lib-cache-v24';
+const APP_CACHE = 'cornfield-cache-v222';
+const LIB_CACHE = 'cornfield-lib-cache-v26';
 const EXT_CACHE = 'cornfield-ext-cache';
 const DEBUG = false;
 
@@ -25,6 +25,7 @@ self.addEventListener('install', (e) => {
             const appAdd = (await app).addAll([
                 './',
                 './index.html',
+                './style.css',
                 './js/weathertick.js',
                 './js/weatherdata.js',
             ]);

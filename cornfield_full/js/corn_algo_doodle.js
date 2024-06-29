@@ -196,6 +196,10 @@ var tick = function() {
 };
 
 tick();
+
+if ('wakeLock' in navigator) {
+	navigator.wakeLock.request('screen');
+}
 var fullscreenButton = document.getElementById('fullscreen');
 if (fullscreenButton && (document.exitFullscreen||document.webkitExitFullscreen||document.webkitExitFullScreen||document.mozCancelFullScreen||document.msExitFullscreen)) {
 	fullscreenButton.onclick = function() {

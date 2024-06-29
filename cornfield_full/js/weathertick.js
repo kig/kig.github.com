@@ -566,7 +566,12 @@ function populateWeatherElement(el, weatherData) {
 			dayTime = new Date((dayTime + fc.city.timezone) * 1e3).setUTCHours(24).valueOf() / 1e3 - fc.city.timezone;
 		}
 
-		const wg = el.querySelector('#hourly-forecast');
+		let wg = el.querySelector('#hourly-forecast');
+		if (!wg) {
+			wg = document.createElement('div');
+			wg.id = 'hourly-forecast';
+			tempEl.parentNode.insertBefore(wg, tempEl.nextSibling);
+		}
 		wg.innerHTML = '';
 		wg.appendChild(container);
 

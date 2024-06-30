@@ -537,6 +537,9 @@ function populateWeatherElement(el, weatherData) {
 			if (i > 0 && weatherCodeNames[forecast[i-1].weather].group === wd.group && weatherCodeNames[forecast[i-1].weather].intensity < 3 && wd.intensity < 3) {
 				return;
 			}
+			if (width < 33) {
+				return;
+			}
 			const date = new Date((f.start + fc.city.timezone) * 1e3);
 			// Add the time.
 			const time = document.createElement('div');
@@ -556,11 +559,15 @@ function populateWeatherElement(el, weatherData) {
 		// Create day labels for the forecast.
 		let dayTime = forecast[0].start;
 		while (dayTime < forecast[forecast.length-1].end) {
+			const left = Math.floor((dayTime - forecast[0].start) / 3600) * 11;
+			if (left > 0 && left < 33) {
+				container.lastChild.remove();
+			}
 			const dayOfWeekString = new Date(dayTime * 1e3).toLocaleDateString(navigator.language, { weekday: 'short', timeZone });
 			const div = document.createElement('div');
 			div.className = 'forecast-day';
 			div.textContent = dayOfWeekString;
-			div.style.left = Math.floor((dayTime - forecast[0].start) / 3600) * 11 + 'px';
+			div.style.left = left + 'px';
 			container.appendChild(div);
 
 			dayTime = new Date((dayTime + fc.city.timezone) * 1e3).setUTCHours(24).valueOf() / 1e3 - fc.city.timezone;

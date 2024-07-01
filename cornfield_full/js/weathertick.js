@@ -479,8 +479,9 @@ function populateWeatherElement(el, weatherData) {
 
 		const timeZone = (timeZoneHoursInt >= 0 ? '+' : '-') + Math.abs(timeZoneHoursInt).toString().padStart(2, '0') + timeZoneMinutes.toString().padStart(2, '0');
 
+		let dt = new Date((c.weatherData.dt + fc.city.timezone) * 1e3).setUTCMinutes(0, 0, 0) / 1e3 - fc.city.timezone;
 		const forecast = [
-			{start: c.weatherData.dt, weather: c.weatherData.weather[0].id, temp: c.weatherData.main.temp, wind: c.weatherData.wind.speed, elapsed: (c.weatherData.dt-Math.round(Date.now()/1e3)) / 3600}
+			{start: dt, weather: c.weatherData.weather[0].id, temp: c.weatherData.main.temp, wind: c.weatherData.wind.speed, elapsed: (c.weatherData.dt-Math.round(Date.now()/1e3)) / 3600}
 		];
 		fc.list.forEach((l, i) => {
 			const prev = fc.list[i-1] || c.weatherData;
@@ -522,6 +523,7 @@ function populateWeatherElement(el, weatherData) {
 		const container = document.createElement('div');
 		container.className = 'forecast-container';
 		let currentLeft = 0;
+		let lastTemp = -1e9;
 		forecast.forEach((f,i) => {
 			const div = document.createElement('div');
 			div.className = `forecast-item`;
@@ -534,27 +536,37 @@ function populateWeatherElement(el, weatherData) {
 			currentLeft += width;
 			container.appendChild(div);
 			const wd = weatherCodeNames[f.weather];
-			if (i > 0 && weatherCodeNames[forecast[i-1].weather].group === wd.group && weatherCodeNames[forecast[i-1].weather].intensity < 3 && wd.intensity < 3) {
+			const shouldUpdateIcon = !(i > 0 && weatherCodeNames[forecast[i-1].weather].group === wd.group && weatherCodeNames[forecast[i-1].weather].intensity < 3 && wd.intensity < 3);
+			const shouldUpdateTemperature = Math.abs(lastTemp - f.temp) >= 2;
+			if (!shouldUpdateTemperature && !shouldUpdateIcon) {
 				return;
 			}
 			if (width < 33) {
 				return;
 			}
-			const date = new Date((f.start + fc.city.timezone) * 1e3);
 			// Add the time.
+			const date = new Date((f.start + fc.city.timezone) * 1e3);
 			const time = document.createElement('div');
 			time.className = 'forecast-time';
 			time.textContent = date.getUTCHours();
 			div.appendChild(time);
-			// Add the weather icon.
-			const icon = document.createElement('span');
-			// If the intensity is 1, use the intensity 2 icon if one exists.
-			let iconNumber = f.weather;
-			if (wd.intensity === 1 && weatherCodeNames[f.weather+1] && weatherCodeNames[f.weather+1].intensity === 2) {
-				iconNumber = f.weather + 1;
+
+			if (shouldUpdateTemperature) {
+				// Add current temperature.
+				lastTemp = f.temp;
+				time.append(document.createElement('br'), formatTemperature(f.temp));
 			}
-			icon.className = 'wi wi-owm-' + iconNumber;
-			div.appendChild(icon);
+			if (shouldUpdateIcon) {
+				// Add the weather icon.
+				const icon = document.createElement('span');
+				// If the intensity is 1, use the intensity 2 icon if one exists.
+				let iconNumber = f.weather;
+				if (wd.intensity === 1 && weatherCodeNames[f.weather+1] && weatherCodeNames[f.weather+1].intensity === 2) {
+					iconNumber = f.weather + 1;
+				}
+				icon.className = 'wi wi-owm-' + iconNumber;
+				div.appendChild(icon);
+			}
 		});
 		// Create day labels for the forecast.
 		let dayTime = forecast[0].start;
@@ -570,7 +582,7 @@ function populateWeatherElement(el, weatherData) {
 			div.style.left = left + 'px';
 			container.appendChild(div);
 
-			dayTime = new Date((dayTime + fc.city.timezone) * 1e3).setUTCHours(24).valueOf() / 1e3 - fc.city.timezone;
+			dayTime = new Date((dayTime + fc.city.timezone + 86400) * 1e3).setUTCHours(0) / 1e3 - fc.city.timezone;
 		}
 
 		let wg = el.querySelector('#hourly-forecast');

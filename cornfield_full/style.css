@@ -349,9 +349,11 @@ body {
 }
 .forecast-time {
     position: absolute;
-    top: 10px;
+    top: 11px;
     left: 3px;
-    font-size: 14px;
+    font-size: 12px;
+    line-height: 13px;
+    text-align: left;
 }
 .forecast-item span {
     position: absolute;

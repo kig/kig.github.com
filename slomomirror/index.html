@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>SloMo Mirror</title>
+        <link rel="stylesheet" href="./style.css" />
+    </head>
+    <body>
+        <header>
+            <h1>SloMo Mirror</h1>
+            <select id="cameraSelect"></select>
+            <button id="cameraRotate">Rotate Camera</button>
+        </header>
+        <main>
+            <div class="videoContainer">
+                <video id="video" autoplay playsinline></video>
+                <video id="slowMotionVideo" autoplay playsinline></video>
+                <div id="recordingProgressBar"><span></span></div>
+                <div id="playbackProgressBar"><span></span></div>
+                <div id="countdown">
+                    <span class="countdown-3">3</span>
+                    <span class="countdown-2">2</span>
+                    <span class="countdown-1">1</span>
+                </div>
+            </div>
+        </main>
+        <script src="./script.js"></script>
+    </body>
+</html>

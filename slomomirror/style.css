@@ -1,0 +1,203 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: sans-serif;
+    background: #f4f7f8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+}
+header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+main {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.videoContainer {
+    background: #000;
+    position: relative;
+    border-radius: 8px;
+    padding: 0rem;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+#video {
+    display: none;
+}
+#slowMotionVideo {
+    display: block;
+}
+.countdown #video {
+    display: block;
+}
+.countdown #slowMotionVideo {
+    display: none;
+}
+select {
+    padding: 0.3rem;
+    font-size: 1rem;
+}
+#countdown {
+    color: white;
+    font-size: 7vh;
+    font-weight: 500;
+    position: absolute;
+    left: 0;
+    bottom: 10vh;
+    z-index: 2;
+    text-align: center;
+    width: 100%;
+    opacity: 1;
+}
+#countdown > span {
+    pointer-events: none;
+    opacity: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: auto;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+#countdown:before {
+    content: "Recording in";
+    text-transform: uppercase;
+    font-size: 2.25vh;
+    margin-top: -5vh;
+    display: block;
+    animation: fade-in 0.5s 1 7s both;
+}
+.countdown #countdown:before {
+    content: "Recording";
+    animation: countdown 5s 1 both;
+}
+.videoContainer:before {
+    content: "Replay";
+    text-transform: uppercase;
+    font-size: 2rem;
+    display: block;
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    color: white;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+.countdown .videoContainer:before {
+    content: none;
+}
+#recordingProgressBar,
+#playbackProgressBar {
+    position: absolute;
+    left: 40%;
+    bottom: 10vh;
+    width: 20%;
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+#playbackProgressBar {
+    opacity: 1;
+}
+.countdown #recordingProgressBar {
+    opacity: 1;
+}
+.countdown #playbackProgressBar {
+    opacity: 0;
+}
+#recordingProgressBar span,
+#playbackProgressBar span {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 0;
+    height: 100%;
+
+    border-radius: 4px;
+
+    background: red;
+    box-shadow: 0 0 4px rgba(0,0,0,0.1);
+}
+#playbackProgressBar span {
+    background: white;
+}
+.countdown #recordingProgressBar span {
+    animation: width-to-100 5s 1 linear reverse;
+}
+#playbackProgressBar span {
+    animation: width-to-100 10s 1 linear;
+}
+.countdown #playbackProgressBar span {
+    animation: none;
+}
+
+@keyframes width-to-100 {
+    0% {
+        width: 0%;
+    }
+    100% {
+        width: 100%;
+    }
+}
+
+#countdown > span {
+    animation: countdown 1s 1;
+}
+.countdown #countdown > span {
+    animation: none;
+}
+#countdown > span.countdown-3 {
+    animation-delay: 7s;
+}
+#countdown > span.countdown-2 {
+    animation-delay: 8s;
+}
+#countdown > span.countdown-1 {
+    animation-delay: 9s;
+}
+@keyframes countdown {
+    0% {
+        transform: scale(1);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}

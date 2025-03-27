@@ -28,8 +28,10 @@
         devices.forEach((device) => {
             if (device.kind === "videoinput") {
                 const option = document.createElement("option");
+                const capabilities = device.getCapabilities();
+                const resolutionString = ` ${capabilities.width.max}x${capabilities.height.max}@${capabilities.frameRate.max}Hz`;
                 option.value = device.deviceId;
-                option.text = device.label || `Camera ${index + 1}`;
+                option.text = (device.label || `Camera ${index + 1}`) + resolutionString;
                 index++;
                 cameraSelect.appendChild(option);
             }
@@ -51,6 +53,7 @@
         let playingSlowMotion = false;
         const recorder = new MediaRecorder(stream, {
             videoBitsPerSecond: 30000000,
+            mimeType: 'video/x-matroska;codecs=av1'
         });
         recorder.ondataavailable = (event) => {
             if (!playingSlowMotion) {
@@ -111,7 +114,7 @@
     let rotation = 0;
     cameraRotateButton.addEventListener("click", async () => {
         rotation = (rotation + 90) % 360;
-        let zoom = (rotation % 180 === 0) ? 1 : video.videoHeight / video.videoWidth;
+        let zoom = (rotation % 180 === 0) ? 1 : Math.max(video.videoWidth / video.videoHeight, video.videoHeight / video.videoWidth);
         video.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
         slowMotionVideo.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
     });

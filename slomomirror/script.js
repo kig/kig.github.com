@@ -24,11 +24,13 @@
     async function getCameras() {
         cameraSelect.innerHTML = "";
         const devices = await navigator.mediaDevices.enumerateDevices();
-        devices.forEach((device, index) => {
+        let index = 0;
+        devices.forEach((device) => {
             if (device.kind === "videoinput") {
                 const option = document.createElement("option");
                 option.value = device.deviceId;
                 option.text = device.label || `Camera ${index + 1}`;
+                index++;
                 cameraSelect.appendChild(option);
             }
         });
@@ -87,11 +89,11 @@
         });
     }
 
+    await startCamera();
     await getCameras();
     cameraSelect.addEventListener("change", () =>
         startCamera(cameraSelect.value)
     );
-    await startCamera();
 
     // Make tapping on videoContainer make it fullscreen
     const videoContainer = document.querySelector(".videoContainer");

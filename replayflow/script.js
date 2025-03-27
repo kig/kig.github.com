@@ -52,8 +52,7 @@
         const threeSecondBlobs = [];
         let playingSlowMotion = false;
         const recorder = new MediaRecorder(stream, {
-            videoBitsPerSecond: 30000000,
-            mimeType: 'video/x-matroska;codecs=av1'
+            videoBitsPerSecond: 30000000
         });
         recorder.ondataavailable = (event) => {
             if (!playingSlowMotion) {

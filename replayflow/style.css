@@ -23,6 +23,8 @@ header {
     color: white;
     align-items: center;
     justify-content: center;
+    z-index: 6;
+    pointer-events: none;
 }
 h1 {
     font-size: 1.25rem;
@@ -45,7 +47,7 @@ select {
     font-family: avenir, sans-serif;
     margin-left: 1rem;
     border-radius: 4px;
-    max-width: calc(100vw - 19rem);
+    max-width: 100%;
 }
 button {
     padding: 0rem 1rem;
@@ -106,7 +108,7 @@ select {
     font-weight: 500;
     position: absolute;
     left: 0;
-    top: 7rem;
+    top: 4rem;
     z-index: 2;
     text-align: center;
     width: 100%;
@@ -155,7 +157,7 @@ select {
 #playbackProgressBar {
     position: absolute;
     left: 40vw;
-    top: 6.8rem;
+    top: 3.8rem;
     width: 20vw;
     height: 8px;
     border-radius: 4px;
@@ -264,11 +266,11 @@ select {
     margin-left: 0rem;
 }
 #countdown {
-    top: 10rem;
+    top: 6rem;
 }
 #recordingProgressBar,
 #playbackProgressBar {
-    top: 9.8rem;
+    top: 5.8rem;
 }
 @media (max-width: 600px) {
     h1 small {
@@ -282,6 +284,13 @@ select {
     #playbackProgressBar {
         left: 20vw;
         width: 60vw;
+    }
+    #countdown {
+        top: 8rem;
+    }
+    #recordingProgressBar,
+    #playbackProgressBar {
+        top: 7.8rem;
     }
 }
 /* When in fullscreen mode, move the countdown and progress bars up */
@@ -316,7 +325,7 @@ select {
     display: block;
     position: absolute;
     left: 60vw;
-    top: 9rem;
+    top: 5rem;
     margin-left: 1rem;
     width: 1.5rem;
     padding: 0;
@@ -325,6 +334,9 @@ select {
     text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
     z-index: 3;
     outline: 0;
+}
+:fullscreen #rewind, :fullscreen #downloadVideo, :fullscreen #pause {
+    top: 3rem;
 }
 
 #pause {
@@ -336,11 +348,8 @@ select {
 
 @media (max-width: 600px) {
     #rewind, #pause, #downloadVideo {
-        top: 6.85rem;
+        top: 4.85rem;
         margin-left: 3rem;
-    }
-    #setReferenceVideo {
-        display: none;
     }
 }
 
@@ -427,4 +436,32 @@ select {
 }
 :fullscreen #exitFullscreen {
     display: inline-block;
+}
+
+#controls {
+    display: none;
+    position: absolute;
+    right: 0rem;
+    top: 0rem;
+    width: 400px;
+    max-width: 100vw;
+    padding: 1.5rem;
+    padding-top: 4rem;
+    background: #000;
+    border-radius: 4px;
+    box-sizing: border-box;
+    z-index: 4;
+}
+#controls.open {
+    display: block;
+}
+#controlsToggle {
+    display: block;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    background: transparent;
+    border: none;
+    color: white;
+    z-index: 5;
 }

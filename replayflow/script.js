@@ -292,6 +292,13 @@
         }
     });
 
+    // #controlsToggle toggles the #controls drawer
+    const controlsToggle = document.getElementById("controlsToggle");
+    const controls = document.getElementById("controls");
+    controlsToggle.addEventListener("click", () => {
+        controls.classList.toggle("open");
+    });
+
     const cameraRotateButton = document.getElementById("cameraRotate");
     let rotation = 0;
     function updateRotation() {

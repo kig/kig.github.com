@@ -9,29 +9,30 @@
     <body>
         <header>
             <h1>Replay Flow <small>Record, Replay, Adjust, Improve</small></h1>
-            <div>
-                <select id="cameraSelect"></select>
-                <button id="cameraRotate">&circlearrowright;</button>    
-                <button id="cameraMirror">&#9656;|<span style="display:inline-block;transform:scaleX(-1)">&#9656;</span></button>
-                <select id="durationSelect">
-                    <option value="3">3s</option>
-                    <option value="5" selected>5s</option>
-                    <option value="10">10s</option>
-                    <option value="30">30s</option>
-                    <option value="60">60s</option>
-                    <option value="0">Manual</option>
-                </select>
-                <select id="speedSelect">
-                    <option value="0.25">1/4x</option>
-                    <option value="0.5" selected>1/2x</option>
-                    <option value="1">1x</option>
-                    <option value="2">2x</option>
-                    <option value="4">4x</option>
-                </select>
-                <button id="setReferenceVideo">📼</button>
-                <input type="file" id="referenceVideoInput">
-            </div>
         </header>
+        <button id="controlsToggle">⚙️</button>
+        <div id="controls">
+            <select id="cameraSelect"></select>
+            <button id="cameraRotate">&circlearrowright;</button>    
+            <button id="cameraMirror">&#9656;|<span style="display:inline-block;transform:scaleX(-1)">&#9656;</span></button>
+            <select id="durationSelect">
+                <option value="3">3s</option>
+                <option value="5" selected>5s</option>
+                <option value="10">10s</option>
+                <option value="30">30s</option>
+                <option value="60">60s</option>
+                <option value="0">Manual</option>
+            </select>
+            <select id="speedSelect">
+                <option value="0.25">1/4x</option>
+                <option value="0.5" selected>1/2x</option>
+                <option value="1">1x</option>
+                <option value="2">2x</option>
+                <option value="4">4x</option>
+            </select>
+            <button id="setReferenceVideo">📼</button>
+            <input type="file" id="referenceVideoInput">
+        </div>
         <main>
             <div class="videoContainer">
                 <video id="referenceVideo" playsinline muted></video>
@@ -46,10 +47,12 @@
                 </div>
                 <button id="exitFullscreen" title="Exit Fullscreen">&#x2716;</button>
                 <button id="manualRecording"></button>
-                <button id="downloadVideo" title="Download">↧</button>
-                <button id="rewind" title="Rewind">↺</button>
-                <button id="pause" title="Pause">⏸</button>
-            </div>
+                <span id="videoControls">
+                    <button id="downloadVideo" title="Download">↧</button>
+                    <button id="rewind" title="Rewind">↺</button>
+                    <button id="pause" title="Pause">⏸</button>
+                </span>
+        </div>
         </main>
         <script src="./script.js"></script>
     </body>

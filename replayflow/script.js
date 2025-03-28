@@ -1,6 +1,6 @@
 (async () => {
     let duration = 5;
-    let playbackRate = 0.5;
+    let playbackRate = 1;
 
     // Realtime video element
     const video = document.getElementById("video");

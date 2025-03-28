@@ -1,4 +1,7 @@
 (async () => {
+    let duration = 5;
+    let playbackRate = 0.5;
+
     // Realtime video element
     const video = document.getElementById("video");
     // Camera selector
@@ -6,20 +9,88 @@
 
     // Slow motion video
     const slowMotionVideo = document.getElementById("slowMotionVideo");
-    slowMotionVideo.playbackRate = 0.5;
+    slowMotionVideo.playbackRate = playbackRate;
+
+    const referenceVideo = document.getElementById("referenceVideo");
+
+    window.onmousedown = (e) => {
+        slowMotionVideo.muted = false;
+    };
 
     const countdownContainer = document.getElementById("countdown");
 
-    // const playbackProgress = document.querySelector('#playbackProgressBar > span');
-    // const recordingProgress = document.querySelector('#recordingProgressBar > span');
-    let recordingStartTime = 0;
+    const extraStyle = document.createElement("style");
+    extraStyle.innerHTML = ``;
+    document.head.appendChild(extraStyle);
 
-    // slowMotionVideo.ontimeupdate = () => {
-    //     playbackProgress.style.width = slowMotionVideo.currentTime / 5 * 100 + '%';
-    // };
-    // video.ontimeupdate = () => {
-    //     recordingProgress.style.width = (video.currentTime - recordingStartTime) / 5 * 100 + '%';
-    // };
+    function setDuration(durationSeconds) {
+        duration = durationSeconds;
+
+        if (duration === 0) {
+            document.body.classList.add("manual");
+        } else {
+            document.body.classList.remove("manual");
+        }
+
+        restartRecording();
+
+        // Adjust animation durations and animation delays
+        const recordingProgressBar = document.querySelector(
+            "#recordingProgressBar span"
+        );
+        recordingProgressBar.style.animationDuration = `${duration}s`;
+        const playbackProgressBar = document.querySelector(
+            "#playbackProgressBar span"
+        );
+        playbackProgressBar.style.animationDuration = `${
+            duration / playbackRate
+        }s`;
+
+        countdownContainer.querySelector(
+            ".countdown-3"
+        ).style.animationDelay = `${duration / playbackRate - 3}s`;
+        countdownContainer.querySelector(
+            ".countdown-2"
+        ).style.animationDelay = `${duration / playbackRate - 2}s`;
+        countdownContainer.querySelector(
+            ".countdown-1"
+        ).style.animationDelay = `${duration / playbackRate - 1}s`;
+
+        extraStyle.innerHTML = `
+        #countdown:before {
+            animation-delay: ${duration / playbackRate - 3}s;
+        }
+        #countdown:after {
+            animation-delay: ${duration / playbackRate - 4}s;
+        }
+        `;
+    }
+
+    function setMirror(mirror) {
+        if (mirror) {
+            videoContainer.classList.add("mirror");
+        } else {
+            videoContainer.classList.remove("mirror");
+        }
+        updateRotation();
+    }
+
+    const cameraMirrorButton = document.getElementById("cameraMirror");
+    cameraMirrorButton.addEventListener("click", () => {
+        setMirror(!videoContainer.classList.contains("mirror"));
+    });
+
+    const durationSelect = document.getElementById("durationSelect");
+    durationSelect.addEventListener("input", () => {
+        setDuration(parseFloat(durationSelect.value));
+    });
+
+    const speedSelect = document.getElementById("speedSelect");
+    speedSelect.addEventListener("input", () => {
+        playbackRate = parseFloat(speedSelect.value);
+        slowMotionVideo.playbackRate = playbackRate;
+        setDuration(duration);
+    });
 
     async function getCameras() {
         cameraSelect.innerHTML = "";
@@ -31,61 +102,92 @@
                 const capabilities = device.getCapabilities();
                 const resolutionString = ` ${capabilities.width.max}x${capabilities.height.max}@${capabilities.frameRate.max}Hz`;
                 option.value = device.deviceId;
-                option.text = (device.label || `Camera ${index + 1}`) + resolutionString;
+                option.text =
+                    (device.label || `Camera ${index + 1}`) + resolutionString;
                 index++;
                 cameraSelect.appendChild(option);
             }
         });
     }
 
+    let recorder = null;
+    let playingSlowMotion = false;
+    let stopTimeout = null;
+
+    function startRecording() {
+        clearTimeout(stopTimeout);
+        recorder.start();
+        document.body.classList.add("countdown");
+        if (referenceVideo) {
+            referenceVideo.currentTime = 0;
+            referenceVideo.playbackRate = 1;
+            referenceVideo.play();
+        }
+        if (duration > 0) {
+            stopTimeout = setTimeout(stopRecording, duration * 1000);
+        }
+    }
+
+    function stopRecording() {
+        clearTimeout(stopTimeout);
+        document.body.classList.remove("countdown");
+        recorder.stop();
+    }
+
+    function restartRecording() {
+        if (playingSlowMotion) {
+            slowMotionVideo.pause();
+            slowMotionVideo.onended();
+        } else {
+            playingSlowMotion = true;
+            stopRecording();
+        }
+    }
+
     async function startCamera(deviceId) {
         const constraints = {
             video: {
-                deviceId: deviceId ? { exact: deviceId } : undefined,
-                width: { min: 640, ideal: 1920, max: 7680 },
-                height: { min: 480, ideal: 1080, max: 4320 },
-                frameRate: { min: 30, ideal: 240, max: 240 },
+                deviceId: deviceId ? deviceId : undefined,
+                width: 1920,
+                height: 1080,
+                frameRate: 240,
             },
+            audio: true,
         };
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = stream;
-        const threeSecondBlobs = [];
-        let playingSlowMotion = false;
-        const recorder = new MediaRecorder(stream, {
-            videoBitsPerSecond: 30000000
+
+        recorder = new MediaRecorder(stream, {
+            videoBitsPerSecond: 30000000,
+            mimeType: "video/mp4",
         });
+
         recorder.ondataavailable = (event) => {
             if (!playingSlowMotion) {
-                threeSecondBlobs.push(event.data);
+                const threeSecondBlobs = [event.data];
                 const slowMotionVideoUrl = URL.createObjectURL(
                     new Blob(threeSecondBlobs, { type: recorder.mimeType })
                 );
                 slowMotionVideo.src = slowMotionVideoUrl;
-                threeSecondBlobs.length = 0;
                 playingSlowMotion = true;
                 slowMotionVideo.play();
-                slowMotionVideo.playbackRate = 0.5;
+                slowMotionVideo.playbackRate = playbackRate;
+                referenceVideo.playbackRate = playbackRate;
+                referenceVideo.currentTime = 0;
+                referenceVideo.play();
                 slowMotionVideo.onended = () => {
-                    URL.revokeObjectURL(slowMotionVideoUrl);
+                    URL.revokeObjectURL(slowMotionVideo.src);
                     playingSlowMotion = false;
-                    recorder.start();
-                    recordingStartTime = video.currentTime;
-                    document.body.classList.add("countdown");
-                    setTimeout(() => {
-                        document.body.classList.remove("countdown");
-                        recorder.stop();
-                    }, 5000);
+                    startRecording();
                 };
+            } else {
+                playingSlowMotion = false;
+                startRecording();
             }
         };
-        recorder.start();
-        recordingStartTime = video.currentTime;
-        document.body.classList.add("countdown");
-        setTimeout(() => {
-            document.body.classList.remove("countdown");
-            recorder.stop();
-        }, 5000);
-        video.addEventListener('play', () => {
+        startRecording();
+
+        video.addEventListener("play", () => {
             slowMotionVideo.width = video.videoWidth;
             slowMotionVideo.height = video.videoHeight;
         });
@@ -96,6 +198,74 @@
     cameraSelect.addEventListener("change", () =>
         startCamera(cameraSelect.value)
     );
+
+    // Make download button download the currently playing video
+    const downloadVideoButton = document.getElementById("downloadVideo");
+    downloadVideoButton.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const a = document.createElement("a");
+        a.href = slowMotionVideo.src;
+        a.download = "replayflow.mp4";
+        a.mimeType = "video/mp4";
+        a.click();
+    });
+
+    // Rewind button seeks the currently playing video to the beginning
+    const rewindButton = document.getElementById("rewind");
+    rewindButton.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        slowMotionVideo.currentTime = 0;
+    });
+
+    // Pause button stops the video playback at the current position and shows the video controls
+    const pauseButton = document.getElementById("pause");
+    pauseButton.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (slowMotionVideo.paused) {
+            slowMotionVideo.play();
+            slowMotionVideo.controls = false;
+        } else {
+            slowMotionVideo.pause();
+            slowMotionVideo.controls = true;
+        }
+    });
+
+    const referenceVideoInput = document.getElementById("referenceVideoInput");
+    referenceVideoInput.addEventListener("change", (ev) => {
+        const videoFile = ev.target.files[0];
+        if (referenceVideo.src) {
+            URL.revokeObjectURL(referenceVideo.src);
+        }
+        if (videoFile) {
+            document.body.classList.add("reference");
+            referenceVideo.src = URL.createObjectURL(videoFile);
+        } else {
+            document.body.classList.remove("reference");
+        }
+    })
+
+    // Reference video button opens a file picker to set the reference video
+    const referenceButton = document.getElementById("setReferenceVideo");
+    referenceButton.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        referenceVideoInput.click();
+    });
+
+    // Make manual recording button start / stop recording
+    const manualRecordingButton = document.getElementById("manualRecording");
+    manualRecordingButton.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (recorder.state === "recording") {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    });
 
     // Make tapping on videoContainer make it fullscreen
     const videoContainer = document.querySelector(".videoContainer");
@@ -109,12 +279,35 @@
         }
     });
 
+    const exitFullscreenButton = document.getElementById("exitFullscreen");
+    exitFullscreenButton.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    });
+
     const cameraRotateButton = document.getElementById("cameraRotate");
     let rotation = 0;
+    function updateRotation() {
+        let zoom =
+            rotation % 180 === 0
+                ? 1
+                : Math.max(
+                      video.videoWidth / video.videoHeight,
+                      video.videoHeight / video.videoWidth
+                  );
+        const mirror = videoContainer.classList.contains("mirror") ? -1 : 1;
+        video.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
+        slowMotionVideo.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
+    }
     cameraRotateButton.addEventListener("click", async () => {
         rotation = (rotation + 90) % 360;
-        let zoom = (rotation % 180 === 0) ? 1 : Math.max(video.videoWidth / video.videoHeight, video.videoHeight / video.videoWidth);
-        video.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
-        slowMotionVideo.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
+        updateRotation();
     });
 })();

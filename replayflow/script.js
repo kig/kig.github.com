@@ -32,7 +32,9 @@
             document.body.classList.remove("manual");
         }
 
-        restartRecording();
+        if (recorder.state === "recording") {
+            restartRecording();
+        }
 
         // Adjust animation durations and animation delays
         const recordingProgressBar = document.querySelector(
@@ -113,10 +115,12 @@
     let recorder = null;
     let playingSlowMotion = false;
     let stopTimeout = null;
+    let recordingStartTime = 0;
 
     function startRecording() {
         clearTimeout(stopTimeout);
         recorder.start();
+        recordingStartTime = Date.now();
         document.body.classList.add("countdown");
         if (referenceVideo) {
             referenceVideo.currentTime = 0;
@@ -142,6 +146,22 @@
             playingSlowMotion = true;
             stopRecording();
         }
+    }
+
+    function downloadVideo(url, filename, mimeType) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.mimeType = mimeType;
+        a.click();
+    }
+
+    function pauseOthers() {
+        this.parentElement.parentElement.querySelectorAll('video').forEach(video => {
+            if (video !== this) {
+                video.pause();
+            }
+        });
     }
 
     async function startCamera(deviceId) {
@@ -172,11 +192,65 @@
                 playingSlowMotion = true;
                 slowMotionVideo.play();
                 slowMotionVideo.playbackRate = playbackRate;
+                document.body.classList.remove("paused");
+                // Add the recorded video to #recordingsList
+                // Delete the oldest recording if there are more than 5
+                const recordingsList =
+                    document.getElementById("recordingsList");
+                if (recordingsList.children.length > 5) {
+                    URL.revokeObjectURL(recordingsList.children[0].src);
+                    recordingsList.removeChild(recordingsList.children[0]);
+                }
+                const recordingContainer = document.createElement("div");
+                const recording = document.createElement("video");
+                recording.src = slowMotionVideoUrl;
+                recording.controls = true;
+                recording.loop = true;
+                recording.onplay = pauseOthers;
+                recordingContainer.appendChild(recording);
+
+                // Add a download button to download the recording
+                const downloadButton = document.createElement("button");
+                downloadButton.textContent = "↧";
+                downloadButton.addEventListener("click", () => {
+                    const dateString = new Date()
+                        .toLocaleString("ja-JP", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                        })
+                        .replace(/[\/]/g, "-")
+                        .replace(/[ :]/g, "_");
+                    downloadVideo(
+                        slowMotionVideoUrl,
+                        `replayflow_${dateString}.mp4`,
+                        "video/mp4"
+                    );
+                });
+                recordingContainer.appendChild(downloadButton);
+
+                // Add a fullscreen button to view the recording in fullscreen
+                const fullscreenButton = document.createElement("button");
+                fullscreenButton.textContent = "⛶";
+                fullscreenButton.addEventListener("click", () => {
+                    recording.requestFullscreen();
+                });
+                recordingContainer.appendChild(fullscreenButton);
+
+                // Set title to hour:minute:second
+                const recordingTitle = document.createElement("h3");
+                recordingTitle.textContent = new Date().toLocaleTimeString();
+                recordingContainer.appendChild(recordingTitle);
+
+                recordingsList.appendChild(recordingContainer);
+
                 referenceVideo.playbackRate = playbackRate;
                 referenceVideo.currentTime = 0;
                 referenceVideo.play();
                 slowMotionVideo.onended = () => {
-                    URL.revokeObjectURL(slowMotionVideo.src);
                     playingSlowMotion = false;
                     startRecording();
                 };
@@ -198,38 +272,63 @@
     cameraSelect.addEventListener("change", () =>
         startCamera(cameraSelect.value)
     );
+    setDuration(duration);
 
-    // Make download button download the currently playing video
-    const downloadVideoButton = document.getElementById("downloadVideo");
-    downloadVideoButton.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        const a = document.createElement("a");
-        a.href = slowMotionVideo.src;
-        a.download = "replayflow.mp4";
-        a.mimeType = "video/mp4";
-        a.click();
-    });
+    // // Make download button download the currently playing video
+    // const downloadVideoButton = document.getElementById("downloadVideo");
+    // downloadVideoButton.addEventListener("click", (ev) => {
+    //     ev.preventDefault();
+    //     ev.stopPropagation();
+    //     const a = document.createElement("a");
+    //     a.href = slowMotionVideo.src;
+    //     a.download = "replayflow.mp4";
+    //     a.mimeType = "video/mp4";
+    //     a.click();
+    // });
 
-    // Rewind button seeks the currently playing video to the beginning
-    const rewindButton = document.getElementById("rewind");
-    rewindButton.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        slowMotionVideo.currentTime = 0;
-    });
+    // // Rewind button seeks the currently playing video to the beginning
+    // const rewindButton = document.getElementById("rewind");
+    // rewindButton.addEventListener("click", (ev) => {
+    //     ev.preventDefault();
+    //     ev.stopPropagation();
+    //     slowMotionVideo.currentTime = 0;
+    // });
 
     // Pause button stops the video playback at the current position and shows the video controls
     const pauseButton = document.getElementById("pause");
+    let recordingElapsed = 0;
     pauseButton.addEventListener("click", (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
-        if (slowMotionVideo.paused) {
-            slowMotionVideo.play();
-            slowMotionVideo.controls = false;
+        // Pause all playing videos in recordingsList
+        document.querySelectorAll("#recordingsList video").forEach(video => {
+            video.pause();
+        });
+        if (playingSlowMotion) {
+            if (slowMotionVideo.paused) {
+                slowMotionVideo.play();
+                document.body.classList.remove("paused");
+            } else {
+                slowMotionVideo.pause();
+                document.body.classList.add("paused");
+            }
         } else {
-            slowMotionVideo.pause();
-            slowMotionVideo.controls = true;
+            if (recorder.state === "recording") {
+                recorder.pause();
+                recordingElapsed = Date.now() - recordingStartTime;
+                clearTimeout(stopTimeout);
+                document.body.classList.add("paused");
+            } else {
+                recorder.resume();
+                recordingStartTime = Date.now() - recordingElapsed;
+                if (duration > 0) {
+                    stopTimeout = setTimeout(
+                        stopRecording,
+                        duration * 1000 - recordingElapsed
+                    );
+                }
+                document.body.classList.remove("paused");
+            }
         }
     });
 
@@ -245,7 +344,7 @@
         } else {
             document.body.classList.remove("reference");
         }
-    })
+    });
 
     // Reference video button opens a file picker to set the reference video
     const referenceButton = document.getElementById("setReferenceVideo");
@@ -270,12 +369,12 @@
     // Make tapping on videoContainer make it fullscreen
     const videoContainer = document.querySelector(".videoContainer");
     videoContainer.addEventListener("click", () => {
-        if (videoContainer.requestFullscreen) {
-            videoContainer.requestFullscreen();
-        } else if (videoContainer.webkitRequestFullscreen) {
-            videoContainer.webkitRequestFullscreen();
-        } else if (videoContainer.msRequestFullscreen) {
-            videoContainer.msRequestFullscreen();
+        if (document.body.requestFullscreen) {
+            document.body.requestFullscreen();
+        } else if (document.body.webkitRequestFullscreen) {
+            document.body.webkitRequestFullscreen();
+        } else if (document.body.msRequestFullscreen) {
+            document.body.msRequestFullscreen();
         }
     });
 

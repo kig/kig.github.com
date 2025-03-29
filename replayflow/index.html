@@ -12,9 +12,13 @@
         </header>
         <button id="controlsToggle">⚙️</button>
         <div id="controls">
+            <h2>Controls</h2>
+            <h3>Camera</h3>
             <select id="cameraSelect"></select>
-            <button id="cameraRotate">&circlearrowright;</button>    
+            <h3>Image rotation</h3>                        
+            <button id="cameraRotate">&circlearrowright;</button>
             <button id="cameraMirror">&#9656;|<span style="display:inline-block;transform:scaleX(-1)">&#9656;</span></button>
+            <h3>Recording duration and speed</h3>
             <select id="durationSelect">
                 <option value="3">3s</option>
                 <option value="5" selected>5s</option>
@@ -30,8 +34,13 @@
                 <option value="2">2x</option>
                 <option value="4">4x</option>
             </select>
-            <button id="setReferenceVideo">📼</button>
+            <h3>Reference Video</h3>
+            <button id="setReferenceVideo">Set Reference Video</button>
             <input type="file" id="referenceVideoInput">
+        </div>
+        <div id="recordings">
+            <h2>Recordings</h2>
+            <div id="recordingsList"></div>
         </div>
         <main>
             <div class="videoContainer">
@@ -48,9 +57,9 @@
                 <button id="exitFullscreen" title="Exit Fullscreen">&#x2716;</button>
                 <button id="manualRecording"></button>
                 <span id="videoControls">
-                    <button id="downloadVideo" title="Download">↧</button>
-                    <button id="rewind" title="Rewind">↺</button>
+                    <!-- <button id="rewind" title="Rewind">↺</button> -->
                     <button id="pause" title="Pause">⏸</button>
+                    <!-- <button id="downloadVideo" title="Download">↧</button> -->
                 </span>
         </div>
         </main>

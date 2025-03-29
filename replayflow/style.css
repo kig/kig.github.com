@@ -43,7 +43,6 @@ select {
     padding: 0.3rem;
     font-size: 1rem;
     height: 2.25rem;
-    box-sizing: border-box;
     font-family: avenir, sans-serif;
     margin-left: 1rem;
     border-radius: 4px;
@@ -60,6 +59,67 @@ button {
     border-radius: 4px;
     cursor: pointer;
     vertical-align: top;
+}
+#recordings {
+    display: none;
+    width: 200px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    padding: 1rem;
+    z-index: 2;
+    background: #eee;
+    overflow-y: auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.paused #recordings {
+    display: block;
+}
+.paused #recordingProgressBar,
+.paused #playbackProgressBar,
+.paused #countdown {
+    display: none;
+}
+
+#recordingsList {
+}
+:fullscreen header {
+    display: none;
+}
+h3 {
+    margin: 0;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    margin-top: 0.75rem;
+}
+#recordingsList button {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    outline: 0;
+    border: none;
+    color: black;
+    float: right;
+    font-size: 1.25rem;
+    height: 1.25rem;
+    line-height: 1.25rem;
+    margin-top: -0.2rem;
+    margin-left: 0.5rem;
+}
+#recordingsList video {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-size: 1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    margin-top: 0rem;
+    margin-bottom: 0.5rem;
 }
 main {
     width: 100%;
@@ -133,7 +193,7 @@ select {
     font-size: 2.25vh;
     margin-top: -5vh;
     display: block;
-    animation: fade-in 0.5s 1 7s both;
+    animation: fade-in 0.5s 1 2s both;
 }
 #countdown:after {
     content: "Replaying";
@@ -144,7 +204,7 @@ select {
     font-size: 2.25vh;
     margin-top: -5vh;
     display: block;
-    animation: fade-out 0.5s 1 6s both;
+    animation: fade-out 0.5s 1 1s both;
 }
 .countdown #countdown:after {
     content: none;
@@ -196,7 +256,7 @@ select {
     animation: width-to-100 5s 1 linear reverse;
 }
 #playbackProgressBar span {
-    animation: width-to-100 10s 1 linear;
+    animation: width-to-100 5s 1 linear;
 }
 .countdown #playbackProgressBar span {
     animation: none;
@@ -310,18 +370,19 @@ select {
     left: 50%;
     width: 16rem;
     margin-left: -8rem;
-    box-sizing: border-box;
     text-align: center;
     background-color: rgba(0, 0, 0, 0.5);
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
     color: white;
 }
-.videoContainer:fullscreen:after {
+:fullscreen .videoContainer:after {
     display: none;
 }
 
-#rewind, #downloadVideo, #pause {
+#rewind,
+#downloadVideo,
+#pause {
     display: block;
     position: absolute;
     left: 60vw;
@@ -335,7 +396,9 @@ select {
     z-index: 3;
     outline: 0;
 }
-:fullscreen #rewind, :fullscreen #downloadVideo, :fullscreen #pause {
+:fullscreen #rewind,
+:fullscreen #downloadVideo,
+:fullscreen #pause {
     top: 3rem;
 }
 
@@ -347,7 +410,9 @@ select {
 }
 
 @media (max-width: 600px) {
-    #rewind, #pause, #downloadVideo {
+    #rewind,
+    #pause,
+    #downloadVideo {
         top: 4.85rem;
         margin-left: 3rem;
     }
@@ -391,7 +456,7 @@ select {
 }
 
 .countdown #rewind,
-.countdown #pause,
+/* .countdown #pause, */
 .countdown #downloadVideo {
     display: none;
 }
@@ -430,9 +495,9 @@ select {
     display: none;
     position: absolute;
     right: 1rem;
-    top: 1rem;
+    bottom: 1rem;
     background: transparent;
-    z-index: 2;
+    z-index: 6;
 }
 :fullscreen #exitFullscreen {
     display: inline-block;
@@ -446,11 +511,11 @@ select {
     width: 400px;
     max-width: 100vw;
     padding: 1.5rem;
-    padding-top: 4rem;
-    background: #000;
+    padding-top: 1.5rem;
+    background: #eee;
     border-radius: 4px;
-    box-sizing: border-box;
-    z-index: 4;
+    z-index: 6;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 #controls.open {
     display: block;
@@ -463,5 +528,9 @@ select {
     background: transparent;
     border: none;
     color: white;
-    z-index: 5;
+    z-index: 7;
+}
+
+#setReferenceVideo {
+    font-size: 1rem;
 }

@@ -82,8 +82,6 @@ button {
     display: none;
 }
 
-#recordingsList {
-}
 :fullscreen header {
     display: none;
 }
@@ -92,6 +90,10 @@ h3 {
     font-size: 1rem;
     margin-bottom: 0.5rem;
     margin-top: 0.75rem;
+}
+#recordingsList h3 {
+    font-size: 0.75rem;
+    margin-top: 0;
 }
 #recordingsList button {
     margin: 0;

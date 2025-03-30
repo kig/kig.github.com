@@ -247,6 +247,18 @@
 
                 recordingsList.appendChild(recordingContainer);
 
+                // Play animation to tell the user that the recording has been
+                // added to the list of recordings. This should look like the
+                // current frame of the video flying to the left side of the
+                // screen and disappearing.
+                const recordingAnimationFrame = document.body.querySelector('.recordingAnimationFrame') || document.createElement("canvas");
+                recordingAnimationFrame.width = video.videoWidth/5;
+                recordingAnimationFrame.height = video.videoHeight/5;
+                const recordingAnimationFrameCtx = recordingAnimationFrame.getContext("2d");
+                recordingAnimationFrameCtx.drawImage(video, 0, 0, recordingAnimationFrame.width, recordingAnimationFrame.height);
+                recordingAnimationFrame.className = "recordingAnimationFrame";
+                document.body.appendChild(recordingAnimationFrame);
+
                 referenceVideo.playbackRate = playbackRate;
                 referenceVideo.currentTime = 0;
                 referenceVideo.play();

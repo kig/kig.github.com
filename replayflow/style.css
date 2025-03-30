@@ -407,6 +407,10 @@ select {
 #pause {
     left: calc(60vw + 1.5rem);
 }
+#pause svg {
+    transform: scale(0.75);
+    margin-top: 2px;
+}
 #downloadVideo {
     left: calc(60vw + 3rem);
 }
@@ -535,4 +539,40 @@ select {
 
 #setReferenceVideo {
     font-size: 1rem;
+}
+
+/* 
+    Play animation to tell the user that the recording has been
+    added to the list of recordings. This should look like the
+    current frame of the video flying to the left side of the
+    screen and disappearing.
+*/
+
+.recordingAnimationFrame {
+    position: absolute;
+    width: 100px;
+    height: auto;
+    top: 3rem;
+    left: 15vw;
+    border-radius: 4px;
+    animation: fly-out 0.75s 1 both ease-in-out;
+}
+
+@keyframes fly-out {
+    0% {
+        transform: translateX(0vw);
+        opacity: 0;
+    }
+    5% {
+        transform: translateX(0vw);
+        opacity: 0.5;
+    }
+    20% {
+        transform: translateX(1vw);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-20vw) scale(0.8);
+        opacity: 0;
+    }
 }

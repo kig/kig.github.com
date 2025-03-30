@@ -194,10 +194,12 @@
                 slowMotionVideo.playbackRate = playbackRate;
                 document.body.classList.remove("paused");
                 // Add the recorded video to #recordingsList
-                // Delete the oldest recording if there are more than 5
+                // Delete the oldest recording if there are more than maxRecordings of them
                 const recordingsList =
                     document.getElementById("recordingsList");
-                if (recordingsList.children.length > 5) {
+                const isMobile = /mobile|android/i.test(navigator.userAgent);
+                const maxRecordings = isMobile ? 3 : 5;
+                if (recordingsList.children.length >= maxRecordings) {
                     URL.revokeObjectURL(recordingsList.children[0].src);
                     recordingsList.removeChild(recordingsList.children[0]);
                 }

@@ -1,4 +1,17 @@
-(async () => {
+const landingOverlay = document.getElementById("landingOverlay");
+const startRecordingButton = document.getElementById("startRecording");
+startRecordingButton.addEventListener("click", async () => {
+    landingOverlay.style.display = "none";
+    await init();
+});
+
+// If we're in WeChat, show the viewInBrowserOverlay
+if (/micromessenger/i.test(navigator.userAgent)) {
+    const viewInBrowserOverlay = document.getElementById("viewInBrowserOverlay");
+    viewInBrowserOverlay.style.display = "flex";
+}
+
+const init = async () => {
     let duration = 5;
     let playbackRate = 1;
 
@@ -431,4 +444,4 @@
         rotation = (rotation + 90) % 360;
         updateRotation();
     });
-})();
+};

@@ -576,3 +576,69 @@ select {
         opacity: 0;
     }
 }
+
+/*
+
+        <div id="landingOverlay">
+            <h2>ReplayFlow</h2>
+            <p>Record, Replay, Adjust, Improve</p>
+            <button id="startRecording">Start Recording</button>
+            <p>ReplayFlow is an immediate feedback camera app for practicing skills.</p>
+            <p>You repeatedly perform and watch an instant replay, getting better each time.</p>
+        </div>
+        <div id="viewInBrowserOverlay">
+            <h2>This site needs to be viewed in browser</h2>
+        </div>
+*/
+
+#landingOverlay {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    gap: 0.5rem;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    color: white;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    padding: 1rem;
+}
+
+#landingOverlay h2 {
+    font-size: 2rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    margin-top: 0;
+}
+
+#landingOverlay h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+#landingOverlay button {
+    font-size: 1rem;
+    margin-top: 2rem;
+}
+
+#viewInBrowserOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    color: white;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 11;
+    padding: 1rem;
+}

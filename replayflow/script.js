@@ -168,6 +168,7 @@
         const constraints = {
             video: {
                 deviceId: deviceId ? deviceId : undefined,
+                facingMode: deviceId ? undefined : "user",
                 width: 1920,
                 height: 1080,
                 frameRate: 240,

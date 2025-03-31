@@ -4,9 +4,15 @@
         <meta charset="UTF-8" />
         <title>ReplayFlow - Record, Replay, Adjust, Improve</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content="ReplayFlow is a camera app offering instant feedback for skill practice. Perform, review, and improve with every replay." />
+        <meta
+            name="description"
+            content="ReplayFlow is a camera app offering instant feedback for skill practice. Perform, review, and improve with every replay."
+        />
         <meta name="author" content="ReplayFlow" />
-        <meta name="keywords" content="ReplayFlow, camera, app, instant feedback, skill practice, perform, review, improve, replay" />
+        <meta
+            name="keywords"
+            content="ReplayFlow, camera, app, instant feedback, skill practice, perform, review, improve, replay"
+        />
         <meta name="robots" content="index, follow" />
         <meta name="theme-color" content="#000000" />
         <link rel="stylesheet" href="./style.css" />
@@ -18,7 +24,10 @@
         <div id="landingOverlay">
             <h2>ReplayFlow</h2>
             <h3>Record, Replay, Adjust, Improve</h3>
-            <p>ReplayFlow is a camera app offering instant feedback for skill practice.</p>
+            <p>
+                ReplayFlow is a camera app offering instant feedback for skill
+                practice.
+            </p>
             <p>Perform, review, and improve with every replay.</p>
             <button id="startRecording">Start Recording</button>
         </div>
@@ -31,9 +40,14 @@
             <h2>Controls</h2>
             <h3>Camera</h3>
             <select id="cameraSelect"></select>
-            <h3>Image rotation</h3>                        
+            <h3>Image rotation</h3>
             <button id="cameraRotate">&circlearrowright;</button>
-            <button id="cameraMirror">&#9656;|<span style="display:inline-block;transform:scaleX(-1)">&#9656;</span></button>
+            <button id="cameraMirror">
+                &#9656;|<span
+                    style="display: inline-block; transform: scaleX(-1)"
+                    >&#9656;</span
+                >
+            </button>
             <h3>Recording duration and speed</h3>
             <select id="durationSelect">
                 <option value="3">3s</option>
@@ -52,7 +66,7 @@
             </select>
             <h3>Reference Video</h3>
             <button id="setReferenceVideo">Set Reference Video</button>
-            <input type="file" id="referenceVideoInput">
+            <input type="file" id="referenceVideoInput" />
         </div>
         <div id="recordings">
             <h2>Recordings</h2>
@@ -70,19 +84,42 @@
                     <span class="countdown-2">2</span>
                     <span class="countdown-1">1</span>
                 </div>
-                <button id="exitFullscreen" title="Exit Fullscreen">&#x2716;</button>
+                <button id="exitFullscreen" title="Exit Fullscreen">
+                    &#x2716;
+                </button>
                 <button id="manualRecording"></button>
                 <span id="videoControls">
                     <!-- <button id="rewind" title="Rewind">↺</button> -->
                     <button id="pause" title="Pause">
                         <svg width="16px" height="16px" viewport="0 0 16 16">
-                            <rect x="0" y="0" width="6" height="16" fill="currentColor"/>
-                            <rect x="10" y="0" width="6" height="16" fill="currentColor"/>
+                            <rect
+                                x="0"
+                                y="0"
+                                width="6"
+                                height="16"
+                                fill="currentColor"
+                            />
+                            <rect
+                                x="10"
+                                y="0"
+                                width="6"
+                                height="16"
+                                fill="currentColor"
+                            />
                         </svg>
                     </button>
                     <!-- <button id="downloadVideo" title="Download">↧</button> -->
                 </span>
-        </div>
+                <div id="cameraError">
+                    <h2>Camera Error</h2>
+                    <p>Camera access is required to use ReplayFlow.</p>
+                    <button id="cameraErrorRetry">Retry</button>
+                </div>
+                <div id="startingCamera">
+                    <h2>Starting Camera</h2>
+                    <p>ReplayFlow is starting the camera.</p>
+                </div>
+            </div>
         </main>
         <script src="./script.js"></script>
     </body>

@@ -644,3 +644,27 @@ select {
 #viewInBrowserOverlay h2 {
     text-transform: none;
 }
+
+#cameraError,
+#startingCamera {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    color: white;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    padding: 1rem;
+    text-align: center;
+}
+.no-camera #startingCamera {
+    display: flex;
+}
+.camera-error #cameraError {
+    display: flex;
+}

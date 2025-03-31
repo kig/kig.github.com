@@ -17,6 +17,8 @@ window.onmousedown = (e) => {
     slowMotionVideo.muted = false;
 };
 
+document.body.classList.add("no-camera");
+
 const init = async () => {
     let updateLoop = null;
 
@@ -168,7 +170,17 @@ const init = async () => {
         if (stream) {
             stream.getTracks().forEach((track) => track.stop());
         }
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (recorder) {
+            recorder.stop();
+        }
+        try {
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch(err) {
+            document.body.classList.add("camera-error");
+            console.error(err);
+            return;
+        }
+        document.body.classList.remove("no-camera");
         const cameras = stream.getVideoTracks();
         if (cameras.length > 0) {
             cameraSelect.value = cameras[0].getSettings().deviceId;
@@ -293,17 +305,12 @@ const init = async () => {
             updateLoop = setInterval(() => {
                 // The update loop runs an animation loop and monitors the video stream status.
                 //
-                // If the video is in the background, we release the camera and stop recording.
-                // If we're in the foreground and we don't have a camera stream, we start one.
+                // If we don't have a camera stream, try starting one.
                 // During recording and playback, we update the progress bar widths and trigger countdown timers.
-                if (document.hidden) {
-                    // stream.getTracks().forEach((track) => track.stop());
-                    // if (recorder.state === "recording") {
-                    //     stopRecording();
-                    // }
-                } else if (!stream.getTracks().every((track) => track.active)) {
+                if (stream.getTracks().some((track) => track.readystate === "ended")) {
+                    document.body.classList.add("no-camera");
                     // Assert that all the tracks in the stream are active.
-                    // startCamera(cameraSelect.value);
+                    startCamera(cameraSelect.value);
                 }
                 if (isPaused) return;
                 if (playingSlowMotion) {
@@ -500,5 +507,10 @@ const init = async () => {
     cameraRotateButton.addEventListener("click", async () => {
         rotation = (rotation + 90) % 360;
         updateRotation();
+    });
+
+    const cameraRetryButton = document.getElementById("cameraErrorRetry");
+    cameraRetryButton.addEventListener("click", async () => {
+        await startCamera(cameraSelect.value);
     });
 };

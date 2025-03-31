@@ -253,6 +253,15 @@ const init = async () => {
                 });
                 recordingContainer.appendChild(fullscreenButton);
 
+                // Add a "Use as reference" button to the recording
+                const referenceButton = document.createElement("button");
+                referenceButton.textContent = "⚑";
+                referenceButton.addEventListener("click", () => {
+                    referenceVideo.src = slowMotionVideoUrl;
+                    document.body.classList.add("reference");
+                });
+                recordingContainer.appendChild(referenceButton);
+
                 // Set title to hour:minute:second
                 const recordingTitle = document.createElement("h3");
                 recordingTitle.textContent = new Date().toLocaleTimeString();
@@ -513,4 +522,10 @@ const init = async () => {
     cameraRetryButton.addEventListener("click", async () => {
         await startCamera(cameraSelect.value);
     });
+
+    layoutSideBySide.onclick = () => document.body.classList.remove('layout-overlay');
+    layoutOverlay.onclick = () => document.body.classList.add('layout-overlay');
+
+    layoutFit.onclick = () => document.body.classList.remove('layout-fill');
+    layoutFill.onclick = () => document.body.classList.add('layout-fill');
 };

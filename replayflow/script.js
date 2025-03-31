@@ -7,12 +7,20 @@ startRecordingButton.addEventListener("click", async () => {
 
 // If we're in WeChat, show the viewInBrowserOverlay
 if (/micromessenger/i.test(navigator.userAgent)) {
-    const viewInBrowserOverlay = document.getElementById("viewInBrowserOverlay");
+    const viewInBrowserOverlay = document.getElementById(
+        "viewInBrowserOverlay"
+    );
     viewInBrowserOverlay.style.display = "flex";
 }
 
+window.onmousedown = (e) => {
+    slowMotionVideo.muted = false;
+};
+
 const init = async () => {
-    let duration = 5;
+    let updateLoop = null;
+
+    let durationSeconds = 5;
     let playbackRate = 1;
 
     // Realtime video element
@@ -26,10 +34,6 @@ const init = async () => {
 
     const referenceVideo = document.getElementById("referenceVideo");
 
-    window.onmousedown = (e) => {
-        slowMotionVideo.muted = false;
-    };
-
     const countdownContainer = document.getElementById("countdown");
 
     const extraStyle = document.createElement("style");
@@ -37,9 +41,9 @@ const init = async () => {
     document.head.appendChild(extraStyle);
 
     function setDuration(durationSeconds) {
-        duration = durationSeconds;
+        durationSeconds = durationSeconds;
 
-        if (duration === 0) {
+        if (durationSeconds === 0) {
             document.body.classList.add("manual");
         } else {
             document.body.classList.remove("manual");
@@ -48,37 +52,6 @@ const init = async () => {
         if (recorder.state === "recording") {
             restartRecording();
         }
-
-        // Adjust animation durations and animation delays
-        const recordingProgressBar = document.querySelector(
-            "#recordingProgressBar span"
-        );
-        recordingProgressBar.style.animationDuration = `${duration}s`;
-        const playbackProgressBar = document.querySelector(
-            "#playbackProgressBar span"
-        );
-        playbackProgressBar.style.animationDuration = `${
-            duration / playbackRate
-        }s`;
-
-        countdownContainer.querySelector(
-            ".countdown-3"
-        ).style.animationDelay = `${duration / playbackRate - 3}s`;
-        countdownContainer.querySelector(
-            ".countdown-2"
-        ).style.animationDelay = `${duration / playbackRate - 2}s`;
-        countdownContainer.querySelector(
-            ".countdown-1"
-        ).style.animationDelay = `${duration / playbackRate - 1}s`;
-
-        extraStyle.innerHTML = `
-        #countdown:before {
-            animation-delay: ${duration / playbackRate - 3}s;
-        }
-        #countdown:after {
-            animation-delay: ${duration / playbackRate - 4}s;
-        }
-        `;
     }
 
     function setMirror(mirror) {
@@ -104,7 +77,7 @@ const init = async () => {
     speedSelect.addEventListener("input", () => {
         playbackRate = parseFloat(speedSelect.value);
         slowMotionVideo.playbackRate = playbackRate;
-        setDuration(duration);
+        setDuration(durationSeconds);
     });
 
     async function getCameras() {
@@ -125,29 +98,31 @@ const init = async () => {
         });
     }
 
+    let stream = null;
     let recorder = null;
     let playingSlowMotion = false;
     let stopTimeout = null;
     let recordingStartTime = 0;
+    let playbackStartTime = 0;
 
     function startRecording() {
         clearTimeout(stopTimeout);
         recorder.start();
         recordingStartTime = Date.now();
-        document.body.classList.add("countdown");
+        document.body.classList.add("recording");
         if (referenceVideo) {
             referenceVideo.currentTime = 0;
             referenceVideo.playbackRate = 1;
             referenceVideo.play();
         }
-        if (duration > 0) {
-            stopTimeout = setTimeout(stopRecording, duration * 1000);
+        if (durationSeconds > 0) {
+            stopTimeout = setTimeout(stopRecording, durationSeconds * 1000);
         }
     }
 
     function stopRecording() {
         clearTimeout(stopTimeout);
-        document.body.classList.remove("countdown");
+        document.body.classList.remove("recording");
         recorder.stop();
     }
 
@@ -170,11 +145,13 @@ const init = async () => {
     }
 
     function pauseOthers() {
-        this.parentElement.parentElement.querySelectorAll('video').forEach(video => {
-            if (video !== this) {
-                video.pause();
-            }
-        });
+        this.parentElement.parentElement
+            .querySelectorAll("video")
+            .forEach((video) => {
+                if (video !== this) {
+                    video.pause();
+                }
+            });
     }
 
     async function startCamera(deviceId) {
@@ -188,7 +165,14 @@ const init = async () => {
             },
             audio: true,
         };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+        }
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        const cameras = stream.getVideoTracks();
+        if (cameras.length > 0) {
+            cameraSelect.value = cameras[0].getSettings().deviceId;
+        }
         video.srcObject = stream;
 
         recorder = new MediaRecorder(stream, {
@@ -206,6 +190,7 @@ const init = async () => {
                 playingSlowMotion = true;
                 slowMotionVideo.play();
                 slowMotionVideo.playbackRate = playbackRate;
+                playbackStartTime = Date.now();
                 document.body.classList.remove("paused");
                 // Add the recorded video to #recordingsList
                 // Delete the oldest recording if there are more than maxRecordings of them
@@ -267,17 +252,28 @@ const init = async () => {
                 // added to the list of recordings. This should look like the
                 // current frame of the video flying to the left side of the
                 // screen and disappearing.
-                const recordingAnimationFrame = document.body.querySelector('.recordingAnimationFrame') || document.createElement("canvas");
-                recordingAnimationFrame.width = video.videoWidth/5;
-                recordingAnimationFrame.height = video.videoHeight/5;
-                const recordingAnimationFrameCtx = recordingAnimationFrame.getContext("2d");
-                recordingAnimationFrameCtx.drawImage(video, 0, 0, recordingAnimationFrame.width, recordingAnimationFrame.height);
+                const recordingAnimationFrame =
+                    document.body.querySelector(".recordingAnimationFrame") ||
+                    document.createElement("canvas");
+                recordingAnimationFrame.width = video.videoWidth / 5;
+                recordingAnimationFrame.height = video.videoHeight / 5;
+                const recordingAnimationFrameCtx =
+                    recordingAnimationFrame.getContext("2d");
+                recordingAnimationFrameCtx.drawImage(
+                    video,
+                    0,
+                    0,
+                    recordingAnimationFrame.width,
+                    recordingAnimationFrame.height
+                );
                 recordingAnimationFrame.className = "recordingAnimationFrame";
                 document.body.appendChild(recordingAnimationFrame);
 
-                referenceVideo.playbackRate = playbackRate;
-                referenceVideo.currentTime = 0;
-                referenceVideo.play();
+                if (referenceVideo && referenceVideo.src) {
+                    referenceVideo.playbackRate = playbackRate;
+                    referenceVideo.currentTime = 0;
+                    referenceVideo.play();
+                }
                 slowMotionVideo.onended = () => {
                     playingSlowMotion = false;
                     startRecording();
@@ -293,6 +289,60 @@ const init = async () => {
             slowMotionVideo.width = video.videoWidth;
             slowMotionVideo.height = video.videoHeight;
         });
+        if (!updateLoop) {
+            updateLoop = setInterval(() => {
+                // The update loop runs an animation loop and monitors the video stream status.
+                //
+                // If the video is in the background, we release the camera and stop recording.
+                // If we're in the foreground and we don't have a camera stream, we start one.
+                // During recording and playback, we update the progress bar widths and trigger countdown timers.
+                if (document.hidden) {
+                    // stream.getTracks().forEach((track) => track.stop());
+                    // if (recorder.state === "recording") {
+                    //     stopRecording();
+                    // }
+                } else if (!stream.getTracks().every((track) => track.active)) {
+                    // Assert that all the tracks in the stream are active.
+                    // startCamera(cameraSelect.value);
+                }
+                if (isPaused) return;
+                if (playingSlowMotion) {
+                    const elapsedMs = Date.now() - playbackStartTime;
+                    const pct =
+                        (elapsedMs / ((durationSeconds / playbackRate) * 1e3)) *
+                        100;
+                    playbackProgressBar.firstChild.style.width = `${pct}%`;
+                    const remaining = durationSeconds - elapsedMs * 1e-3;
+                    // Animate the countdown timer
+                    // The countdown animation is:
+                    // - Fade in "Recording in" at 4s remaining
+                    // - Fade in .countdown-3 at 3s remaining and fade it out
+                    // - Fade in .countdown-2 at 2s remaining and fade it out
+                    // - Fade in .countdown-1 at 1s remaining and fade it out
+                    // - Fade out "Recording in" at 1s remaining
+                    countdownContainer.classList.toggle(
+                        "recording-in",
+                        remaining <= 4 && remaining >= 1
+                    );
+                    countdownContainer.classList.toggle(
+                        "countdown-3",
+                        remaining <= 3 && remaining > 2
+                    );
+                    countdownContainer.classList.toggle(
+                        "countdown-2",
+                        remaining <= 2 && remaining > 1
+                    );
+                    countdownContainer.classList.toggle(
+                        "countdown-1",
+                        remaining <= 1 && remaining > 0
+                    );
+                } else {
+                    const elapsed = Date.now() - recordingStartTime;
+                    const pct = (elapsed / durationSeconds / 1000) * 100;
+                    recordingProgressBar.firstChild.style.width = `${pct}%`;
+                }
+            }, 10);
+        }
     }
 
     await startCamera();
@@ -300,7 +350,7 @@ const init = async () => {
     cameraSelect.addEventListener("change", () =>
         startCamera(cameraSelect.value)
     );
-    setDuration(duration);
+    setDuration(durationSeconds);
 
     // // Make download button download the currently playing video
     // const downloadVideoButton = document.getElementById("downloadVideo");
@@ -325,34 +375,41 @@ const init = async () => {
     // Pause button stops the video playback at the current position and shows the video controls
     const pauseButton = document.getElementById("pause");
     let recordingElapsed = 0;
+    let isPaused = false;
     pauseButton.addEventListener("click", (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
         // Pause all playing videos in recordingsList
-        document.querySelectorAll("#recordingsList video").forEach(video => {
+        document.querySelectorAll("#recordingsList video").forEach((video) => {
             video.pause();
         });
         if (playingSlowMotion) {
             if (slowMotionVideo.paused) {
+                isPaused = false;
                 slowMotionVideo.play();
                 document.body.classList.remove("paused");
+                playbackStartTime = Date.now() - recordingElapsed;
             } else {
+                isPaused = true;
                 slowMotionVideo.pause();
                 document.body.classList.add("paused");
+                recordingElapsed = Date.now() - playbackStartTime;
             }
         } else {
             if (recorder.state === "recording") {
+                isPaused = true;
                 recorder.pause();
                 recordingElapsed = Date.now() - recordingStartTime;
                 clearTimeout(stopTimeout);
                 document.body.classList.add("paused");
             } else {
+                isPaused = false;
                 recorder.resume();
                 recordingStartTime = Date.now() - recordingElapsed;
-                if (duration > 0) {
+                if (durationSeconds > 0) {
                     stopTimeout = setTimeout(
                         stopRecording,
-                        duration * 1000 - recordingElapsed
+                        durationSeconds * 1000 - recordingElapsed
                     );
                 }
                 document.body.classList.remove("paused");

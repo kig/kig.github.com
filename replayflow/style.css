@@ -148,8 +148,15 @@ video {
     transform: scaleX(-1);
 }
 
-#video {
-    display: none;
+body:not(.recording) #video {
+    /* Small PIP video when not recording */
+    right: 1rem;
+    bottom: 1rem;
+    width: 15vw;
+    height: auto;
+    position: fixed;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 #slowMotionVideo {
     display: block;

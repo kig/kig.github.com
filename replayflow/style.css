@@ -5,7 +5,7 @@
 }
 body {
     font-family: sans-serif;
-    background: #f4f7f8;
+    background: #667;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -131,12 +131,18 @@ main {
 .videoContainer {
     background: #000;
     position: relative;
-    /* border-radius: 8px; */
-    /* padding: 0rem; */
+    border-radius: 8px;
     overflow: hidden;
+    width: calc(100vw - 1rem);
+    height: calc(100vh - 1rem);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 0.5rem;
+}
+:fullscreen .videoContainer {
     width: 100vw;
     height: 100vh;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 0;
+    border-radius: 0;
 }
 video {
     width: 100%;
@@ -450,6 +456,24 @@ select {
     position: absolute;
     left: 50vw;
     top: 0;
+}
+
+/* Use a vertical layout on portrait mode */
+@media (orientation: portrait) {
+    .reference #referenceVideo {
+        width: 100vw;
+        height: 50vh;
+    }
+    .reference #video,
+    .reference #slowMotionVideo {
+        width: 100vw;
+        height: 50vh;
+        left: 0;
+        top: 50vh;
+    }
+    body:not(.recording) #video {
+        width: 40vw !important;
+    }
 }
 
 .layout-overlay.reference #referenceVideo {

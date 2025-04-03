@@ -188,6 +188,7 @@ const init = async () => {
             return;
         }
         document.body.classList.remove("no-camera");
+        document.body.classList.remove("camera-error");
         const cameras = stream.getVideoTracks();
         if (cameras.length > 0) {
             cameraSelect.value = cameras[0].getSettings().deviceId;

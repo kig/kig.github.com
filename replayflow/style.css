@@ -144,10 +144,10 @@ main {
     margin: 0;
     border-radius: 0;
 }
-video {
+.videoContainer video {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
 }
 
 .mirror video::-webkit-media-controls-enclosure {
@@ -415,8 +415,8 @@ select {
     }
 }
 
-.layout-fill video {
-    object-fit: cover;
+body:not(.layout-fill) video {
+    object-fit: contain;
 }
 
 #referenceVideo {

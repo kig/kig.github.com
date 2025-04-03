@@ -488,7 +488,7 @@ const init = async () => {
 
     // If there's no fullscreen API support, hide the enterFullscreen button
     const iPhone = /iphone/i.test(navigator.userAgent);
-    if (iPhone || !document.body.requestFullscreen || !document.body.webkitRequestFullscreen || !document.body.msRequestFullscreen) {
+    if (iPhone || !(document.body.requestFullscreen || document.body.webkitRequestFullscreen || document.body.msRequestFullscreen)) {
         enterFullscreenButton.style.display = "none";
     }
 

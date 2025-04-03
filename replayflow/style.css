@@ -633,6 +633,11 @@ body:not(.layout-fill) video {
     margin-bottom: 2rem;
 }
 
+#landingOverlay img {
+    width: 256px;
+    height: 256px;
+}
+
 .margin1 {
     margin-top: 1rem !important;
     margin-bottom: 1rem !important;

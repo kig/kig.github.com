@@ -560,3 +560,11 @@ const init = async () => {
     layoutFit.onclick = () => document.body.classList.remove("layout-fill");
     layoutFill.onclick = () => document.body.classList.add("layout-fill");
 };
+
+
+
+// If we landed here from ?pwa, hide the landing overlay and go directly to init()
+if (location.search.includes("?pwa")) {
+    landingOverlay.style.display = "none";
+    init();
+}

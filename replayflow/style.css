@@ -12,20 +12,7 @@ body {
     padding: 0;
     font-family: avenir, sans-serif;
 }
-header {
-    display: flex;
-    margin-bottom: 1rem;
-    position: absolute;
-    top: 1rem;
-    left: 0;
-    width: 100%;
-    z-index: 1;
-    color: white;
-    align-items: center;
-    justify-content: center;
-    z-index: 6;
-    pointer-events: none;
-}
+
 h1 {
     font-size: 1.25rem;
     font-weight: 500;
@@ -77,9 +64,6 @@ button {
     display: block;
 }
 
-:fullscreen header {
-    display: none;
-}
 h3 {
     margin: 0;
     font-size: 1rem;
@@ -356,12 +340,12 @@ select {
         top: 7.8rem;
     }
 }
-/* When in fullscreen mode, move the countdown and progress bars up */
-:fullscreen #countdown {
+
+#countdown {
     top: 4rem;
 }
-:fullscreen #recordingProgressBar,
-:fullscreen #playbackProgressBar {
+#recordingProgressBar,
+#playbackProgressBar {
     top: 3.8rem;
 }
 
@@ -371,7 +355,7 @@ select {
     display: block;
     position: absolute;
     left: 60vw;
-    top: 5rem;
+    top: 3rem;
     margin-left: 1rem;
     width: 1.5rem;
     padding: 0;
@@ -380,11 +364,6 @@ select {
     text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
     z-index: 3;
     outline: 0;
-}
-:fullscreen #rewind,
-:fullscreen #downloadVideo,
-:fullscreen #pause {
-    top: 3rem;
 }
 
 #pause {
@@ -402,8 +381,8 @@ select {
     #rewind,
     #pause,
     #downloadVideo {
-        top: 4.85rem;
-        margin-left: 3rem;
+        top: 0.85rem;
+        margin-left: 2.5rem;
     }
 }
 
@@ -532,6 +511,15 @@ body:not(.layout-fill) video {
 }
 :fullscreen #enterFullscreen {
     display: none;
+}
+
+@media (display-mode: standalone) {
+    #enterFullscreen {
+        display: none;
+    }
+    #exitFullscreen {
+        display: none;
+    }
 }
 
 #controls {

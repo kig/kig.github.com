@@ -632,6 +632,10 @@ body:not(.layout-fill) video {
     margin-top: 2rem;
 }
 
+.margin1 {
+    margin: 1rem !important;
+}
+
 #viewInBrowserOverlay {
     display: none;
     position: fixed;

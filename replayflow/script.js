@@ -1,9 +1,11 @@
 const landingOverlay = document.getElementById("landingOverlay");
-const startRecordingButton = document.getElementById("startRecording");
-startRecordingButton.addEventListener("click", async () => {
-    landingOverlay.style.display = "none";
-    await init();
-});
+const startRecordingButtons = document.querySelectorAll(".startRecording");
+startRecordingButtons.forEach((btn) =>
+    btn.addEventListener("click", async () => {
+        landingOverlay.style.display = "none";
+        await init();
+    })
+);
 
 // If we're in WeChat, show the viewInBrowserOverlay
 if (/micromessenger/i.test(navigator.userAgent)) {
@@ -185,7 +187,7 @@ const init = async () => {
         }
         try {
             stream = await navigator.mediaDevices.getUserMedia(constraints);
-        } catch(err) {
+        } catch (err) {
             document.body.classList.add("camera-error");
             console.error(err);
             return;
@@ -327,7 +329,12 @@ const init = async () => {
                 //
                 // If we don't have a camera stream, try starting one.
                 // During recording and playback, we update the progress bar widths and trigger countdown timers.
-                if (!stream || stream.getTracks().some((track) => track.readyState === "ended")) {
+                if (
+                    !stream ||
+                    stream
+                        .getTracks()
+                        .some((track) => track.readyState === "ended")
+                ) {
                     document.body.classList.add("no-camera");
                     // Assert that all the tracks in the stream are active.
                     startCamera(cameraSelect.value);
@@ -491,7 +498,14 @@ const init = async () => {
 
     // If there's no fullscreen API support, hide the enterFullscreen button
     const iPhone = /iphone/i.test(navigator.userAgent);
-    if (iPhone || !(document.body.requestFullscreen || document.body.webkitRequestFullscreen || document.body.msRequestFullscreen)) {
+    if (
+        iPhone ||
+        !(
+            document.body.requestFullscreen ||
+            document.body.webkitRequestFullscreen ||
+            document.body.msRequestFullscreen
+        )
+    ) {
         enterFullscreenButton.style.display = "none";
     }
 
@@ -539,9 +553,10 @@ const init = async () => {
         await startCamera(cameraSelect.value);
     });
 
-    layoutSideBySide.onclick = () => document.body.classList.remove('layout-overlay');
-    layoutOverlay.onclick = () => document.body.classList.add('layout-overlay');
+    layoutSideBySide.onclick = () =>
+        document.body.classList.remove("layout-overlay");
+    layoutOverlay.onclick = () => document.body.classList.add("layout-overlay");
 
-    layoutFit.onclick = () => document.body.classList.remove('layout-fill');
-    layoutFill.onclick = () => document.body.classList.add('layout-fill');
+    layoutFit.onclick = () => document.body.classList.remove("layout-fill");
+    layoutFill.onclick = () => document.body.classList.add("layout-fill");
 };

@@ -3,8 +3,8 @@
     "name": "ReplayFlow",
     "icons": [
       {
-        "src": "icon.jpg",
-        "type": "image/jpg",
+        "src": "icon.png",
+        "type": "image/png",
         "sizes": "512x512",
         "purpose": "any maskable"
       }

@@ -16,7 +16,6 @@ body {
 h1 {
     font-size: 1.25rem;
     font-weight: 500;
-    text-transform: uppercase;
     text-align: center;
 }
 h1 small {
@@ -591,28 +590,30 @@ body:not(.layout-fill) video {
 }
 
 #landingOverlay {
-    display: flex;
+    display: block;
+    overflow: auto;
     position: fixed;
     top: 0;
     left: 0;
-    gap: 0.5rem;
     width: 100vw;
     height: 100vh;
     background: #fff;
     color: black;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     z-index: 10;
     padding: 1rem;
     text-align: center;
 }
+#landingOverlay * {
+    max-width: 650px;
+    margin: auto;
+}
 
 #landingOverlay h2 {
+    text-transform: none;
     font-size: 2rem;
     font-weight: 500;
-    text-transform: uppercase;
     margin-top: 0;
+    margin-bottom: 1rem;
 }
 
 #landingOverlay h3 {
@@ -620,6 +621,10 @@ body:not(.layout-fill) video {
     font-weight: 500;
     margin-top: 0;
     margin-bottom: 1rem;
+}
+
+#landingOverlay p {
+    margin-bottom: 0.5rem;
 }
 
 #landingOverlay button {

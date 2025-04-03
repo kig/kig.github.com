@@ -76,11 +76,6 @@ button {
 .paused #recordings {
     display: block;
 }
-/* .paused #recordingProgressBar,
-.paused #playbackProgressBar,
-.paused #countdown {
-    display: none;
-} */
 
 :fullscreen header {
     display: none;
@@ -131,12 +126,9 @@ main {
 .videoContainer {
     background: #000;
     position: relative;
-    border-radius: 8px;
     overflow: hidden;
-    width: calc(100vw - 1rem);
-    height: calc(100vh - 1rem);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-top: 0.5rem;
+    width: 100vw;
+    height: 100vh;
 }
 :fullscreen .videoContainer {
     width: 100vw;
@@ -482,7 +474,6 @@ body:not(.layout-fill) video {
 }
 
 .recording #rewind,
-/* .recording #pause, */
 .recording #downloadVideo {
     display: none;
 }
@@ -608,20 +599,6 @@ body:not(.layout-fill) video {
         opacity: 0;
     }
 }
-
-/*
-
-        <div id="landingOverlay">
-            <h2>ReplayFlow</h2>
-            <p>Record, Replay, Adjust, Improve</p>
-            <button id="startRecording">Start Recording</button>
-            <p>ReplayFlow is an immediate feedback camera app for practicing skills.</p>
-            <p>You repeatedly perform and watch an instant replay, getting better each time.</p>
-        </div>
-        <div id="viewInBrowserOverlay">
-            <h2>This site needs to be viewed in browser</h2>
-        </div>
-*/
 
 #landingOverlay {
     display: flex;

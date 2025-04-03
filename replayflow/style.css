@@ -631,8 +631,8 @@ body:not(.layout-fill) video {
     gap: 0.5rem;
     width: 100vw;
     height: 100vh;
-    background: #000;
-    color: white;
+    background: #fff;
+    color: black;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -682,6 +682,14 @@ body:not(.layout-fill) video {
 }
 #viewInBrowserOverlay h2 {
     text-transform: none;
+}
+
+#startRecording {
+    margin-bottom: 2rem;
+}
+
+#cameraErrorRetry {
+    font-size: 1rem;
 }
 
 #cameraError,

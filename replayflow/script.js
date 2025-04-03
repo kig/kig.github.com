@@ -343,10 +343,9 @@ const init = async () => {
                     // - Fade in .countdown-3 at 3s remaining and fade it out
                     // - Fade in .countdown-2 at 2s remaining and fade it out
                     // - Fade in .countdown-1 at 1s remaining and fade it out
-                    // - Fade out "Recording in" at 1s remaining
                     countdownContainer.classList.toggle(
                         "recording-in",
-                        remaining <= 4 && remaining >= 1
+                        remaining <= 4
                     );
                     countdownContainer.classList.toggle(
                         "countdown-3",

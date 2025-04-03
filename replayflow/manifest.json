@@ -13,5 +13,5 @@
     "display": "fullscreen",
     "theme_color": "#000000",
     "description": "ReplayFlow is an app for practicing and improving your skills by studying instant replays.",
-    "start_url": "/"
+    "start_url": "/?pwa"
   }

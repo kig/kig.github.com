@@ -512,7 +512,7 @@ body:not(.layout-fill) video {
     display: none;
 }
 
-@media (display-mode: standalone) {
+@media (display-mode: fullscreen) or (display-mode: standalone) {
     #enterFullscreen {
         display: none;
     }
@@ -604,8 +604,12 @@ body:not(.layout-fill) video {
     text-align: center;
 }
 #landingOverlay * {
-    max-width: 650px;
+    max-width: 390px;
     margin: auto;
+}
+#landingOverlay ol {
+    text-align: left;
+    display: inline-block;
 }
 
 #landingOverlay h2 {

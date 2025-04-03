@@ -157,6 +157,7 @@ const init = async () => {
     }
 
     let lastStartCameraTime = 0;
+    let firstStartCamera = true;
     async function startCamera(deviceId) {
         if (Date.now() - lastStartCameraTime > 3000) {
             lastStartCameraTime = Date.now();
@@ -174,11 +175,13 @@ const init = async () => {
             },
             audio: true,
         };
+        if (recorder) {
+            stopRecording();
+            recorder = null;
+        }
         if (stream) {
             stream.getTracks().forEach((track) => track.stop());
-        }
-        if (recorder) {
-            recorder.stop();
+            stream = null;
         }
         try {
             stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -314,10 +317,10 @@ const init = async () => {
         };
         startRecording();
 
-        video.addEventListener("play", () => {
+        video.onplay = () => {
             slowMotionVideo.width = video.videoWidth;
             slowMotionVideo.height = video.videoHeight;
-        });
+        };
         if (!updateLoop) {
             updateLoop = setInterval(() => {
                 // The update loop runs an animation loop and monitors the video stream status.

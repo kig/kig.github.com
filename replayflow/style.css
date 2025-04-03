@@ -446,7 +446,8 @@ body:not(.layout-fill) video {
         top: 50vh;
     }
     body:not(.recording) #video {
-        width: 40vw !important;
+        width: auto !important;
+        height: 25vh !important;
     }
 }
 

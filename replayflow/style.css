@@ -647,6 +647,30 @@ body:not(.layout-fill) video {
     margin-bottom: 1rem !important;
 }
 
+dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 400px;
+    transform: translate(-50%, -50%);
+    border-radius: 8px;
+    border: 0;
+    background: #fff;
+    color: black;
+    text-align: center;
+    padding: 2rem;
+}
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+dialog button {
+    font-size: 1rem;
+    margin: 1rem;
+}
+#firstRecordingDialog button {
+    margin-bottom: 0;
+}
+
 #viewInBrowserOverlay {
     display: none;
     position: fixed;

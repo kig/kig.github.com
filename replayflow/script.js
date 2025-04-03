@@ -21,6 +21,9 @@ window.onmousedown = (e) => {
 
 document.body.classList.add("no-camera");
 
+let firstDialogDone = false;
+let secondDialogDone = false;
+
 const init = async () => {
     let updateLoop = null;
 
@@ -199,6 +202,77 @@ const init = async () => {
             cameraSelect.value = cameras[0].getSettings().deviceId;
         }
         video.srcObject = stream;
+        video.onplay = () => {
+            slowMotionVideo.width = video.videoWidth;
+            slowMotionVideo.height = video.videoHeight;
+        };
+        if (!updateLoop) {
+            updateLoop = setInterval(() => {
+                // The update loop runs an animation loop and monitors the video stream status.
+                //
+                // If we don't have a camera stream, try starting one.
+                // During recording and playback, we update the progress bar widths and trigger countdown timers.
+                if (
+                    !stream ||
+                    stream
+                        .getTracks()
+                        .some((track) => track.readyState === "ended")
+                ) {
+                    document.body.classList.add("no-camera");
+                    // Assert that all the tracks in the stream are active.
+                    startCamera(cameraSelect.value);
+                }
+                if (isPaused) return;
+                if (playingSlowMotion) {
+                    const elapsedMs = Date.now() - playbackStartTime;
+                    const pct =
+                        (elapsedMs / ((durationSeconds / playbackRate) * 1e3)) *
+                        100;
+                    playbackProgressBar.firstChild.style.width = `${pct}%`;
+                    const remaining = durationSeconds - elapsedMs * 1e-3;
+                    // Animate the countdown timer
+                    // The countdown animation is:
+                    // - Fade in "Recording in" at 4s remaining
+                    // - Fade in .countdown-3 at 3s remaining and fade it out
+                    // - Fade in .countdown-2 at 2s remaining and fade it out
+                    // - Fade in .countdown-1 at 1s remaining and fade it out
+                    countdownContainer.classList.toggle(
+                        "recording-in",
+                        remaining <= 4
+                    );
+                    countdownContainer.classList.toggle(
+                        "countdown-3",
+                        remaining <= 3 && remaining > 2
+                    );
+                    countdownContainer.classList.toggle(
+                        "countdown-2",
+                        remaining <= 2 && remaining > 1
+                    );
+                    countdownContainer.classList.toggle(
+                        "countdown-1",
+                        remaining <= 1 && remaining > 0
+                    );
+                } else {
+                    const elapsed = Date.now() - recordingStartTime;
+                    const pct = (elapsed / durationSeconds / 1000) * 100;
+                    recordingProgressBar.firstChild.style.width = `${pct}%`;
+                }
+            }, 10);
+        }
+        
+        if (!firstDialogDone) {
+            document.body.classList.add('recording');
+            const dialog = document.getElementById("firstRecordingDialog");
+            dialog.showModal();
+            firstDialogDone = true;
+            const closeButton = document.getElementById("firstRecordingGo");
+            await new Promise((resolve) => {
+                closeButton.addEventListener("click", () => {
+                    dialog.close();
+                    resolve();
+                });
+            });
+        }
 
         recorder = new MediaRecorder(stream, {
             videoBitsPerSecond: 30000000,
@@ -308,8 +382,22 @@ const init = async () => {
                     referenceVideo.currentTime = 0;
                     referenceVideo.play();
                 }
-                slowMotionVideo.onended = () => {
+                slowMotionVideo.onended = async () => {
                     playingSlowMotion = false;
+
+                    if (!secondDialogDone) {
+                        document.body.classList.add('recording');
+                        const dialog = document.getElementById("secondRecordingDialog");
+                        dialog.showModal();
+                        secondDialogDone = true;
+                        const closeButton = document.getElementById("secondRecordingGo");
+                        await new Promise((resolve) => {
+                            closeButton.addEventListener("click", () => {
+                                dialog.close();
+                                resolve();
+                            });
+                        });
+                    }
                     startRecording();
                 };
             } else {
@@ -319,63 +407,6 @@ const init = async () => {
         };
         startRecording();
 
-        video.onplay = () => {
-            slowMotionVideo.width = video.videoWidth;
-            slowMotionVideo.height = video.videoHeight;
-        };
-        if (!updateLoop) {
-            updateLoop = setInterval(() => {
-                // The update loop runs an animation loop and monitors the video stream status.
-                //
-                // If we don't have a camera stream, try starting one.
-                // During recording and playback, we update the progress bar widths and trigger countdown timers.
-                if (
-                    !stream ||
-                    stream
-                        .getTracks()
-                        .some((track) => track.readyState === "ended")
-                ) {
-                    document.body.classList.add("no-camera");
-                    // Assert that all the tracks in the stream are active.
-                    startCamera(cameraSelect.value);
-                }
-                if (isPaused) return;
-                if (playingSlowMotion) {
-                    const elapsedMs = Date.now() - playbackStartTime;
-                    const pct =
-                        (elapsedMs / ((durationSeconds / playbackRate) * 1e3)) *
-                        100;
-                    playbackProgressBar.firstChild.style.width = `${pct}%`;
-                    const remaining = durationSeconds - elapsedMs * 1e-3;
-                    // Animate the countdown timer
-                    // The countdown animation is:
-                    // - Fade in "Recording in" at 4s remaining
-                    // - Fade in .countdown-3 at 3s remaining and fade it out
-                    // - Fade in .countdown-2 at 2s remaining and fade it out
-                    // - Fade in .countdown-1 at 1s remaining and fade it out
-                    countdownContainer.classList.toggle(
-                        "recording-in",
-                        remaining <= 4
-                    );
-                    countdownContainer.classList.toggle(
-                        "countdown-3",
-                        remaining <= 3 && remaining > 2
-                    );
-                    countdownContainer.classList.toggle(
-                        "countdown-2",
-                        remaining <= 2 && remaining > 1
-                    );
-                    countdownContainer.classList.toggle(
-                        "countdown-1",
-                        remaining <= 1 && remaining > 0
-                    );
-                } else {
-                    const elapsed = Date.now() - recordingStartTime;
-                    const pct = (elapsed / durationSeconds / 1000) * 100;
-                    recordingProgressBar.firstChild.style.width = `${pct}%`;
-                }
-            }, 10);
-        }
     }
 
     await startCamera();

@@ -327,7 +327,7 @@ const init = async () => {
                 //
                 // If we don't have a camera stream, try starting one.
                 // During recording and playback, we update the progress bar widths and trigger countdown timers.
-                if (stream.getTracks().some((track) => track.readyState === "ended")) {
+                if (!stream || stream.getTracks().some((track) => track.readyState === "ended")) {
                     document.body.classList.add("no-camera");
                     // Assert that all the tracks in the stream are active.
                     startCamera(cameraSelect.value);

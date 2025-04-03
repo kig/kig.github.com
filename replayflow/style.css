@@ -373,24 +373,6 @@ select {
     top: 3.8rem;
 }
 
-.videoContainer:after {
-    content: "Tap to enter fullscreen";
-    display: block;
-    position: absolute;
-    bottom: 4rem;
-    left: 50%;
-    width: 16rem;
-    margin-left: -8rem;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    color: white;
-}
-:fullscreen .videoContainer:after {
-    display: none;
-}
-
 #rewind,
 #downloadVideo,
 #pause {
@@ -545,6 +527,18 @@ select {
 }
 :fullscreen #exitFullscreen {
     display: inline-block;
+}
+
+#enterFullscreen {
+    display: block;
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    background: transparent;
+    z-index: 6;
+}
+:fullscreen #enterFullscreen {
+    display: none;
 }
 
 #controls {

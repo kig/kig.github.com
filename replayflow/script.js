@@ -474,9 +474,9 @@ const init = async () => {
         }
     });
 
-    // Make tapping on videoContainer make it fullscreen
-    const videoContainer = document.querySelector(".videoContainer");
-    videoContainer.addEventListener("click", () => {
+    // Make tapping on enterFullscreen button enter fullscreen
+    const enterFullscreenButton = document.getElementById("enterFullscreen");
+    enterFullscreenButton.addEventListener("click", () => {
         if (document.body.requestFullscreen) {
             document.body.requestFullscreen();
         } else if (document.body.webkitRequestFullscreen) {
@@ -485,6 +485,12 @@ const init = async () => {
             document.body.msRequestFullscreen();
         }
     });
+
+    // If there's no fullscreen API support, hide the enterFullscreen button
+    const iPhone = /iphone/i.test(navigator.userAgent);
+    if (iPhone || !document.body.requestFullscreen || !document.body.webkitRequestFullscreen || !document.body.msRequestFullscreen) {
+        enterFullscreenButton.style.display = "none";
+    }
 
     const exitFullscreenButton = document.getElementById("exitFullscreen");
     exitFullscreenButton.addEventListener("click", (ev) => {

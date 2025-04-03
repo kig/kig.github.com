@@ -1,0 +1,17 @@
+{
+    "short_name": "ReplayFlow",
+    "name": "ReplayFlow",
+    "icons": [
+      {
+        "src": "icon.jpg",
+        "type": "image/jpg",
+        "sizes": "512x512",
+        "purpose": "any maskable"
+      }
+    ],
+    "background_color": "#000000",
+    "display": "fullscreen",
+    "theme_color": "#000000",
+    "description": "ReplayFlow is an app for practicing and improving your skills by studying instant replays.",
+    "start_url": "/"
+  }

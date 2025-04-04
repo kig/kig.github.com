@@ -23,15 +23,10 @@ const cameraSelect = document.getElementById("cameraSelect");
 
 // Slow motion video
 const slowMotionVideo = document.getElementById("slowMotionVideo");
-slowMotionVideo.playbackRate = playbackRate;
 
 const referenceVideo = document.getElementById("referenceVideo");
 
 const countdownContainer = document.getElementById("countdown");
-
-const extraStyle = document.createElement("style");
-extraStyle.innerHTML = ``;
-document.head.appendChild(extraStyle);
 
 window.onmousedown = (e) => {
     slowMotionVideo.muted = false;
@@ -49,6 +44,7 @@ const init = async () => {
 
     let durationSeconds = 5;
     let playbackRate = 1;
+    slowMotionVideo.playbackRate = playbackRate;
 
     function setDuration(newDurationSeconds) {
         durationSeconds = newDurationSeconds;

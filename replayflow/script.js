@@ -31,7 +31,7 @@ const init = async () => {
     let playbackRate = 1;
 
     // Realtime video element
-    const videoContainer = document.getElementById("videoContainer");
+    const videoContainer = document.querySelector(".videoContainer");
     const video = document.getElementById("video");
     // Camera selector
     const cameraSelect = document.getElementById("cameraSelect");
@@ -73,7 +73,7 @@ const init = async () => {
         const mirror = videoContainer.classList.contains("mirror") ? -1 : 1;
         video.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom}) !important`;
         slowMotionVideo.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom}) !important`;
-        alert(`rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom}) !important`);
+        //alert(`rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom}) !important`);
     }
 
     function setMirror(mirror) {

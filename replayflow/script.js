@@ -230,7 +230,7 @@ const init = async () => {
                         (elapsedMs / ((durationSeconds / playbackRate) * 1e3)) *
                         100;
                     playbackProgressBar.firstChild.style.width = `${pct}%`;
-                    const remaining = durationSeconds - elapsedMs * 1e-3;
+                    const remaining = durationSeconds - playbackRate * elapsedMs * 1e-3;
                     // Animate the countdown timer
                     // The countdown animation is:
                     // - Fade in "Recording in" at 4s remaining

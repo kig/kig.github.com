@@ -31,6 +31,7 @@ const init = async () => {
     let playbackRate = 1;
 
     // Realtime video element
+    const videoContainer = document.getElementById("videoContainer");
     const video = document.getElementById("video");
     // Camera selector
     const cameraSelect = document.getElementById("cameraSelect");
@@ -47,8 +48,8 @@ const init = async () => {
     extraStyle.innerHTML = ``;
     document.head.appendChild(extraStyle);
 
-    function setDuration(durationSeconds) {
-        durationSeconds = durationSeconds;
+    function setDuration(newDurationSeconds) {
+        durationSeconds = newDurationSeconds;
 
         if (durationSeconds === 0) {
             document.body.classList.add("manual");

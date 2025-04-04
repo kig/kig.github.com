@@ -31,7 +31,7 @@ const init = async () => {
     let playbackRate = 1;
 
     // Realtime video element
-    const videoContainer = document.querySelector(".videoContainer");
+    const videoContainer = document.body.querySelector(".videoContainer");
     const video = document.getElementById("video");
     // Camera selector
     const cameraSelect = document.getElementById("cameraSelect");

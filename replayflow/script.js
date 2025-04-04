@@ -64,16 +64,19 @@ const init = async () => {
 
     let rotation = 0;
     function updateRotation() {
+        alert(0)
         const zoom = (rotation % 180 === 0)
             ? 1
             : Math.max(
                   video.videoWidth / video.videoHeight,
                   video.videoHeight / video.videoWidth
               );
+        alert(1)
         const mirror = videoContainer.classList.contains("mirror") ? -1 : 1;
+        alert(2)
         video.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom}) !important`;
         slowMotionVideo.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom}) !important`;
-        //alert(`rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom}) !important`);
+        alert(`rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom}) !important`);
     }
 
     function setMirror(mirror) {

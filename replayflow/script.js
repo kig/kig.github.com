@@ -15,26 +15,11 @@ if (/micromessenger/i.test(navigator.userAgent)) {
     viewInBrowserOverlay.style.display = "flex";
 }
 
-// Realtime video element
-const videoContainer = document.body.querySelector(".videoContainer");
-const video = document.getElementById("video");
-// Camera selector
-const cameraSelect = document.getElementById("cameraSelect");
-
-// Slow motion video
-const slowMotionVideo = document.getElementById("slowMotionVideo");
-
-const referenceVideo = document.getElementById("referenceVideo");
-
-const countdownContainer = document.getElementById("countdown");
-
 window.onmousedown = (e) => {
     slowMotionVideo.muted = false;
 };
 
 document.body.classList.add("no-camera");
-
-
 
 let firstDialogDone = false;
 let secondDialogDone = false;
@@ -44,7 +29,24 @@ const init = async () => {
 
     let durationSeconds = 5;
     let playbackRate = 1;
+
+    // Realtime video element
+    const videoContainer = document.body.querySelector(".videoContainer");
+    const video = document.getElementById("video");
+    // Camera selector
+    const cameraSelect = document.getElementById("cameraSelect");
+
+    // Slow motion video
+    const slowMotionVideo = document.getElementById("slowMotionVideo");
     slowMotionVideo.playbackRate = playbackRate;
+
+    const referenceVideo = document.getElementById("referenceVideo");
+
+    const countdownContainer = document.getElementById("countdown");
+
+    const extraStyle = document.createElement("style");
+    extraStyle.innerHTML = ``;
+    document.head.appendChild(extraStyle);
 
     function setDuration(newDurationSeconds) {
         durationSeconds = newDurationSeconds;
@@ -58,19 +60,6 @@ const init = async () => {
         if (recorder.state === "recording") {
             restartRecording();
         }
-    }
-
-    let rotation = 0;
-    function updateRotation() {
-        const zoom = (rotation % 180 === 0)
-            ? 1
-            : Math.max(
-                  video.videoWidth / video.videoHeight,
-                  video.videoHeight / video.videoWidth
-              );
-        const mirror = videoContainer.classList.contains("mirror") ? -1 : 1;
-        video.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom}) !important`;
-        slowMotionVideo.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom}) !important`;
     }
 
     function setMirror(mirror) {
@@ -573,7 +562,20 @@ const init = async () => {
     });
 
     const cameraRotateButton = document.getElementById("cameraRotate");
-    cameraRotateButton.addEventListener("click", () => {
+    let rotation = 0;
+    function updateRotation() {
+        let zoom =
+            rotation % 180 === 0
+                ? 1
+                : Math.max(
+                      video.videoWidth / video.videoHeight,
+                      video.videoHeight / video.videoWidth
+                  );
+        const mirror = videoContainer.classList.contains("mirror") ? -1 : 1;
+        video.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
+        slowMotionVideo.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
+    }
+    cameraRotateButton.addEventListener("click", async () => {
         rotation = (rotation + 90) % 360;
         updateRotation();
     });

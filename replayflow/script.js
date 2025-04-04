@@ -62,6 +62,19 @@ const init = async () => {
         }
     }
 
+    let rotation = 0;
+    function updateRotation() {
+        let zoom = (rotation % 180 === 0)
+            ? 1
+            : Math.max(
+                  video.videoWidth / video.videoHeight,
+                  video.videoHeight / video.videoWidth
+              );
+        const mirror = videoContainer.classList.contains("mirror") ? -1 : 1;
+        video.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
+        slowMotionVideo.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
+    }
+
     function setMirror(mirror) {
         if (mirror) {
             videoContainer.classList.add("mirror");
@@ -562,19 +575,6 @@ const init = async () => {
     });
 
     const cameraRotateButton = document.getElementById("cameraRotate");
-    let rotation = 0;
-    function updateRotation() {
-        let zoom =
-            rotation % 180 === 0
-                ? 1
-                : Math.max(
-                      video.videoWidth / video.videoHeight,
-                      video.videoHeight / video.videoWidth
-                  );
-        const mirror = videoContainer.classList.contains("mirror") ? -1 : 1;
-        video.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
-        slowMotionVideo.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
-    }
     cameraRotateButton.addEventListener("click", async () => {
         rotation = (rotation + 90) % 360;
         updateRotation();

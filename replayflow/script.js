@@ -76,6 +76,15 @@ const init = async () => {
         setMirror(!videoContainer.classList.contains("mirror"));
     });
 
+    const pipCheckbox = document.getElementById("pipCheckbox");
+    pipCheckbox.addEventListener("click", () => {
+        if (pipCheckbox.checked) {
+            videoContainer.classList.remove('no-pip');
+        } else {
+            videoContainer.classList.add('no-pip');
+        }
+    });
+
     const durationSelect = document.getElementById("durationSelect");
     durationSelect.addEventListener("input", () => {
         setDuration(parseFloat(durationSelect.value));
@@ -571,6 +580,11 @@ const init = async () => {
                       video.videoWidth / video.videoHeight,
                       video.videoHeight / video.videoWidth
                   );
+        if (rotation % 180 !== 0) {
+            videoContainer.classList.add('rotated');
+        } else {
+            videoContainer.classList.remove('rotated');
+        }
         const mirror = videoContainer.classList.contains("mirror") ? -1 : 1;
         video.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
         slowMotionVideo.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;

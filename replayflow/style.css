@@ -142,6 +142,10 @@ body:not(.recording) #video {
     border-radius: 4px !important;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) !important;
 }
+body:not(.recording) .rotated #video,
+body:not(.recording) .no-pip #video {
+    display: none;
+}
 #slowMotionVideo {
     display: block;
 }
@@ -385,7 +389,8 @@ select {
     }
 }
 
-body:not(.layout-fill) video {
+body:not(.layout-fill) video,
+.rotated video {
     object-fit: contain;
 }
 

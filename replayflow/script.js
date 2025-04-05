@@ -21,8 +21,10 @@ window.onmousedown = (e) => {
 
 document.body.classList.add("no-camera");
 
-let firstDialogDone = false;
-let secondDialogDone = false;
+// Check if localStorage has replayflow-onboarding-done set
+const onboardingDone = localStorage.getItem("replayflow-onboarding-done") === "true";
+let firstDialogDone = onboardingDone;
+let secondDialogDone = onboardingDone;
 
 const init = async () => {
     let updateLoop = null;
@@ -172,7 +174,6 @@ const init = async () => {
     }
 
     let lastStartCameraTime = 0;
-    let firstStartCamera = true;
     async function startCamera(deviceId) {
         if (Date.now() - lastStartCameraTime > 3000) {
             lastStartCameraTime = Date.now();
@@ -400,6 +401,7 @@ const init = async () => {
                         const dialog = document.getElementById("secondRecordingDialog");
                         dialog.showModal();
                         secondDialogDone = true;
+                        localStorage.setItem("replayflow-onboarding-done", "true");
                         const closeButton = document.getElementById("secondRecordingGo");
                         await new Promise((resolve) => {
                             closeButton.addEventListener("click", () => {

@@ -23,10 +23,13 @@ document.body.classList.add("no-camera");
 
 // Check if localStorage has replayflow-onboarding-done set
 const onboardingDone = localStorage.getItem("replayflow-onboarding-done") === "true";
-let firstDialogDone = onboardingDone;
+let firstDialogDone = false;
 let secondDialogDone = onboardingDone;
 
 const init = async () => {
+
+    let isPaused = false;
+
     let updateLoop = null;
 
     let durationSeconds = 5;
@@ -451,7 +454,6 @@ const init = async () => {
     // Pause button stops the video playback at the current position and shows the video controls
     const pauseButton = document.getElementById("pause");
     let recordingElapsed = 0;
-    let isPaused = false;
     pauseButton.addEventListener("click", (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
@@ -489,6 +491,28 @@ const init = async () => {
                     );
                 }
                 document.body.classList.remove("paused");
+            }
+        }
+    });
+
+    document.addEventListener("keydown", (ev) => {
+        if (ev.key === " ") {
+            // Space presses pause button
+            ev.preventDefault();
+            ev.stopPropagation();
+            pauseButton.click();
+        } else if (ev.key === "f") {
+            // F key presses enterFullscreen/exitFullscreen button
+            ev.preventDefault();
+            ev.stopPropagation();
+            if (
+                document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.msFullscreenElement
+            ) {
+                exitFullscreenButton.click();
+            } else {
+                enterFullscreenButton.click();
             }
         }
     });
@@ -613,6 +637,7 @@ const init = async () => {
 
 // If we landed here from ?pwa, hide the landing overlay and go directly to init()
 if (location.search.includes("?pwa")) {
-    landingOverlay.style.display = "none";
+    document.body.querySelector('#landing').style.display = "none";
+    document.body.querySelector('main').style.display = "flex";
     init();
 }

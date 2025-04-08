@@ -41,8 +41,8 @@ main h1 small {
 main select {
     padding: 0.3rem;
     font-size: 1rem;
-    height: 2.25rem;
-    font-family: avenir, sans-serif;
+    /* height: 2.25rem; */
+    font-family: Inter, avenir, sans-serif;
     margin-left: 1rem;
     border-radius: 4px;
     max-width: 100%;
@@ -50,9 +50,9 @@ main select {
 main button {
     padding: 0rem 1rem;
     font-size: 1rem;
-    font-family: avenir, sans-serif;
+    font-family: Inter, avenir, sans-serif;
     background: #007bff;
-    height: 2.2rem;
+    /* height: 2.2rem; */
     color: white;
     border: none;
     border-radius: 4px;
@@ -114,7 +114,7 @@ main h3 {
 main h2 {
     font-size: 1rem;
     font-weight: 500;
-    text-transform: uppercase;
+
     margin-top: 0rem;
     margin-bottom: 0.5rem;
 }
@@ -199,7 +199,7 @@ main select {
 }
 #countdown:before {
     content: "Recording in";
-    text-transform: uppercase;
+
     position: absolute;
     text-align: center;
     width: 100%;
@@ -211,7 +211,7 @@ main select {
 }
 #countdown:after {
     content: "Replaying";
-    text-transform: uppercase;
+
     position: absolute;
     text-align: center;
     width: 100%;
@@ -369,7 +369,7 @@ main select {
     display: block;
     position: absolute;
     left: 60vw;
-    top: 3rem;
+    top: 2.5rem;
     margin-left: 1rem;
     width: 1.5rem;
     padding: 0;
@@ -513,13 +513,17 @@ body:not(.layout-fill) .videoContainer video,
     z-index: 6;
 }
 :fullscreen #exitFullscreen {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #enterFullscreen {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: absolute;
-    left: 1rem;
+    right: 1rem;
     bottom: 1rem;
     background: transparent;
     z-index: 6;
@@ -539,11 +543,13 @@ body:not(.layout-fill) .videoContainer video,
 
 #controls {
     display: none;
-    position: absolute;
+    position: fixed;
     right: 0rem;
     top: 0rem;
     width: 400px;
     max-width: 100vw;
+    max-height: 100vh;
+    overflow: auto;
     padding: 1.5rem;
     padding-top: 1.5rem;
     background: #eee;
@@ -677,4 +683,274 @@ dialog button {
 }
 .camera-error #cameraError {
     display: flex;
+}
+
+
+/* Apply additional styling to controls and components */
+
+/* Headings in control panel */
+#controls h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #111827;
+}
+
+#controls h3 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    color: #4B5563;
+}
+
+/* Style selects and buttons consistently */
+#controls select, 
+#cameraSelect, 
+#durationSelect, 
+#speedSelect {
+    background-color: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    color: #374151;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+
+#controls select:focus,
+#cameraSelect:focus,
+#durationSelect:focus,
+#speedSelect:focus {
+    outline: none;
+    border-color: #6366F1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* Style all buttons in controls */
+#controls button,
+#setReferenceVideo,
+#cameraRotate,
+#cameraMirror,
+#layoutSideBySide,
+#layoutOverlay,
+#layoutFit,
+#layoutFill {
+    background: white;
+    border: 1px solid #E5E7EB;
+    color: #4B5563;
+    border-radius: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#controls button:hover,
+#setReferenceVideo:hover,
+#cameraRotate:hover,
+#cameraMirror:hover,
+#layoutSideBySide:hover,
+#layoutOverlay:hover,
+#layoutFit:hover,
+#layoutFill:hover {
+    background: #F9FAFB;
+    border-color: #D1D5DB;
+}
+
+/* Primary action buttons */
+#setReferenceVideo {
+    background: linear-gradient(to right, #6366F1, #8B5CF6);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+}
+
+#setReferenceVideo:hover {
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+    transform: translateY(-1px);
+}
+
+/* File input styling */
+#referenceVideoInput {
+    display: none;
+}
+
+#videoControls button {
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    color: #6366F1;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s;
+}
+
+#videoControls button:hover {
+    background: white;
+    transform: scale(1.05);
+}
+
+/* Progress bars */
+#recordingProgressBar span,
+#playbackProgressBar span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(to right, #c5c6f9, #d9cbf9);
+    width: 0;
+    border-radius: 0 2px 2px 0;
+}
+/* Recording progress bar is red */
+#recordingProgressBar span {
+    background: linear-gradient(to right, #EF4444, #FBBF24);
+}
+
+/* Fullscreen buttons */
+#enterFullscreen,
+#exitFullscreen {
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    color: #6366F1;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    font-size: 1rem;
+    z-index: 5;
+    transition: all 0.2s;
+}
+
+#enterFullscreen:hover,
+#exitFullscreen:hover {
+    background: white;
+    transform: scale(1.05);
+}
+
+/* Manual recording button */
+#manualRecording {
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+}
+
+#manualRecording.recording {
+    background: #EF4444;
+}
+
+/* Error and loading states */
+#cameraError h2,
+#startingCamera h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #111827;
+}
+
+#cameraError p,
+#startingCamera p {
+    font-size: 1rem;
+    color: #6B7280;
+    margin-bottom: 1.5rem;
+}
+#startingCamera h2,
+#startingCamera p {
+    color: white;
+}
+
+#cameraErrorRetry,
+#firstRecordingGo {
+    background: linear-gradient(to right, #6366F1, #8B5CF6);
+    color: white;
+    border: none;
+    border-radius: 9999px;
+    padding: 0.875rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#cameraErrorRetry:hover {
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Recordings panel styling */
+#recordings {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    font-family: 'Inter', sans-serif;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    z-index: 6;
+    max-height: 80vh;
+    overflow-y: auto;
+    width: 300px;
+    max-width: 100vw;
+}
+
+#recordings h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #111827;
+}
+
+#recordingsList {
+    display: grid;
+    gap: 0.75rem;
+}
+
+#recordingsList .recording {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+#recordingsList .recording:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+#controls.open {
+    display: block;
+}
+#controlsToggle {
+    display: none;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    background: white;
+    border: none;
+    color: #6366F1;
+    z-index: 7;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+#controlsToggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
 }

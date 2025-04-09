@@ -62,6 +62,8 @@ const init = async () => {
             document.body.classList.remove("manual");
         }
 
+        tryNumber = 1;
+
         if (recorder.state === "recording") {
             restartRecording();
         }
@@ -126,6 +128,8 @@ const init = async () => {
     let stopTimeout = null;
     let recordingStartTime = 0;
     let playbackStartTime = 0;
+
+    let tryNumber = 1;
 
     function startRecording() {
         clearTimeout(stopTimeout);
@@ -326,8 +330,10 @@ const init = async () => {
                 // Add a download button to download the recording
                 const downloadButton = document.createElement("button");
                 downloadButton.textContent = "↧";
+                const recordingDate = new Date();
+                const recordingTryNumber = tryNumber++;
                 downloadButton.addEventListener("click", () => {
-                    const dateString = new Date()
+                    const dateString = recordingDate
                         .toLocaleString("ja-JP", {
                             year: "numeric",
                             month: "2-digit",
@@ -340,7 +346,7 @@ const init = async () => {
                         .replace(/[ :]/g, "_");
                     downloadVideo(
                         slowMotionVideoUrl,
-                        `replayflow_${dateString}.mp4`,
+                        `replayflow_${dateString}_try_${tryNumber}.mp4`,
                         "video/mp4"
                     );
                 });
@@ -365,7 +371,7 @@ const init = async () => {
 
                 // Set title to hour:minute:second
                 const recordingTitle = document.createElement("h3");
-                recordingTitle.textContent = new Date().toLocaleTimeString();
+                recordingTitle.textContent = `Try #${recordingTryNumber}`;
                 recordingContainer.appendChild(recordingTitle);
 
                 recordingsList.appendChild(recordingContainer);

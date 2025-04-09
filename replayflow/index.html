@@ -80,7 +80,7 @@
                     Get Better 
                     <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">Faster</span>
                 </h1>
-                <h2 class="text-xl text-gray-600 mb-8">Your <!-- AI-powered --> micro-practice app for instant feedback and accelerated improvement</h2>
+                <h2 class="text-xl text-gray-600 mb-8">Your <!-- AI-powered --> micropractice app for instant feedback and accelerated improvement</h2>
                 <p class="text-gray-500 italic mb-8">
                     Record. Replay. Refine. Repeat.
                 </p>
@@ -276,7 +276,7 @@
 
     <!-- Contact Us Dialog-->
     <dialog id="contactUs" class="fixed z-50 rounded-2xl">
-        <div class="bg-white rounded-2xl p-8 max-w-lg w-full mx-4">
+        <div class="bg-white rounded-2xl p-8 max-w-lg w-full">
             <h3 class="text-2xl font-bold mb-4">Contact Us</h3>
             <p class="text-gray-600 mb-6">
                 Have questions or feedback? We'd love to hear from you!
@@ -331,7 +331,7 @@
                 Let's set you up to get instant feedback on your skills.<br>
                 We'll walk you through it in 30 seconds ⏱️
             </p>
-            <button onclick="onboardingStep(2)" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+            <button onclick="onboardingStep(2)" class="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
                 Let's Go →
             </button>
         </div>
@@ -349,8 +349,11 @@
                 ✅ Camera access to analyze form<br>
                 ✅ Microphone for speech feedback
             </p>
-            <button onclick="onboardingStep(3)" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
-                Allow & Continue →
+            <button id="allowAndContinueButton" onclick="onboardingStep(3)" class="w-200 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
+                <span class="visible button-title">Allow & Continue →</span>
+                <span class="hidden button-spinner">
+                    <div class="animate-spin h-5 w-5 text-white border-4 border-white border-t-transparent rounded-full"></div>
+                </span>
             </button>
         </div>
 
@@ -377,35 +380,43 @@
             </ol>
             <p class="mb-10">
                 Here's a quick challenge to get you started:<br><br>
-                Say "Hi, I'm [Your Name], and my day is going just <em>wonderfully!</em>"<br><br>
+                "Hi, I'm <span class="text-gray-400 outline-0" 
+                onfocus="event.target.textContent === 'Edit' && selectAll(event.target)" 
+                onblur="event.target.textContent === '' && (event.target.textContent = 'Edit')"
+                oninput="event.target.textContent = event.target.textContent.replace(/\n/g,'')" 
+                contenteditable="plaintext-only">Edit</span>, and my day is going just <em>wonderfully!</em>"<br><br>
                 Try and say it with a smile! 😊
             </p>
-            <button onclick="startPracticing()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+            <button onclick="startPracticing()" class="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
                 Start Practicing Now
             </button>
         </div>
     </div>
 </div>
 
-<dialog id="firstRecordingDialog" class="text-center bg-white rounded-2xl p-8 max-w-lg w-full mx-4">
+<dialog id="firstRecordingDialog" class="text-center bg-white rounded-2xl p-8 max-w-lg w-full">
     <p>Get ready to do your first 5-second practice.</p>
     <p>We'll record a clip and play it back right after.</p>
-    <button id="firstRecordingGo" class="mt-10 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+    <button id="firstRecordingGo" class="mt-10 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
         <span class="hidden">Start Recording</span>
         <span class="visible">Start Recording</span>
     </button>
 </dialog>
-<dialog id="secondRecordingDialog" class="text-center bg-white rounded-2xl p-8 max-w-lg w-full mx-4">
+<dialog id="secondRecordingDialog" class="text-center bg-white rounded-2xl p-8 max-w-lg w-full">
     <p class="mb-10">Great! Let's start the practice loop.</p>
     <p>We'll record clips and play them back.</p>
     <p>Tap the pause button to see the latest clips.</p>
-    <button id="secondRecordingGo" class="mt-10 mb-10 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+    <button id="secondRecordingGo" class="mt-10 mb-10 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
         <span class="hidden">Let's go!</span>
         <span class="visible">Let's go!</span>
     </button>
     <p><em>P.s. You can change the recording duration and playback speed in the settings pane.</em></p>
 </dialog>
-<button id="controlsToggle">⚙️</button>
+<button id="controlsToggle" class="rounded-full p-3 shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+    </svg>
+</button>
 <div id="controls">
     <h2>Controls</h2>
     <h3>Camera</h3>
@@ -493,6 +504,14 @@
                     />
                 </svg>
             </button>
+            <button id="fastForward"
+                title="Fast Forward"
+            >
+                <svg width="16px" height="16px" viewport="0 0 16 16">
+                    <polygon points="2,2 10,8 2,14" fill="currentColor"></polygon>
+                    <polygon points="8,2 16,8 8,14" fill="currentColor"></polygon>
+                </svg>
+            </button>
             <!-- <button id="downloadVideo" title="Download">↧</button> -->
         </span>
         <div id="cameraError">
@@ -508,27 +527,5 @@
 </main>
 
 <script src="script.js"></script>
-<script>
-    async function onboardingStep(step) {
-        if (onboardingDone) {
-            step = 4;
-        }
-        if (step === 3) {
-            const dev = await navigator.mediaDevices.getUserMedia({video: true, audio: true});            
-            dev.getTracks().forEach(t => t.stop());
-        }
-        document.body.dataset.onboarding = step;
-        if (onboardingDone) {
-            init();
-        }
-    }
-
-    function startPracticing() {
-        onboardingStep(4);
-        init();
-    }
-
-    
-</script>
 </body>
 </html>

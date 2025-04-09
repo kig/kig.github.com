@@ -62,7 +62,7 @@ const init = async () => {
             document.body.classList.remove("manual");
         }
 
-        tryNumber = 1;
+        takeNumber = 1;
 
         if (recorder.state === "recording") {
             restartRecording();
@@ -129,7 +129,7 @@ const init = async () => {
     let recordingStartTime = 0;
     let playbackStartTime = 0;
 
-    let tryNumber = 1;
+    let takeNumber = 1;
 
     function startRecording() {
         clearTimeout(stopTimeout);
@@ -316,8 +316,8 @@ const init = async () => {
                 const isMobile = /mobile|android/i.test(navigator.userAgent);
                 const maxRecordings = isMobile ? 3 : 5;
                 if (recordingsList.children.length >= maxRecordings) {
-                    URL.revokeObjectURL(recordingsList.children[0].src);
-                    recordingsList.removeChild(recordingsList.children[0]);
+                    URL.revokeObjectURL(recordingsList.lastElementChild.src);
+                    recordingsList.removeChild(recordingsList.lastElementChild);
                 }
                 const recordingContainer = document.createElement("div");
                 const recording = document.createElement("video");
@@ -331,7 +331,7 @@ const init = async () => {
                 const downloadButton = document.createElement("button");
                 downloadButton.textContent = "↧";
                 const recordingDate = new Date();
-                const recordingTryNumber = tryNumber++;
+                const recordingTakeNumber = takeNumber++;
                 downloadButton.addEventListener("click", () => {
                     const dateString = recordingDate
                         .toLocaleString("ja-JP", {
@@ -346,7 +346,7 @@ const init = async () => {
                         .replace(/[ :]/g, "_");
                     downloadVideo(
                         slowMotionVideoUrl,
-                        `replayflow_${dateString}_try_${tryNumber}.mp4`,
+                        `ReplayFlow_${dateString}_Take_${recordingTakeNumber}.mp4`,
                         "video/mp4"
                     );
                 });
@@ -371,10 +371,10 @@ const init = async () => {
 
                 // Set title to hour:minute:second
                 const recordingTitle = document.createElement("h3");
-                recordingTitle.textContent = `Try #${recordingTryNumber}`;
+                recordingTitle.textContent = `Take #${recordingTakeNumber}`;
                 recordingContainer.appendChild(recordingTitle);
 
-                recordingsList.appendChild(recordingContainer);
+                recordingsList.prepend(recordingContainer);
 
                 // Play animation to tell the user that the recording has been
                 // added to the list of recordings. This should look like the
@@ -498,6 +498,22 @@ const init = async () => {
                 }
                 document.body.classList.remove("paused");
             }
+        }
+    });
+
+
+    // Add a fast-forward (ffwd) button to discard current recording/playback and start a new one
+    const ffwdButton = document.getElementById("fastForward");
+    ffwdButton.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        // Stop any ongoing playback or recording
+        if (playingSlowMotion) {
+            slowMotionVideo.pause();
+            playingSlowMotion = false;
+            slowMotionVideo.onended();
+        } else if (recorder && recorder.state === "recording") {
+            restartRecording();
         }
     });
 
@@ -646,4 +662,43 @@ if (location.search.includes("?pwa")) {
     document.body.querySelector('#landing').style.display = "none";
     document.body.querySelector('main').style.display = "flex";
     init();
+}
+
+
+async function onboardingStep(step) {
+    if (onboardingDone) {
+        step = 4;
+    }
+    if (step === 3) {
+        document.body.classList.add("acquiring-camera");
+        try {
+            const dev = await navigator.mediaDevices.getUserMedia({video: true, audio: true});            
+            dev.getTracks().forEach(t => t.stop());
+            document.body.classList.remove("acquiring-camera");
+        } catch (e) {
+            document.body.classList.add("camera-error");
+            console.error(e);
+            return;
+        }
+    }
+    document.body.dataset.onboarding = step;
+    if (onboardingDone) {
+        init();
+    }
+}
+
+function startPracticing() {
+    onboardingStep(4);
+    init();
+}
+
+function selectAll(element) {
+    // Set document selection to element's text
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+
+    const range = document.createRange();
+    range.selectNodeContents(element);
+
+    selection.addRange(range);
 }

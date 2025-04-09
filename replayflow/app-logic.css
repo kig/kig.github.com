@@ -362,9 +362,8 @@ main select {
     top: 3.8rem;
 }
 
-#rewind,
-#downloadVideo,
-#pause {
+#pause,
+#fastForward {
     display: block;
     position: absolute;
     left: 60vw;
@@ -382,20 +381,24 @@ main select {
 #pause {
     left: calc(60vw + 1.5rem);
 }
+#fastForward {
+    left: calc(60vw + 5rem);
+}
 #pause svg {
     transform: scale(0.75);
     margin-top: 2px;
 }
-#downloadVideo {
-    left: calc(60vw + 3rem);
-}
 
 @media (max-width: 600px) {
-    #rewind,
     #pause,
-    #downloadVideo {
-        top: 0.85rem;
-        margin-left: 2.5rem;
+    #fastForward {
+        top: 4rem;
+        margin-left: 0;
+        left: auto;
+        right: 1rem;
+    }
+    #fastForward {
+        top: 7.5rem;
     }
 }
 
@@ -553,7 +556,7 @@ body:not(.layout-fill) .videoContainer video,
     padding-top: 1.5rem;
     background: #eee;
     border-radius: 4px;
-    z-index: 6;
+    z-index: 7;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 #controls.open {
@@ -896,7 +899,7 @@ dialog button {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     font-family: 'Inter', sans-serif;
     position: absolute;
-    right: 1rem;
+    left: 1rem;
     top: 1rem;
     z-index: 6;
     max-height: 80vh;
@@ -940,7 +943,7 @@ dialog button {
     background: white;
     border: none;
     color: #6366F1;
-    z-index: 7;
+    z-index: 8;
     width: 2.5rem;
     height: 2.5rem;
     border-radius: 9999px;
@@ -952,4 +955,11 @@ dialog button {
 #controlsToggle:hover {
     transform: scale(1.05);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+}
+
+.acquiring-camera #allowAndContinueButton .button-title {
+    display: none;
+}
+.acquiring-camera #allowAndContinueButton .button-spinner {
+    display: block;
 }

@@ -103,7 +103,8 @@ main h3 {
     line-height: 1.25rem;
     margin-left: 0.5rem;
 }
-#recordingsList video {
+#recordingsList video,
+#recordingsList .poster {
     width: 100%;
     height: auto;
     border-radius: 4px;
@@ -202,8 +203,8 @@ main select {
     position: absolute;
     text-align: center;
     width: 100%;
-    font-size: 2.25vh;
-    margin-top: -5vh;
+    font-size: 1.5rem;
+    margin-top: -3.25rem;
     display: block;
     opacity: 0;
     transition: opacity 1s;
@@ -214,8 +215,8 @@ main select {
     position: absolute;
     text-align: center;
     width: 100%;
-    font-size: 2.25vh;
-    margin-top: -5vh;
+    font-size: 1.5rem;
+    margin-top: -3.25rem;
     display: block;
     opacity: 1;
     transition: opacity 1s;
@@ -325,13 +326,7 @@ body:not(.recording) #countdown.recording-in:after {
 main select {
     margin-left: 0rem;
 }
-#countdown {
-    top: 6rem;
-}
-#recordingProgressBar,
-#playbackProgressBar {
-    top: 5.8rem;
-}
+
 @media (max-width: 600px) {
     main h1 small {
         display: block;
@@ -345,21 +340,6 @@ main select {
         left: 20vw;
         width: 60vw;
     }
-    #countdown {
-        top: 8rem;
-    }
-    #recordingProgressBar,
-    #playbackProgressBar {
-        top: 7.8rem;
-    }
-}
-
-#countdown {
-    top: 4rem;
-}
-#recordingProgressBar,
-#playbackProgressBar {
-    top: 3.8rem;
 }
 
 #pause,
@@ -664,7 +644,8 @@ dialog button {
 }
 
 #cameraError,
-#startingCamera {
+#startingCamera,
+#noMediaDeviceSelected {
     display: none;
     position: fixed;
     top: 0;
@@ -684,6 +665,9 @@ dialog button {
     display: flex;
 }
 .camera-error #cameraError {
+    display: flex;
+}
+.no-media-device-selected #noMediaDeviceSelected {
     display: flex;
 }
 
@@ -709,7 +693,8 @@ dialog button {
 /* Style selects and buttons consistently */
 #controls select, 
 #cameraSelect, 
-#durationSelect, 
+#microphoneSelect,
+#durationSelect,
 #speedSelect {
     background-color: white;
     border: 1px solid #E5E7EB;
@@ -722,14 +707,20 @@ dialog button {
     transition: all 0.2s;
 }
 
+#firstRecordingDialog select {
+    margin-top: 0.5rem;
+}
+
 #controls select:focus,
 #cameraSelect:focus,
+#microphoneSelect:focus,
 #durationSelect:focus,
 #speedSelect:focus {
     outline: none;
     border-color: #6366F1;
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
+
 
 /* Style all buttons in controls */
 #controls button,
@@ -905,7 +896,7 @@ dialog button {
     max-height: 80vh;
     overflow-y: auto;
     width: 300px;
-    max-width: 100vw;
+    max-width: calc(100vw - 5.5rem);
 }
 
 #recordings h2 {

@@ -349,6 +349,11 @@
                 ✅ Camera access to analyze form<br>
                 ✅ Microphone for speech feedback
             </p>
+            <select id="cameraSelect"></select>
+            <select id="microphoneSelect"></select>
+            <p class="text-gray-600 mb-6">
+                <em>Note: You can change these settings later in the app.</em>
+            </p>
             <button id="allowAndContinueButton" onclick="onboardingStep(3)" class="w-200 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
                 <span class="visible button-title">Allow & Continue →</span>
                 <span class="hidden button-spinner">
@@ -397,6 +402,7 @@
 <dialog id="firstRecordingDialog" class="text-center bg-white rounded-2xl p-8 max-w-lg w-full">
     <p>Get ready to do your first 5-second practice.</p>
     <p>We'll record a clip and play it back right after.</p>
+    <div id="firstDialogCameraSelects"></div>
     <button id="firstRecordingGo" class="mt-10 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
         <span class="hidden">Start Recording</span>
         <span class="visible">Start Recording</span>
@@ -420,7 +426,8 @@
 <div id="controls">
     <h2>Controls</h2>
     <h3>Camera</h3>
-    <select id="cameraSelect"></select>
+    <div id="cameraSelects">
+    </div>
     <h3>Image rotation</h3>
     <button id="cameraRotate">&circlearrowright;</button>
     <button id="cameraMirror">
@@ -522,6 +529,10 @@
         <div id="startingCamera">
             <h2>Starting Camera</h2>
             <p>ReplayFlow is starting the camera.</p>
+        </div>
+        <div id="noMediaDeviceSelected">
+            <h2>No Media Device Selected</h2>
+            <p>Please select a camera or microphone in the settings pane.</p>
         </div>
     </div>
 </main>

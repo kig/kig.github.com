@@ -23,23 +23,71 @@ document.body.classList.add("no-camera");
 
 // Check if localStorage has replayflow-onboarding-done set
 const onboardingDone = localStorage.getItem("replayflow-onboarding-done") === "true";
-let firstDialogDone = false;
+let firstDialogDone = !onboardingDone;
 let secondDialogDone = onboardingDone;
 
+// Camera selector
+const cameraSelect = document.getElementById("cameraSelect");
+const microphoneSelect = document.getElementById("microphoneSelect");
+
+async function getCameras() {
+    cameraSelect.innerHTML = "";
+    microphoneSelect.innerHTML = "";
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    let index = 0;
+    let micIndex = 0;
+    // Add all video and audio input devices to the select elements
+    devices.forEach((device) => {
+        if (device.kind === "videoinput") {
+            const option = document.createElement("option");
+            const capabilities = device.getCapabilities();
+            const resolutionString = ` ${capabilities.width.max}x${capabilities.height.max}@${capabilities.frameRate.max}Hz`;
+            option.value = device.deviceId;
+            option.text =
+                (device.label || `Camera ${index + 1}`) + resolutionString;
+            index++;
+            cameraSelect.appendChild(option);
+        } else if (device.kind === "audioinput") {
+            const option = document.createElement("option");
+            option.value = device.deviceId;
+            option.text =
+                device.label || `Microphone ${micIndex + 1}`;
+            micIndex++;
+            microphoneSelect.appendChild(option);
+        }
+    });
+    // Add a "None" option to the camera and microphone select elements
+    const noneOption = document.createElement("option");
+    noneOption.value = "";
+    noneOption.text = "None";
+    cameraSelect.appendChild(noneOption);
+    microphoneSelect.appendChild(noneOption.cloneNode(true));
+}
+
 const init = async () => {
+
+    // Move cameraSelect and microphoneSelect to #cameraSelects
+    const cameraSelects = document.getElementById("cameraSelects");
+    if (!onboardingDone) {
+        const deviceId = cameraSelect.value;
+        const audioDeviceId = microphoneSelect.value;
+        cameraSelects.appendChild(cameraSelect);
+        cameraSelects.appendChild(microphoneSelect);
+        cameraSelect.value = deviceId;
+        microphoneSelect.value = audioDeviceId;
+    }
 
     let isPaused = false;
 
     let updateLoop = null;
 
     let durationSeconds = 5;
+    let actualDurationSeconds = 5;
     let playbackRate = 1;
 
     // Realtime video element
     const videoContainer = document.body.querySelector(".videoContainer");
     const video = document.getElementById("video");
-    // Camera selector
-    const cameraSelect = document.getElementById("cameraSelect");
 
     // Slow motion video
     const slowMotionVideo = document.getElementById("slowMotionVideo");
@@ -65,6 +113,7 @@ const init = async () => {
         takeNumber = 1;
 
         if (recorder.state === "recording") {
+            actualDurationSeconds = durationSeconds;
             restartRecording();
         }
     }
@@ -104,24 +153,6 @@ const init = async () => {
         setDuration(durationSeconds);
     });
 
-    async function getCameras() {
-        cameraSelect.innerHTML = "";
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        let index = 0;
-        devices.forEach((device) => {
-            if (device.kind === "videoinput") {
-                const option = document.createElement("option");
-                const capabilities = device.getCapabilities();
-                const resolutionString = ` ${capabilities.width.max}x${capabilities.height.max}@${capabilities.frameRate.max}Hz`;
-                option.value = device.deviceId;
-                option.text =
-                    (device.label || `Camera ${index + 1}`) + resolutionString;
-                index++;
-                cameraSelect.appendChild(option);
-            }
-        });
-    }
-
     let stream = null;
     let recorder = null;
     let playingSlowMotion = false;
@@ -131,11 +162,17 @@ const init = async () => {
 
     let takeNumber = 1;
 
-    function startRecording() {
+    async function startRecording() {
         clearTimeout(stopTimeout);
+        if (recorder.state === "recording") {
+            // Already recording, stop it
+            await stopRecording();
+        }
         recorder.start();
         recordingStartTime = Date.now();
         document.body.classList.add("recording");
+        playingSlowMotion = false;
+        slowMotionVideo.src = "";
         if (referenceVideo) {
             referenceVideo.currentTime = 0;
             referenceVideo.playbackRate = 1;
@@ -146,19 +183,19 @@ const init = async () => {
         }
     }
 
-    function stopRecording() {
+    async function stopRecording() {
         clearTimeout(stopTimeout);
         document.body.classList.remove("recording");
-        recorder.stop();
+        await recorder.stop();
     }
 
-    function restartRecording() {
+    async function restartRecording() {
         if (playingSlowMotion) {
             slowMotionVideo.pause();
             slowMotionVideo.onended();
         } else {
             playingSlowMotion = true;
-            stopRecording();
+            await stopRecording();
         }
     }
 
@@ -181,7 +218,34 @@ const init = async () => {
     }
 
     let lastStartCameraTime = 0;
-    async function startCamera(deviceId) {
+    let noMediaDeviceMode = false;
+    async function startCamera(deviceId, audioDeviceId) {
+        if (deviceId === "" && audioDeviceId === "") {
+            // If both are empty, we can't getUserMedia.
+            // The right thing to do would be to show a blank screen with
+            // the recording timer progress bar and a message saying 
+            // "No camera or microphone selected".
+            document.body.classList.add("no-media-device-selected");
+            noMediaDeviceMode = true;
+            playingSlowMotion = false;
+            if (recorder) {
+                await stopRecording();
+                recorder = null;
+            }
+            if (stream) {
+                stream.getTracks().forEach((track) => track.stop());
+                stream = null;
+            }
+            if (video.srcObject) {
+                video.srcObject = null;
+            }
+            if (slowMotionVideo.src) {
+                slowMotionVideo.src = "";
+            }
+            return;
+        }
+        document.body.classList.remove("no-media-device-selected");
+        noMediaDeviceMode = false;
         if (Date.now() - lastStartCameraTime > 3000) {
             lastStartCameraTime = Date.now();
         } else {
@@ -189,17 +253,24 @@ const init = async () => {
             return;
         }
         const constraints = {
-            video: {
+            video: deviceId === "" ? false : ({
                 deviceId: deviceId ? deviceId : undefined,
                 facingMode: deviceId ? undefined : "user",
                 width: 1920,
                 height: 1080,
                 frameRate: 60,
-            },
-            audio: true,
+            }),
+            audio: audioDeviceId === "" ? false : ({
+                deviceId: audioDeviceId ? audioDeviceId : undefined,
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                sampleRate: 44100,
+                sampleSize: 16,
+            }),
         };
         if (recorder) {
-            stopRecording();
+            await stopRecording();
             recorder = null;
         }
         if (stream) {
@@ -238,16 +309,16 @@ const init = async () => {
                 ) {
                     document.body.classList.add("no-camera");
                     // Assert that all the tracks in the stream are active.
-                    startCamera(cameraSelect.value);
+                    startCamera(cameraSelect.value, microphoneSelect.value);
                 }
                 if (isPaused) return;
                 if (playingSlowMotion) {
                     const elapsedMs = Date.now() - playbackStartTime;
                     const pct =
-                        (elapsedMs / ((durationSeconds / playbackRate) * 1e3)) *
+                        (elapsedMs / ((actualDurationSeconds / playbackRate) * 1e3)) *
                         100;
                     playbackProgressBar.firstChild.style.width = `${pct}%`;
-                    const remaining = (durationSeconds / playbackRate) - elapsedMs * 1e-3;
+                    const remaining = (actualDurationSeconds / playbackRate) - elapsedMs * 1e-3;
                     // Animate the countdown timer
                     // The countdown animation is:
                     // - Fade in "Recording in" at 4s remaining
@@ -278,30 +349,16 @@ const init = async () => {
             }, 10);
         }
         
-        if (!firstDialogDone) {
-            document.body.classList.add('recording');
-            const dialog = document.getElementById("firstRecordingDialog");
-            dialog.showModal();
-            firstDialogDone = true;
-            const closeButton = document.getElementById("firstRecordingGo");
-            await new Promise((resolve) => {
-                closeButton.addEventListener("click", () => {
-                    dialog.close();
-                    resolve();
-                });
-            });
-        }
-
         recorder = new MediaRecorder(stream, {
             videoBitsPerSecond: 30000000,
             mimeType: "video/mp4",
         });
 
-        recorder.ondataavailable = (event) => {
+        recorder.ondataavailable = function(event) {
             if (!playingSlowMotion) {
                 const threeSecondBlobs = [event.data];
                 const slowMotionVideoUrl = URL.createObjectURL(
-                    new Blob(threeSecondBlobs, { type: recorder.mimeType })
+                    new Blob(threeSecondBlobs, { type: event.target.mimeType })
                 );
                 slowMotionVideo.src = slowMotionVideoUrl;
                 playingSlowMotion = true;
@@ -315,17 +372,70 @@ const init = async () => {
                     document.getElementById("recordingsList");
                 const isMobile = /mobile|android/i.test(navigator.userAgent);
                 const maxRecordings = isMobile ? 3 : 5;
-                if (recordingsList.children.length >= maxRecordings) {
-                    URL.revokeObjectURL(recordingsList.lastElementChild.src);
-                    recordingsList.removeChild(recordingsList.lastElementChild);
+                const unpinnedRecordings = recordingsList.querySelectorAll('.recordingContainer:not(.pinned)');
+                if (unpinnedRecordings.length >= maxRecordings) {
+                    const deletedRecording = unpinnedRecordings[unpinnedRecordings.length - 1];
+                    URL.revokeObjectURL(deletedRecording.dataset.videoSrc);
+                    recordingsList.removeChild(deletedRecording);
                 }
                 const recordingContainer = document.createElement("div");
-                const recording = document.createElement("video");
-                recording.src = slowMotionVideoUrl;
-                recording.controls = true;
-                recording.loop = true;
-                recording.onplay = pauseOthers;
-                recordingContainer.appendChild(recording);
+                recordingContainer.className = "recordingContainer";
+                // Poster image
+                const poster = document.createElement("canvas");
+                // If we're audio-only, use a play button as the poster
+                if (!video.videoWidth || !video.videoHeight) {
+                    poster.width = 128;
+                    poster.height = 128;
+                    const posterCtx = poster.getContext("2d");
+                    posterCtx.fillStyle = "black";
+                    posterCtx.fillRect(0, 0, poster.width, poster.height);
+                    posterCtx.fillStyle = "white";
+                    posterCtx.font = "bold 64px sans-serif";
+                    posterCtx.textAlign = "center";
+                    posterCtx.textBaseline = "middle";
+                    posterCtx.fillText("▶", 64, 64);
+                } else {
+                    // Set the poster size to 1/5 of the video size
+                    poster.width = video.videoWidth / 5;
+                    poster.height = video.videoHeight / 5;
+                    const posterCtx = poster.getContext("2d");
+                    posterCtx.drawImage(
+                        video,
+                        0,
+                        0,
+                        poster.width,
+                        poster.height
+                    );
+                }
+                poster.className = "poster";
+                recordingContainer.dataset.videoSrc = slowMotionVideoUrl;
+                poster.onclick = (ev) => {
+                    const recording = document.createElement("video");
+                    recording.src = recordingContainer.dataset.videoSrc;
+                    recording.controls = true;
+                    recording.loop = true;
+                    recording.onplay = pauseOthers;
+                    recording.dataset.durationSeconds = actualDurationSeconds;
+                    recording.playbackRate = playbackRate;
+                    recordingContainer.insertBefore(
+                        recording,
+                        poster
+                    );
+                    recording.play();
+                    recording.requestFullscreen();
+                    poster.style.display = "none";
+                    // When exiting fullscreen remove the video and bring back the poster
+                    recording.onfullscreenchange = (ev) => {
+                        if (
+                            document.fullscreenElement === null &&
+                            recordingContainer.parentElement
+                        ) {
+                            recordingContainer.removeChild(recording);
+                            poster.style.display = "block";
+                        }
+                    };
+                };
+                recordingContainer.appendChild(poster);
 
                 // Add a download button to download the recording
                 const downloadButton = document.createElement("button");
@@ -352,13 +462,13 @@ const init = async () => {
                 });
                 recordingContainer.appendChild(downloadButton);
 
-                // Add a fullscreen button to view the recording in fullscreen
-                const fullscreenButton = document.createElement("button");
-                fullscreenButton.textContent = "⛶";
-                fullscreenButton.addEventListener("click", () => {
-                    recording.requestFullscreen();
-                });
-                recordingContainer.appendChild(fullscreenButton);
+                // // Add a fullscreen button to view the recording in fullscreen
+                // const fullscreenButton = document.createElement("button");
+                // fullscreenButton.textContent = "⛶";
+                // fullscreenButton.addEventListener("click", () => {
+                //     recording.requestFullscreen();
+                // });
+                // recordingContainer.appendChild(fullscreenButton);
 
                 // Add a "Use as reference" button to the recording
                 const referenceButton = document.createElement("button");
@@ -368,6 +478,26 @@ const init = async () => {
                     document.body.classList.add("reference");
                 });
                 recordingContainer.appendChild(referenceButton);
+
+                // Add a "Pin" button to pin the recording so that it's not deleted
+                const pinButton = document.createElement("button");
+                if (recordingTakeNumber === 1) {
+                    // Pin the first take
+                    recordingContainer.classList.add("pinned");
+                    pinButton.textContent = "📍";
+                } else {
+                    pinButton.textContent = "📌";
+                }
+                pinButton.addEventListener("click", () => {
+                    if (recordingContainer.classList.contains("pinned")) {
+                        recordingContainer.classList.remove("pinned");
+                        pinButton.textContent = "📌";
+                    } else {
+                        recordingContainer.classList.add("pinned");
+                        pinButton.textContent = "📍";
+                    }
+                });
+                recordingContainer.appendChild(pinButton);
 
                 // Set title to hour:minute:second
                 const recordingTitle = document.createElement("h3");
@@ -430,10 +560,49 @@ const init = async () => {
 
     }
 
-    await startCamera();
-    await getCameras();
+
+    function stopCamera() {
+        clearTimeout(stopTimeout);
+        document.body.classList.remove("recording");
+        if (recorder) {
+            recorder.stop();
+        }
+        if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+            stream = null;
+        }
+        slowMotionVideo.onended = null;
+        slowMotionVideo.src = "";
+        video.srcObject = null;
+        recordingStartTime = 0;
+        playbackStartTime = 0;
+    }
+
+    if (!firstDialogDone) {
+        document.body.classList.add('recording');
+        const dialog = document.getElementById("firstRecordingDialog");
+        document.getElementById('firstDialogCameraSelects').append(cameraSelect, microphoneSelect);
+        dialog.showModal();
+        firstDialogDone = true;
+        const closeButton = document.getElementById("firstRecordingGo");
+        await new Promise((resolve) => {
+            closeButton.addEventListener("click", () => {
+                dialog.close();
+                const deviceId = cameraSelect.value;
+                const audioDeviceId = microphoneSelect.value;
+                cameraSelects.append(cameraSelect, microphoneSelect);
+                cameraSelect.value = deviceId;
+                microphoneSelect.value = audioDeviceId;
+                resolve();
+            });
+        });
+    }
+    await startCamera(cameraSelect.value, microphoneSelect.value);
     cameraSelect.addEventListener("change", () =>
-        startCamera(cameraSelect.value)
+        startCamera(cameraSelect.value, microphoneSelect.value)
+    );
+    microphoneSelect.addEventListener("change", () =>
+        startCamera(cameraSelect.value, microphoneSelect.value)
     );
     setDuration(durationSeconds);
 
@@ -644,7 +813,7 @@ const init = async () => {
 
     const cameraRetryButton = document.getElementById("cameraErrorRetry");
     cameraRetryButton.addEventListener("click", async () => {
-        await startCamera(cameraSelect.value);
+        await startCamera(cameraSelect.value, microphoneSelect.value);
     });
 
     layoutSideBySide.onclick = () =>
@@ -666,13 +835,21 @@ if (location.search.includes("?pwa")) {
 
 
 async function onboardingStep(step) {
+    if (step === 1 || onboardingDone) {
+        await getCameras();
+    }
     if (onboardingDone) {
         step = 4;
     }
     if (step === 3) {
         document.body.classList.add("acquiring-camera");
         try {
-            const dev = await navigator.mediaDevices.getUserMedia({video: true, audio: true});            
+            const deviceId = cameraSelect.value;
+            const audioDeviceId = microphoneSelect.value;
+            const dev = await navigator.mediaDevices.getUserMedia({
+                video: (deviceId ? { deviceId: deviceId } : false),
+                audio: (audioDeviceId ? { deviceId: audioDeviceId } : false),
+            });            
             dev.getTracks().forEach(t => t.stop());
             document.body.classList.remove("acquiring-camera");
         } catch (e) {

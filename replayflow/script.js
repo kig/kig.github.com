@@ -76,6 +76,9 @@ const init = async () => {
         cameraSelect.value = deviceId;
         microphoneSelect.value = audioDeviceId;
     }
+    if (cameraSelects.children.length === 0 && microphoneSelect.children.length === 0) {
+        await getCameras();
+    }
 
     let isPaused = false;
 

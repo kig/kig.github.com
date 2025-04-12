@@ -44,7 +44,7 @@ async function getCameras() {
             const resolutionString = ` ${capabilities.width.max}x${capabilities.height.max}@${capabilities.frameRate.max}Hz`;
             option.value = device.deviceId;
             option.text =
-                (device.label || `Camera ${index + 1}`) + resolutionString;
+                (device.label || `Camera ${index + 1}`);
             index++;
             cameraSelect.appendChild(option);
         } else if (device.kind === "audioinput") {
@@ -87,6 +87,7 @@ const init = async () => {
     let durationSeconds = 5;
     let actualDurationSeconds = 5;
     let playbackRate = 1;
+    let rotation = 0;
 
     // Realtime video element
     const videoContainer = document.body.querySelector(".videoContainer");
@@ -222,6 +223,8 @@ const init = async () => {
 
     let lastStartCameraTime = 0;
     let noMediaDeviceMode = false;
+    let firstTimeStartCamera = true;
+
     async function startCamera(deviceId, audioDeviceId) {
         if (deviceId === "" && audioDeviceId === "") {
             // If both are empty, we can't getUserMedia.
@@ -298,6 +301,17 @@ const init = async () => {
             slowMotionVideo.width = video.videoWidth;
             slowMotionVideo.height = video.videoHeight;
         };
+        if (firstTimeStartCamera) {
+            // If this is the first time we start the camera,
+            // use mirror mode if the camera is facing the user.
+            const facingModeEnv = stream.getVideoTracks()[0].getCapabilities().facingMode[0] === "environment";
+            if (facingModeEnv) {
+                setMirror(false);
+            } else {
+                setMirror(true);
+            }
+            firstTimeStartCamera = false;
+        }
         if (!updateLoop) {
             updateLoop = setInterval(() => {
                 // The update loop runs an animation loop and monitors the video stream status.
@@ -791,7 +805,6 @@ const init = async () => {
     });
 
     const cameraRotateButton = document.getElementById("cameraRotate");
-    let rotation = 0;
     function updateRotation() {
         let zoom =
             rotation % 180 === 0
@@ -807,7 +820,8 @@ const init = async () => {
         }
         const mirror = videoContainer.classList.contains("mirror") ? -1 : 1;
         video.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
-        slowMotionVideo.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
+        // We keep the replay video unmirrored to help you see yourself with fresh eyes.
+        slowMotionVideo.style.transform = `rotate(${rotation}deg) scaleX(1) scale(${zoom})`;
     }
     cameraRotateButton.addEventListener("click", async () => {
         rotation = (rotation + 90) % 360;

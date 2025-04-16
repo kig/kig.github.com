@@ -302,10 +302,14 @@ const init = async () => {
         if (deviceId === "false" || audioDeviceId === "false") {
             await getCameras();
         }
-        if (firstTimeStartCamera) {
+        if (firstTimeStartCamera && stream.getVideoTracks()[0]) {
             // If this is the first time we start the camera,
             // use mirror mode if the camera is facing the user.
-            const facingModeEnv = stream.getVideoTracks()[0].getCapabilities().facingMode[0] === "environment";
+            let facingMode = undefined;
+            try {
+                facingMode = stream.getVideoTracks()[0].getCapabilities().facingMode;
+            } catch(e) {}
+            const facingModeEnv = facingMode === "environment";
             if (facingModeEnv) {
                 setMirror(false);
             } else {

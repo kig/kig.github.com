@@ -627,26 +627,6 @@ const init = async () => {
     );
     setDuration(durationSeconds);
 
-    // // Make download button download the currently playing video
-    // const downloadVideoButton = document.getElementById("downloadVideo");
-    // downloadVideoButton.addEventListener("click", (ev) => {
-    //     ev.preventDefault();
-    //     ev.stopPropagation();
-    //     const a = document.createElement("a");
-    //     a.href = slowMotionVideo.src;
-    //     a.download = "replayflow.mp4";
-    //     a.mimeType = "video/mp4";
-    //     a.click();
-    // });
-
-    // // Rewind button seeks the currently playing video to the beginning
-    // const rewindButton = document.getElementById("rewind");
-    // rewindButton.addEventListener("click", (ev) => {
-    //     ev.preventDefault();
-    //     ev.stopPropagation();
-    //     slowMotionVideo.currentTime = 0;
-    // });
-
     // Pause button stops the video playback at the current position and shows the video controls
     const pauseButton = document.getElementById("pause");
     let recordingElapsed = 0;

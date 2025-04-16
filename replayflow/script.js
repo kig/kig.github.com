@@ -867,10 +867,22 @@ async function onboardingStep(step) {
         try {
             const deviceId = cameraSelect.value;
             const audioDeviceId = microphoneSelect.value;
-            const dev = await navigator.mediaDevices.getUserMedia({
-                video: (deviceId !== "" ? { deviceId: deviceId ? deviceId : undefined } : false),
-                audio: (audioDeviceId !== "" ? { deviceId: audioDeviceId ? audioDeviceId : undefined } : false),
-            });            
+            const options = {};
+            if (deviceId === "") {
+                options.video = false;
+            } else if (deviceId === "false") {
+                options.video = true;
+            } else {
+                options.video = { deviceId: deviceId };
+            }
+            if (audioDeviceId === "") {
+                options.audio = false;
+            } else if (audioDeviceId === "false") {
+                options.audio = true;
+            } else {
+                options.audio = { deviceId: audioDeviceId };
+            }
+            const dev = await navigator.mediaDevices.getUserMedia(options);
             dev.getTracks().forEach(t => t.stop());
             await getCameras();
             document.body.classList.remove("acquiring-camera");

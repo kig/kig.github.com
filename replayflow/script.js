@@ -307,7 +307,7 @@ const init = async () => {
             // use mirror mode if the camera is facing the user.
             let facingMode = undefined;
             try {
-                facingMode = stream.getVideoTracks()[0].getCapabilities().facingMode;
+                facingMode = '' + stream.getVideoTracks()[0].getCapabilities().facingMode;
             } catch(e) {}
             const facingModeEnv = facingMode === "environment";
             if (facingModeEnv) {

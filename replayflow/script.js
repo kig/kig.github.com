@@ -40,8 +40,6 @@ async function getCameras() {
     devices.forEach((device) => {
         if (device.kind === "videoinput") {
             const option = document.createElement("option");
-            const capabilities = device.getCapabilities();
-            const resolutionString = ` ${capabilities.width.max}x${capabilities.height.max}@${capabilities.frameRate.max}Hz`;
             option.value = device.deviceId;
             option.text =
                 (device.label || `Camera ${index + 1}`);

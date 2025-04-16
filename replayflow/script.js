@@ -847,7 +847,7 @@ const init = async () => {
 if (location.search.includes("?pwa")) {
     document.body.querySelector('#landing').style.display = "none";
     document.body.querySelector('main').style.display = "flex";
-    init();
+    onboardingStep(4);
 }
 
 

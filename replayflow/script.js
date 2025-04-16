@@ -373,7 +373,6 @@ const init = async () => {
         
         recorder = new MediaRecorder(stream, {
             videoBitsPerSecond: 30000000,
-            mimeType: "video/mp4",
         });
 
         recorder.ondataavailable = function(event) {

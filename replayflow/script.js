@@ -40,14 +40,14 @@ async function getCameras() {
     devices.forEach((device) => {
         if (device.kind === "videoinput") {
             const option = document.createElement("option");
-            option.value = device.deviceId;
+            option.value = device.deviceId === "" ? "false" : device.deviceId;
             option.text =
                 (device.label || `Camera ${index + 1}`);
             index++;
             cameraSelect.appendChild(option);
         } else if (device.kind === "audioinput") {
             const option = document.createElement("option");
-            option.value = device.deviceId;
+            option.value = device.deviceId === "" ? "false" : device.deviceId;
             option.text =
                 device.label || `Microphone ${micIndex + 1}`;
             micIndex++;
@@ -818,8 +818,8 @@ const init = async () => {
         }
         const mirror = videoContainer.classList.contains("mirror") ? -1 : 1;
         video.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
-        // We keep the replay video unmirrored to help you see yourself with fresh eyes.
-        slowMotionVideo.style.transform = `rotate(${rotation}deg) scaleX(1) scale(${zoom})`;
+        // We could keep the replay video unmirrored to help you see yourself with fresh eyes.
+        slowMotionVideo.style.transform = `rotate(${rotation}deg) scaleX(${mirror}) scale(${zoom})`;
     }
     cameraRotateButton.addEventListener("click", async () => {
         rotation = (rotation + 90) % 360;
@@ -862,10 +862,11 @@ async function onboardingStep(step) {
             const deviceId = cameraSelect.value;
             const audioDeviceId = microphoneSelect.value;
             const dev = await navigator.mediaDevices.getUserMedia({
-                video: (deviceId ? { deviceId: deviceId } : false),
-                audio: (audioDeviceId ? { deviceId: audioDeviceId } : false),
+                video: (deviceId !== "" ? { deviceId: deviceId ? deviceId : undefined } : false),
+                audio: (audioDeviceId !== "" ? { deviceId: audioDeviceId ? audioDeviceId : undefined } : false),
             });            
             dev.getTracks().forEach(t => t.stop());
+            await getCameras();
             document.body.classList.remove("acquiring-camera");
         } catch (e) {
             document.body.classList.add("camera-error");

@@ -299,6 +299,9 @@ const init = async () => {
             slowMotionVideo.width = video.videoWidth;
             slowMotionVideo.height = video.videoHeight;
         };
+        if (deviceId === "false" || audioDeviceId === "false") {
+            await getCameras();
+        }
         if (firstTimeStartCamera) {
             // If this is the first time we start the camera,
             // use mirror mode if the camera is facing the user.

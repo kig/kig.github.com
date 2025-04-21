@@ -189,7 +189,7 @@ const init = async () => {
         clearTimeout(stopTimeout);
         document.body.classList.remove("recording");
         if (recorder.state === "recording") {
-            actualDurationSeconds = (Date.now() - recordingStartTime);
+            actualDurationSeconds = (Date.now() - recordingStartTime) * 1e-3;
         }
         await recorder.stop();
     }

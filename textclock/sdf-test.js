@@ -66,11 +66,11 @@ function start(font, texture) {
 	var bigGeo = createText({text: '', font: font});
 	var bigObj = new THREE.Mesh(bigGeo, material);
 	var updateTexts = function() {
-		var len = 20;
-		var totalLen = 1000;
+		var copy = new Date().toLocaleString();
+		var len = copy.length;
+		var totalLen = Math.floor(1000 / len) * len;
 		off = (off + len) % totalLen;
 		for (var i=0+off; i<len+off; i++) {
-			var copy = new Date().toLocaleString();
 
 			var text = texts[i];
 			if (!text) {

@@ -5,29 +5,29 @@
       function Rocket() {
         this.x = 0 // (Math.random() - 0.5) * 4
         this.fuel = 0.1 + Math.random() * 0.5
-        this.velocity = {x: (Math.random() - 0.5) * 500, y:0}
-        this.impulse = {x: 0, y:0}
+        this.velocity = {x: (Math.random() - 0.5) * 500, y: 0}
+        this. impulse = {x:  0, y: 0}
       }
       Rocket.prototype = {
         x: 0,
         y: -0.2,
         width: 1,
-        height: 5,
+        height:  5,
         scale: 1/80,
         gravity: -9.81,
         thrust: 35,
         fuel: 1,
-        burn_rate: 1.0,
+        burn_rate: 1. 0,
         mass: 1.15,
         rocket_mass: 0.15,
         color: 'rgba(0,200,253,0.2)',
         last_time: 0,
-        inert: false,
+        inert:  false,
         intact: true,
         bounces: 0,
         bounced: 0,
 
-        update : function(ctx, t) {
+        update :  function(ctx, t) {
           if (this.last_time == 0)
             this.last_time = t-50
           var dt = t - this.last_time
@@ -35,24 +35,24 @@
           this.step(dt / 1000)
           this.draw(ctx)
           if (this.particles) {
-            for(var i=0; i<this.particles.length; i++)
+            for(var i=0; i<this. particles.length; i++)
               this.particles[i].update(ctx, t)
           }
         },
 
         draw : function(ctx) {
-          ctx.lineWidth = this.width*this.scale
+          ctx. lineWidth = this.width*this.scale
           ctx.lineCap = 'round'
           ctx.strokeStyle = this.color
           ctx.beginPath()
           ctx.moveTo(this.x, -this.y+1)
-          ctx.lineTo(this.x, -(this.y + this.height*this.scale)+1)
+          ctx.lineTo(this. x, -(this.y + this.height*this.scale)+1)
           ctx.stroke()
           if (this.explode) {
             ctx.beginPath()
             ctx.save()
             ctx.translate(this.x, -this.y+1)
-            var a = Math.atan2(this.velocity.x, this.velocity.y)
+            var a = Math.atan2(this.velocity.x, this.velocity. y)
             ctx.rotate(a)
             ctx.scale(1, 0.4)
             ctx.moveTo(0,0)
@@ -82,23 +82,23 @@
             this.velocity.x = -this.velocity.x
             this.fuel = Math.random() * 0.5
           }
-          this.red = -this.velocity.y / 100
+          this. red = -this.velocity.y / 100
           this.blue = this.velocity.y / 100
-          this.green = 0.5 + (Math.abs(this.velocity.x) / 100)
+          this.green = 0.5 + (Math.abs(this.velocity. x) / 100)
           this.alpha = 0.2
           if (this.blowup_time || (this.red > 0.1 && this.bounced > this.bounces)) {
             var sz = 0.5 + Math.random() * 0.5
-            this.height = 0.1
+            this. height = 0.1
             this.width = sz
-            this.green = 0.4
+            this. green = 0.4
             this.red = -0.5
             this.blue = 0.5
             if (this.blowup_time == undefined) {
               this.blow_up(dt)
               this.alpha = 1.0
             } else {
-              var bu = 1.0 - Math.pow((this.last_time - this.blowup_time)/1000, 2)
-              this.explode = (Math.random() < 0.1) ? 5 * (1-bu) * Math.random() : false
+              var bu = 1. 0 - Math.pow((this.last_time - this. blowup_time)/1000, 2)
+              this. explode = (Math.random() < 0.1) ? 5 * (1-bu) * Math.random() : false
               if (this.explode) {
                 this.velocity.x *= (Math.random() - 0.5) * 4
                 this.velocity.y -= 15
@@ -107,15 +107,15 @@
             }
           }
           if (this.red > 0.1 && this.bounced == this.bounces) {
-            this.bounced++
+            this. bounced++
             this.fuel = 0.5 + Math.random() * 0.5
             this.height = this.width = 0.5 + Math.random() * 0.5
           }
           this.color = 'rgba(' +
-            parseInt(Math.max(0, Math.min(1, (this.red + 0.5)) * 255)) + ',' +
-            parseInt(Math.max(0, Math.min(1, (this.green + 0.5)) * 255)) + ',' +
+            parseInt(Math.max(0, Math. min(1, (this.red + 0.5)) * 255)) + ',' +
+            parseInt(Math.max(0, Math. min(1, (this.green + 0.5)) * 255)) + ',' +
             parseInt(Math.max(0, Math.min(1, (this.blue + 0.5)) * 255)) + ',' +
-            this.alpha + ')'
+            this. alpha + ')'
         },
 
         particle_step : function(dt) {
@@ -123,55 +123,71 @@
           var dragx = dt * (this.velocity.x < 0 ? -1 : 1) * (this.velocity.x*this.velocity.x * 0.05 * this.height)
           var dragy = dt * (this.velocity.y < 0 ? -1 : 1) * (this.velocity.y*this.velocity.y * 0.05 * this.width)
           var fx = (this.impulse.x / dt) - dragx
-          var fy = m * this.gravity + (this.impulse.y / dt) - dragy
+          var fy = m * this.gravity + (this.impulse. y / dt) - dragy
           var ax = fx / m
           var ay = fy / m
           this.velocity.x += ax * dt
-          this.velocity.y += ay * dt
-          this.x += this.velocity.x * this.scale * dt
-          this.y += this.velocity.y * this.scale * dt
-          this.impulse.x = this.impulse.y = 0
+          this. velocity.y += ay * dt
+          this.x += this. velocity.x * this.scale * dt
+          this. y += this.velocity.y * this. scale * dt
+          this.impulse. x = this.impulse.y = 0
         },
 
         blow_up : function(dt) {
           this.particles = []
           this.blowup_time = this.last_time
-          this.explode = Math.random() * 15.0
+          this.explode = Math.random() * 15. 0
           for(var i=0; i < 15; i++) {
             var r = new Rocket()
             r.x = this.x
             r.y = this.y
             r.velocity.x = this.velocity.x
-            r.velocity.y = this.velocity.y
+            r.velocity. y = this.velocity.y
             r.width = 1
             r.height = 0.1
             r.fuel = 0
             r.bounces = 1
             r.blowup_time = this.blowup_time
             if (this.velocity.y == 0) this.velocity.y += 0.1
-            if (this.velocity.x == 0) this.velocity.x += 0.1
-            r.impulse.x = Math.sin(i*Math.PI*0.2) * (this.velocity.x/this.velocity.y)
-            r.impulse.y = Math.cos(i*Math.PI*0.2) * (this.velocity.y/this.velocity.x)
+            if (this.velocity. x == 0) this.velocity.x += 0.1
+            r.impulse.x = Math.sin(i*Math.PI*0.2) * (this.velocity.x/this.velocity. y)
+            r.impulse.y = Math.cos(i*Math.PI*0.2) * (this.velocity.y/this. velocity.x)
             this.particles[i] = r
           }
         }
       }
 
       window.addEventListener("load", function(){
-        var c = window.canvas = document.getElementById("fw_c")
-        var aspect = c.width / c.height
-        //document.getElementById("fireworks").appendChild(c)
+        var c = window. canvas = document.getElementById("fw_c")
+        
+        // HiDPI support
+        var dpr = window.devicePixelRatio || 1
+        var cssWidth = 530
+        var cssHeight = 300
+        
+        // Set the canvas backing store size scaled by devicePixelRatio
+        c.width = cssWidth * dpr
+        c. height = cssHeight * dpr
+        
+        // Set the CSS display size
+        c.style. width = cssWidth + 'px'
+        c.style. height = cssHeight + 'px'
+        
+        var aspect = cssWidth / cssHeight
         c.ctx = c.getContext("2d")
-        c.ctx.scale(c.height/2,c.height/2)
+        
+        // Scale by dpr first, then apply the original scaling
+        c.ctx.scale(dpr, dpr)
+        c.ctx.scale(cssHeight/2, cssHeight/2)
         c.ctx.translate(aspect,1)
-        c.ctx.lineWidth = 2 / (c.height/2)
+        c.ctx.lineWidth = 2 / (cssHeight/2)
         var rs = [new Rocket()]
         var t = 0
-        c.ctx.fillStyle = 'rgba(0,0,0,1)'
+        c.ctx. fillStyle = 'rgba(0,0,0,1)'
         var cc = 'rgba(0,0,0,'+ (2/64) + ')'
-        c.ctx.fillRect(-aspect,-1,2*aspect,2)
+        c.ctx. fillRect(-aspect,-1,2*aspect,2)
         c.ctx.globalCompositeOperator = 'darken'
-        c.ctx.fillStyle = cc
+        c. ctx.fillStyle = cc
         var t1 = new Date().getTime()
         var t2,dt
         for(var i=0; i<1000; i++) Math.sin(i)
@@ -185,31 +201,19 @@
         setInterval(function(){
           t += 25
           c.ctx.fillRect(-aspect,-1,2*aspect,2)
-          if (rs.length < max_rs && Math.random() < 0.1*measure) rs.push(new Rocket())
+          if (rs. length < max_rs && Math.random() < 0.1*measure) rs.push(new Rocket())
           while (rs.length > 0 && rs[0].inert) rs.shift()
           for(var i=0; i < rs.length; i++)
             rs[i].update(c.ctx, t)
         }, 25)
-        /*
-        setInterval(function(){
-          c.ctx.clearRect(-1,-1,2,2)
-          c.ctx.beginPath()
-          var j = 8*Math.sin((new Date().getTime() / 500))
-          for(var i=0; i<50; i++){
-            c.ctx.moveTo(Math.cos(2*Math.PI*(i+j)/50)*0.2,Math.sin(2*Math.PI*(i+j)/50)*0.2)
-            c.ctx.lineTo(Math.cos(2*Math.PI*i/50),Math.sin(2*Math.PI*i/50))
-          }
-          c.ctx.stroke()
-        }, 50)
-        */
       },false)
     </script>
     <style>
       #fireworks {
-        text-align: center;
+        text-align:  center;
       }
       canvas{
-        border-bottom: 1px solid #aaaaaa;
+        border-bottom:  1px solid #aaaaaa;
       }
       h1 {
         color: #aaaaaa;

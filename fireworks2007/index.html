@@ -210,6 +210,20 @@
       },false)
     </script>
     <style>
+      html, body {
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        min-height: 100vh;
+        background: #000;
+        color: #aaaaaa;
+        font-family: Arial, Helvetica, sans-serif;
+      }
       #fireworks {
         text-align: center;
       }
@@ -219,18 +233,17 @@
       h1 {
         color: #aaaaaa;
         text-align: center;
-        font-family: Arial, Helvetica;
+        font-family: Arial, Helvetica, sans-serif;
         font-weight: bold;
         font-size: 14px;
         letter-spacing: 80px;
-        margin-left: 80px;
-        margin-top: 8px;
+        margin: 8px 0 0 0;
         text-transform: uppercase;
       }
     </style>
   </head>
 
-  <body bgcolor="#000000">
+  <body>
     <div id="info"></div>
     <div id="fireworks">
       <canvas id="fw_c" width="530" height="300"></canvas>

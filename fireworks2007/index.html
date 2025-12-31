@@ -159,12 +159,20 @@
 
       window.addEventListener("load", function(){
         var c = window.canvas = document.getElementById("fw_c")
-        var aspect = c.width / c.height
+        var dpr = window.devicePixelRatio || 1
+        var cssWidth = 530
+        var cssHeight = 300
+        var aspect = cssWidth / cssHeight
+        c.width = cssWidth * dpr
+        c.height = cssHeight * dpr
+        c.style.width = cssWidth + 'px'
+        c.style.height = cssHeight + 'px'
         //document.getElementById("fireworks").appendChild(c)
         c.ctx = c.getContext("2d")
-        c.ctx.scale(c.height/2,c.height/2)
+        c.ctx.scale(dpr, dpr)
+        c.ctx.scale(cssHeight/2,cssHeight/2)
         c.ctx.translate(aspect,1)
-        c.ctx.lineWidth = 2 / (c.height/2)
+        c.ctx.lineWidth = 2 / (cssHeight/2)
         var rs = [new Rocket()]
         var t = 0
         c.ctx.fillStyle = 'rgba(0,0,0,1)'

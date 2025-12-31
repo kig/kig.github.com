@@ -167,7 +167,6 @@
         var aspect = c.width / c.height
         //document.getElementById("fireworks").appendChild(c)
         c.ctx = c.getContext("2d")
-        c.ctx.scale(devicePixelRatio, devicePixelRatio)
         c.ctx.scale(c.height/2,c.height/2)
         c.ctx.translate(aspect,1)
         c.ctx.lineWidth = 2 / (c.height/2)

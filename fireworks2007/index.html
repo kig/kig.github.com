@@ -1,6 +1,7 @@
 <html>
 
   <head>
+    <meta name="viewport" content="width=530" />
     <script>
       function Rocket() {
         this.x = 0 // (Math.random() - 0.5) * 4
@@ -159,9 +160,14 @@
 
       window.addEventListener("load", function(){
         var c = window.canvas = document.getElementById("fw_c")
+        c.style.width = c.width + 'px'
+        c.style.height = c.height + 'px'
+        c.width *= devicePixelRatio
+        c.height *= devicePixelRatio
         var aspect = c.width / c.height
         //document.getElementById("fireworks").appendChild(c)
         c.ctx = c.getContext("2d")
+        c.scale(devicePixelRatio, devicePixelRatio)
         c.ctx.scale(c.height/2,c.height/2)
         c.ctx.translate(aspect,1)
         c.ctx.lineWidth = 2 / (c.height/2)

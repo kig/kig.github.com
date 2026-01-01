@@ -166,8 +166,8 @@
         
         c.style.width = containerWidth + 'px'
         c.style.height = containerHeight + 'px'
-        c.width = containerWidth * (devicePixelRatio || 1)
-        c.height = containerHeight * (devicePixelRatio || 1)
+        c.width = containerWidth * (window.devicePixelRatio || 1)
+        c.height = containerHeight * (window.devicePixelRatio || 1)
         
         var aspect = c.width / c.height
         c.ctx.setTransform(1, 0, 0, 1, 0, 0)

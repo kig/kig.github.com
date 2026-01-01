@@ -1,7 +1,8 @@
 <html>
 
   <head>
-    <meta name="viewport" content="width=530" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>
       function Rocket() {
         this.x = 0 // (Math.random() - 0.5) * 4
@@ -158,18 +159,69 @@
         }
       }
 
+      function resizeCanvas() {
+        var c = window.canvas
+        var container = document.getElementById("fireworks")
+        var containerWidth = window.innerWidth
+        var containerHeight = window.innerHeight - 50 // Account for title
+        
+        c.style.width = containerWidth + 'px'
+        c.style.height = containerHeight + 'px'
+        c.width = containerWidth * devicePixelRatio
+        c.height = containerHeight * devicePixelRatio
+        
+        var aspect = c.width / c.height
+        c.ctx.setTransform(1, 0, 0, 1, 0, 0)
+        c.ctx.scale(c.height/2, c.height/2)
+        c.ctx.translate(aspect, 1)
+        c.ctx.lineWidth = 2 / (c.height/2)
+        c.ctx.fillStyle = 'rgba(0,0,0,1)'
+        c.ctx.fillRect(-aspect, -1, 2*aspect, 2)
+        return aspect
+      }
+
+      function toggleFullscreen() {
+        var elem = document.documentElement
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+            !document.mozFullScreenElement && !document.msFullscreenElement) {
+          if (elem.requestFullscreen) {
+            elem.requestFullscreen()
+          } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen()
+          } else if (elem.mozRequestFullScreen) {
+            elem.mozRequestFullScreen()
+          } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen()
+          }
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen()
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen()
+          } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen()
+          } else if (document.msExitFullscreen) {
+            document.msExitFullscreen()
+          }
+        }
+      }
+
       window.addEventListener("load", function(){
         var c = window.canvas = document.getElementById("fw_c")
-        c.style.width = c.width + 'px'
-        c.style.height = c.height + 'px'
-        c.width *= devicePixelRatio
-        c.height *= devicePixelRatio
-        var aspect = c.width / c.height
-        //document.getElementById("fireworks").appendChild(c)
         c.ctx = c.getContext("2d")
-        c.ctx.scale(c.height/2,c.height/2)
-        c.ctx.translate(aspect,1)
-        c.ctx.lineWidth = 2 / (c.height/2)
+        var aspect = resizeCanvas()
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+          aspect = resizeCanvas()
+        })
+        
+        // Handle fullscreen button click
+        var fsBtn = document.getElementById("fullscreenBtn")
+        if (fsBtn) {
+          fsBtn.addEventListener('click', toggleFullscreen)
+        }
+        
         var rs = [new Rocket()]
         var t = 0
         c.ctx.fillStyle = 'rgba(0,0,0,1)'
@@ -212,6 +264,7 @@
     <style>
       html, body {
         height: 100%;
+        overflow: hidden;
       }
       body {
         display: flex;
@@ -226,9 +279,17 @@
       }
       #fireworks {
         text-align: center;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        position: relative;
       }
       canvas{
         border-bottom: 1px solid #aaaaaa;
+        display: block;
       }
       h1 {
         color: #aaaaaa;
@@ -241,10 +302,32 @@
         text-transform: uppercase;
         text-indent: 80px;
       }
+      #fullscreenBtn {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(170, 170, 170, 0.2);
+        border: 1px solid #aaaaaa;
+        color: #aaaaaa;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        border-radius: 4px;
+        transition: background 0.3s ease;
+        z-index: 1000;
+      }
+      #fullscreenBtn:hover {
+        background: rgba(170, 170, 170, 0.4);
+      }
+      #fullscreenBtn:active {
+        background: rgba(170, 170, 170, 0.6);
+      }
     </style>
   </head>
 
   <body>
+    <button id="fullscreenBtn" title="Toggle Fullscreen">⛶ Fullscreen</button>
     <div id="info"></div>
     <div id="fireworks">
       <canvas id="fw_c" width="530" height="300"></canvas>

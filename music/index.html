@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>sg darkfuture r-mix</title>
+        <meta
+            name="description"
+            content="Web music player with the SG Darkfuture R-mix skin."
+        />
+        <meta name="viewport" content="width=275" />
+        <meta name="theme-color" content="#222222" />
+        <link rel="manifest" href="manifest.json" />
+        <link rel="icon" type="image/png" href="icons/icon-192.png" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="SG Darkfuture" />
+        <meta name="apple-touch-icon" href="icons/icon-192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="SG Darkfuture" />
+        <style>
+            html {
+                background: #222222;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="app" style="height: 100vh">
+            <!-- Webamp will attempt to center itself within this div -->
+        </div>
+        <script type="module">
+            import Webamp from "./js/webamp.js";
+            const webamp = new Webamp({
+                initialSkin: {
+                    url: "sgdarkfuture.wsz",
+                },
+                initialTracks: [
+                    { url: "music/ai_theme.m4a" },
+                    { url: "music/chart_beats_loop.m4a" },
+                    { url: "music/default.m4a" },
+                    { url: "music/ident_loop.m4a" },
+                    { url: "music/sales_loop.m4a" },
+                    { url: "music/song_0.m4a" },
+                    { url: "music/song_1.m4a" },
+                    { url: "music/song_10.m4a" },
+                    { url: "music/song_11.m4a" },
+                    { url: "music/song_12.m4a" },
+                    { url: "music/song_13.m4a" },
+                    { url: "music/song_14.m4a" },
+                    { url: "music/song_15.m4a" },
+                    { url: "music/song_16.m4a" },
+                    { url: "music/song_17.m4a" },
+                    { url: "music/song_18.m4a" },
+                    { url: "music/song_19.m4a" },
+                    { url: "music/song_2.m4a" },
+                    { url: "music/song_20.m4a" },
+                    { url: "music/song_21.m4a" },
+                    { url: "music/song_22.m4a" },
+                    { url: "music/song_23.m4a" },
+                    { url: "music/song_24.m4a" },
+                    { url: "music/song_25.m4a" },
+                    { url: "music/song_26.m4a" },
+                    { url: "music/song_27.m4a" },
+                    { url: "music/song_28.m4a" },
+                    { url: "music/song_29.m4a" },
+                    { url: "music/song_3.m4a" },
+                    { url: "music/song_30.m4a" },
+                    { url: "music/song_31.m4a" },
+                    { url: "music/song_32.m4a" },
+                    { url: "music/song_33.m4a" },
+                    { url: "music/song_34.m4a" },
+                    { url: "music/song_4.m4a" },
+                    { url: "music/song_5.m4a" },
+                    { url: "music/song_6.m4a" },
+                    { url: "music/song_7.m4a" },
+                    { url: "music/song_8.m4a" },
+                    { url: "music/song_9.m4a" },
+                    { url: "music/wait_loop.m4a" },
+                ],
+            });
+
+            // Returns a promise indicating when it's done loading.
+            webamp.renderWhenReady(document.getElementById("app"));
+        </script>
+        <script>
+            // Register service worker for offline support
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('sw.js')
+                        .then((registration) => {
+                            console.log('ServiceWorker registered:', registration.scope);
+                        })
+                        .catch((error) => {
+                            console.log('ServiceWorker registration failed:', error);
+                        });
+                });
+            }
+        </script>
+    </body>
+</html>

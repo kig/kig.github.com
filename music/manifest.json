@@ -4,8 +4,8 @@
   "description": "Web music player with the SG Darkfuture R-mix skin",
   "start_url": "./index.html",
   "display": "fullscreen",
-  "background_color": "#222222",
-  "theme_color": "#222222",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "portrait-primary",
   "icons": [
     {

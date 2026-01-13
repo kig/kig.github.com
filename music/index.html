@@ -31,6 +31,20 @@
         <script type="module">
             import Webamp from "./js/webamp.js";
             const webamp = new Webamp({
+                enableMediaSession: true,
+                windowLayout: {
+    main: {
+      closed: false,
+    },
+    equalizer: {
+      closed: false,
+    },
+    playlist: {
+      // Number of additional sprites by which to expand the window.
+      // size: { extraHeight: Math.max(0,Math.floor(10*(window.innerHeight/window.innerWidth-1.2))), extraWidth: 0 },
+      closed: false,
+    },
+  },
                 initialSkin: {
                     url: "sgdarkfuture.wsz",
                 },

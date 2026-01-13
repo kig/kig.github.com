@@ -18,8 +18,10 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="SG Darkfuture" />
         <style>
-            html {
+            html, body {
                 background: #222222;
+                margin: 0;
+                padding: 0;
             }
         </style>
     </head>
@@ -30,9 +32,25 @@
         </div>
         <script type="module">
             import Webamp from "./js/webamp.js";
+            const extraHeight = Math.max(0,Math.floor((innerHeight/innerWidth-1.3)*10));
+            console.log("extraHeight",extraHeight);
             const webamp = new Webamp({
+                enableMediaSession: true,
                 initialSkin: {
                     url: "sgdarkfuture.wsz",
+                },
+                windowLayout: {
+                    main: {
+                        position: { top: 0, left: 0 },
+                    },
+                    playlist: {
+                        position: { top: 116, left: 0 },
+                        // Number of additional sprites by which to expand the window.
+                        size: { extraHeight, extraWidth: 0 },
+                    },
+                    equalizer: {
+                        position: { top: 116*2 + extraHeight*29, left: 0 },
+                    },
                 },
                 initialTracks: [
                     { url: "music/ai_theme.m4a" },
@@ -86,6 +104,7 @@
             // Register service worker for offline support
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
+                    return;
                     navigator.serviceWorker.register('sw.js')
                         .then((registration) => {
                             console.log('ServiceWorker registered:', registration.scope);

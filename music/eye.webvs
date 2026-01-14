@@ -1,0 +1,247 @@
+﻿{
+    "name": "eye",
+    "date": "2000-05-08T05:27:52.000Z",
+    "clearFrame": false,
+    "components": [
+        {
+            "type": "FadeOut",
+            "group": "Trans",
+            "speed": 22,
+            "color": "#000000"
+        },
+        {
+            "type": "Simple",
+            "group": "Render",
+            "audioSource": "Spectrum",
+            "renderType": "Solid",
+            "audioChannel": "CENTER",
+            "positionY": "BOTTOM",
+            "colors": [
+                "#ffe493"
+            ]
+        },
+        {
+            "type": "Simple",
+            "group": "Render",
+            "audioSource": "Spectrum",
+            "renderType": "Solid",
+            "audioChannel": "CENTER",
+            "positionY": "TOP",
+            "colors": [
+                "#ffe493"
+            ]
+        },
+        {
+            "type": "Simple",
+            "group": "Render",
+            "audioSource": "Waveform",
+            "renderType": "Solid",
+            "audioChannel": "LEFT",
+            "positionY": "CENTER",
+            "colors": [
+                "#ffffff"
+            ]
+        },
+        {
+            "type": "Simple",
+            "group": "Render",
+            "audioSource": "Waveform",
+            "renderType": "Solid",
+            "audioChannel": "RIGHT",
+            "positionY": "CENTER",
+            "colors": [
+                "#ffffff"
+            ]
+        },
+        {
+            "type": "Mirror",
+            "group": "Trans",
+            "enabled": true,
+            "topToBottom": false,
+            "bottomToTop": false,
+            "leftToRight": true,
+            "rightToLeft": true,
+            "onBeatRandom": true,
+            "smoothTransition": true,
+            "transitionDuration": 4
+        },
+        {
+            "type": "Simple",
+            "group": "Render",
+            "audioSource": "Waveform",
+            "renderType": "Solid",
+            "audioChannel": "CENTER",
+            "positionY": "CENTER",
+            "colors": [
+                "#ffffff"
+            ]
+        },
+        {
+            "type": "Simple",
+            "group": "Render",
+            "audioSource": "Waveform",
+            "renderType": "Solid",
+            "audioChannel": "LEFT",
+            "positionY": "TOP",
+            "colors": [
+                "#e69b00"
+            ]
+        },
+        {
+            "type": "Simple",
+            "group": "Render",
+            "audioSource": "Waveform",
+            "renderType": "Solid",
+            "audioChannel": "RIGHT",
+            "positionY": "BOTTOM",
+            "colors": [
+                "#6d4b1d"
+            ]
+        },
+        {
+            "type": "MovingParticle",
+            "group": "Render",
+            "enabled": true,
+            "onBeatSizeChange": true,
+            "color": "#ccbf97",
+            "distance": 13,
+            "particleSize": 24,
+            "onBeatParticleSize": 19,
+            "blendMode": "Additive"
+        },
+        {
+            "type": "MovingParticle",
+            "group": "Render",
+            "enabled": true,
+            "onBeatSizeChange": false,
+            "color": "#916a31",
+            "distance": 2,
+            "particleSize": 38,
+            "onBeatParticleSize": 39,
+            "blendMode": "FIFTY_FIFTY"
+        },
+        {
+            "type": "MovingParticle",
+            "group": "Render",
+            "enabled": true,
+            "onBeatSizeChange": false,
+            "color": "#674210",
+            "distance": 2,
+            "particleSize": 20,
+            "onBeatParticleSize": 39,
+            "blendMode": "REPLACE"
+        },
+        {
+            "type": "MovingParticle",
+            "group": "Render",
+            "enabled": true,
+            "onBeatSizeChange": true,
+            "color": "#000000",
+            "distance": 1,
+            "particleSize": 16,
+            "onBeatParticleSize": 4,
+            "blendMode": "REPLACE"
+        },
+        {
+            "type": "MovingParticle",
+            "group": "Render",
+            "enabled": true,
+            "onBeatSizeChange": true,
+            "color": "#ffffff",
+            "distance": 10,
+            "particleSize": 5,
+            "onBeatParticleSize": 17,
+            "blendMode": "Additive"
+        },
+        {
+            "type": "MovingParticle",
+            "group": "Render",
+            "enabled": true,
+            "onBeatSizeChange": true,
+            "color": "#ffffff",
+            "distance": 18,
+            "particleSize": 5,
+            "onBeatParticleSize": 17,
+            "blendMode": "Additive"
+        },
+        {
+            "type": "MovingParticle",
+            "group": "Render",
+            "enabled": true,
+            "onBeatSizeChange": true,
+            "color": "#ffffff",
+            "distance": 26,
+            "particleSize": 5,
+            "onBeatParticleSize": 17,
+            "blendMode": "Additive"
+        },
+        {
+            "type": "BufferSave",
+            "group": "Misc",
+            "action": "SAVE",
+            "bufferId": 3,
+            "blendMode": "REPLACE",
+            "adjustBlend": 0
+        },
+        {
+            "type": "RotoBlitter",
+            "group": "Trans",
+            "zoom": 30,
+            "rotate": 39,
+            "blendMode": "FIFTY_FIFTY",
+            "onBeatReverse": true,
+            "reversalSpeed": 0,
+            "onBeatZoom": 31,
+            "onBeat": false
+        },
+        {
+            "type": "BlitterFeedback",
+            "group": "Misc",
+            "zoom": 30,
+            "onBeatZoom": 21,
+            "blendMode": "FIFTY_FIFTY",
+            "onBeat": true
+        },
+        {
+            "type": "BufferSave",
+            "group": "Misc",
+            "action": "RESTORE",
+            "bufferId": 3,
+            "blendMode": "REPLACE",
+            "adjustBlend": 7
+        },
+        {
+            "type": "Movement",
+            "group": "Trans",
+            "output": "50/50",
+            "sourceMapped": false,
+            "coordinates": "POLAR",
+            "bilinear": true,
+            "wrap": true,
+            "code": "r=sin(r)*cos(r)-r; d=d*1.2"
+        },
+        {
+            "type": "BlitterFeedback",
+            "group": "Misc",
+            "zoom": 29,
+            "onBeatZoom": 0,
+            "blendMode": "FIFTY_FIFTY",
+            "onBeat": true
+        },
+        {
+            "type": "Movement",
+            "group": "Trans",
+            "output": "50/50",
+            "sourceMapped": false,
+            "coordinates": "POLAR",
+            "bilinear": true,
+            "wrap": true,
+            "code": "d=abs(sin(d)*cos(d));r=sin(r)*cos(r)*tan(r)"
+        },
+        {
+            "type": "Comment",
+            "group": "Misc",
+            "text": "------------------------------------------------------>>>\r\n\r\nWhen you watch deep into the eye of\r\nthe abyss, you can sometimes see the\r\neye watching back at you.\r\n\r\nOr then it's just some nasty torture.\r\n\r\n------------------------------------------------------>>>\r\n\r\nPlease, oh please, try to keep the\r\nframerate high for optimal viewing\r\npleasure. 10fps is the minimum, less\r\nthan that and the fadeout gets too\r\nslow. Looks best on a small resolution?\r\nFLA - Silent Ceremony for neatness.\r\nFSOL - Landmass for more neatness.\r\nMIDI versions of old 8-bit NES games'\r\nmusic for the ultimate, brain-blowing,\r\nnausea causing neatness.\r\nCtrl-L -> tone://8000 -> earache\r\n\r\n------------------------------------------------------>>>\r\n\r\nThis piece of Filter Overkill (TM) was\r\nbrought to you by kig, that weird finnish\r\nguy. For optimal headache, set the\r\nfullscreen resolution to 320x200, pixel\r\ndoubling on, screen refresh rate to \r\n60Hz and stare at this for three hours\r\nstraight in a dark room listening to some\r\ngeeky trash punk bands.\r\n\r\nI will not maintain any responsibility for \r\neffects caused by this preset,\r\nincluding but not limited to: AIDS, \r\ncancer, brain tumors, eyestrain,\r\nexquisitely painful headaches, strained\r\njoints, weird fungus growing between\r\nyour legs, leaving your wife/dog/other\r\npet/partner for life, infidelity, sending a\r\nchunkload of money to me, failure to\r\nsee an impending catastrophe, oddly\r\nsoothing hypnotizing voice telling you\r\nto go out and get a life, and that\r\nstrange man who knocks at your door\r\nevery sunday and asks you to \r\n\"cockpile his kernel\"\r\n\r\nHa ha. That was stupid, you may now \r\ndie in an uncontrollable fit of angst-filled\r\nlaughter. Bitch.\r\n\r\n------------------------------------------------------>>>\r\n\r\nSend your love to i.h@sci.fi and take\r\na peek at http://kig.skinz.org/ for that\r\nquick daily fix of graphics and whatnot.\r\n\r\n------------------------------------------------------>>>"
+        }
+    ]
+}

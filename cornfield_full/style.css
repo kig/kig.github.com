@@ -1031,6 +1031,12 @@ hr {
     opacity: 1;
 }
 
+.black { color: #000; }
+.blue { color: #28f; }
+.purple { color: #f2c; }
+.red { color: #f22; }
+.yellow { color: #fc2; }
+
 #warnings {
     position: absolute;
     height: 44px;

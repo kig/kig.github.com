@@ -466,8 +466,32 @@ function populateWeatherElement(el, weatherData) {
 		if (c.weatherData.rain && c.weatherData.rain['3h'] > 3*30) warnings.push('yellow rain');
 		if (c.weatherData.rain && c.weatherData.rain['3h'] > 3*50) warnings.push('red rain');
 		if (c.weatherData.rain && c.weatherData.rain['3h'] > 3*70) warnings.push('black rain');
+		// fire (30-30-30 rule)
+		if (c.weatherData.main.humidity < 30 && c.weatherData.main.temp > 30 && c.weatherData.main.wind.speed > 8) warnings.push('fire');
+		const weatherIcons = {
+			thunderstorm: 'wi-thunderstorm',
+			hot: 'wi-hot yellow',
+			'extreme heat': 'wi-hot red',
+			'deadly heat': 'wi-hot black',
+			cold: 'wi-snowflake-cold blue',
+			'extreme cold': 'wi-snowflake-cold purple',
+			penguin: 'wi-snowflake-cold black',
+			'high wind': 'wi-strong-wind',
+			storm: 'wi-storm-warning red',
+			typhoon: 'wi-hurricane red',
+			'yellow rain': 'wi-raindrops yellow',
+			'red rain': 'wi-raindrops red',
+			'black rain': 'wi-raindrops black',
+			'fire': 'wi-fire red',
+		};
 		if (warnings.length > 0) {
-			console.log("Warnings", warnings);
+			const warningsEl = document.getElementById('warnings');
+			warnings.forEach(w => {
+				const warningSpan = document.createElement('span');
+				const wiIcon = weatherIcons[w] ? weatherIcons[w] + ' ' : '';
+				warningSpan.className = 'icon wi '+ wiIcon +'warning-' + w.replace(/ /g, '-');
+				warningsEl.appendChild(warningSpan);
+			});
 		}
 	}
 

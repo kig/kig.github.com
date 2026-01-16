@@ -142,9 +142,9 @@ function fractSample2DArray(arr, i, idx) {
 	return arr[Math.max(0,Math.min(arr.length-1, Math.floor(idx)))][i] * (1-t) + arr[Math.max(0,Math.min(arr.length-1, Math.ceil(idx)))][i] * t;
 }
 
-function formatTemperature(temperatureCelsius) {
-	if (useUSAUnits) return Math.round(temperatureCelsius * 1.8 + 32) + '°F';
-	return Math.round(temperatureCelsius) + '°C';
+function formatTemperature(temperatureCelsius, skipUnit) {
+	if (useUSAUnits) return Math.round(temperatureCelsius * 1.8 + 32) + (skipUnit ? '' : '°F');
+	return Math.round(temperatureCelsius) + (skipUnit ? '' : '°C');
 }
 
 function formatWindSpeed(windSpeedMetersPerSecond) {
@@ -485,8 +485,8 @@ function populateWeatherElement(el, weatherData) {
 			'yellow rain': 'wi-rain yellow',
 			'red rain': 'wi-rain red',
 			'black rain': 'wi-rain black',
-			'unhealthy air quality': 'wi-smog yellow',
-			'hazardous air quality': 'wi-smog purple',
+			'unhealthy air quality': 'wi-smoke yellow',
+			'hazardous air quality': 'wi-smoke purple',
 		};
 		const warningsEl = document.getElementById('warnings');
 		if (warnings.length > 0) {

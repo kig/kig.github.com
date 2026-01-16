@@ -683,14 +683,324 @@ function stripTags(s) {
 }
 
 async function fetchWeatherHK() {
-    const weather = await (await fetch('https://office.heichen.hk/weather/hong_kong.json')).json();
-    return (
-        `The temperature is ${parseInt(weather.hko.Temperature)} with a high of ${weather.hko.HomeMaxTemperature} and a low of ${weather.hko.HomeMinTemperature}. ` +
-        stripTags(weather.FLW.GeneralSituation) +
-        stripTags(' Forecast: ' + weather.FLW.ForecastDesc) +
-        stripTags(' Outlook: ' + weather.FLW.OutlookContent) + ' ' + stripTags(weather.FLW.TCInfo || '')
-	);
+    const weather = await (await fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=flw&lang=en')).json();
+	const useOneJSONXML = false;
+	if (useOneJSONXML) {
+		return (
+			`The temperature is ${parseInt(weather.hko.Temperature)} with a high of ${weather.hko.HomeMaxTemperature} and a low of ${weather.hko.HomeMinTemperature}. ` +
+			stripTags(weather.FLW.GeneralSituation) +
+			stripTags(' Forecast: ' + weather.FLW.ForecastDesc) +
+			stripTags(' Outlook: ' + weather.FLW.OutlookContent) + ' ' + stripTags(weather.FLW.TCInfo || '')
+		);
+	} else {
+		// use weather.php API format
+		return (
+			`Current weather: ` + weather.generalSituation + ' ' +
+			weather.forecastPeriod + ': ' + weather.forecastDesc +
+			' Outlook: ' + weather.outlook + ' ' + (weather.tcInfo ? (' ' + weather.tcInfo) : '' ) +
+			(weather.fireDangerWarning ? (weather.fireDangerWarning) : '')
+		);
+	}
 }
+
+function createWeatherSpeechText(city) {
+	if (!city || !city.weatherData) return "No weather data available.";
+	return weatherDataToString(city);
+}
+
+const i18n = { t: (s) => s };
+
+const WarningCodes = new Map([
+    [200, ''],
+    [201, ''],
+    [202, ''],
+    [210, ''],
+    [211, ''],
+    [212, ''],
+    [221, ''],
+    [230, ''],
+    [231, ''],
+    [232, ''],
+    [300, ''],
+    [301, ''],
+    [302, ''],
+    [310, ''],
+    [311, ''],
+    [312, ''],
+    [313, ''],
+    [314, ''],
+    [321, ''],
+    [500, ''],
+    [501, ''],
+    [502, ''],
+    [503, ''],
+    [504, ''],
+    [511, ''],
+    [520, ''],
+    [521, ''],
+    [522, ''],
+    [531, ''],
+    [600, ''],
+    [601, ''],
+    [602, ''],
+    [611, ''],
+    [612, ''],
+    [613, ''],
+    [615, ''],
+    [616, ''],
+    [620, ''],
+    [621, ''],
+    [622, ''],
+    [701, ''],
+    [711, ''],
+    [721, ''],
+    [731, ''],
+    [741, ''],
+    [751, ''],
+    [761, ''],
+    [762, ''],
+    [771, ''],
+    [781, ''],
+    [800, ''],
+    [801, ''],
+    [802, ''],
+    [803, ''],
+    [804, ''],
+    [900, ''],
+    [901, ''],
+    [902, ''],
+    [903, ''],
+    [904, ''],
+    [905, ''],
+    [906, ''],
+    [951, ''],
+    [952, ''],
+    [953, ''],
+    [954, ''],
+    [955, ''],
+    [956, ''],
+    [957, ''],
+    [958, ''],
+    [959, ''],
+    [960, ''],
+    [961, ''],
+    [962, ''],
+]);
+
+function getWeatherCodeDescription(code) {
+    switch (code) {
+        case 200: return 'thunderstorm with light rain';
+        case 201: return 'thunderstorm with rain';
+        case 202: return 'thunderstorm with heavy rain';
+        case 210: return 'light thunderstorm';
+        case 211: return 'thunderstorm';
+        case 212: return 'heavy thunderstorm';
+        case 221: return 'ragged thunderstorm';
+        case 230: return 'thunderstorm with light drizzle';
+        case 231: return 'thunderstorm with drizzle';
+        case 232: return 'thunderstorm with heavy drizzle';
+        case 300: return 'light intensity drizzle';
+        case 301: return 'drizzle';
+        case 302: return 'heavy intensity drizzle';
+        case 310: return 'light intensity drizzle rain';
+        case 311: return 'drizzle rain';
+        case 312: return 'heavy intensity drizzle rain';
+        case 313: return 'shower rain and drizzle';
+        case 314: return 'heavy shower rain and drizzle';
+        case 321: return 'shower drizzle';
+        case 500: return 'light rain';
+        case 501: return 'moderate rain';
+        case 502: return 'heavy intensity rain';
+        case 503: return 'very heavy rain';
+        case 504: return 'extreme rain';
+        case 511: return 'freezing rain';
+        case 520: return 'light intensity shower rain';
+        case 521: return 'shower rain';
+        case 522: return 'heavy intensity shower rain';
+        case 531: return 'ragged shower rain';
+        case 600: return 'light snow';
+        case 601: return 'snow';
+        case 602: return 'heavy snow';
+        case 611: return 'sleet';
+        case 612: return 'shower sleet';
+        case 613: return 'light rain and snow';
+        case 615: return 'light rain and snow';
+        case 616: return 'rain and snow';
+        case 620: return 'light shower snow';
+        case 621: return 'shower snow';
+        case 622: return 'heavy shower snow';
+        case 701: return 'mist';
+        case 711: return 'smoke';
+        case 721: return 'haze';
+        case 731: return 'sand, dust whirls';
+        case 741: return 'fog';
+        case 751: return 'sand';
+        case 761: return 'dust';
+        case 762: return 'volcanic ash';
+        case 771: return 'squalls';
+        case 781: return 'tornado';
+        case 800: return 'clear sky';
+        case 801: return 'few clouds';
+        case 802: return 'scattered clouds';
+        case 803: return 'broken clouds';
+        case 804: return 'overcast clouds';
+        case 900: return 'tornado';
+        case 901: return 'tropical storm';
+        case 902: return 'hurricane';
+        case 903: return 'cold';
+        case 904: return 'hot';
+        case 905: return 'windy';
+        case 906: return 'hail';
+        case 951: return 'calm';
+        case 952: return 'light breeze';
+        case 953: return 'gentle breeze';
+        case 954: return 'moderate breeze';
+        case 955: return 'fresh breeze';
+        case 956: return 'strong breeze';
+        case 957: return 'high wind, near gale';
+        case 958: return 'gale';
+        case 959: return 'severe gale';
+        case 960: return 'storm';
+        case 961: return 'violent storm';
+        case 962: return 'hurricane';
+    }
+    return 'unknown weather, watch out for aliens';
+}
+
+function airQualityToString(aqi) {
+    if (aqi <= 0) return i18n.t('unknown');
+    if (aqi >= 5) return i18n.t('hazardous');
+
+    if (aqi === 1) return i18n.t('very good');
+    if (aqi === 2) return i18n.t('good');
+    if (aqi === 3) return i18n.t('bad');
+    if (aqi === 4) return i18n.t('unhealthy');
+}
+
+// Compares the array values to a given value and returns how they compare.
+// Uses the mean and stdev of the array to figure out the variability of the data.
+// Returns one of the given strings depending on the comparison result.
+// If the stdev is high, adds the variableString to the returned message.
+// E.g. if the array is temperatures over the next days and value is the current temperature.
+// lessString is cooler, similarString is similar, greaterString is warmer, and variableString is occasionally.
+// Temperatures fall compared to present: "cooler"
+// Temperatures rise compared to present: "warmer"
+// Temperatures are high one day, low another, and high again: "occasionally warmer"
+//
+function timeSeriesCompare(arr, val, threshold, lessString, similarString, greaterString, variableString) {
+    if (arr.length === 0) return similarString;
+    const mean = arr.reduce((a, b) => a + b) / arr.length;
+    const stdev = Math.sqrt(arr.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / arr.length);
+    let str = '';
+    if (stdev > threshold) str += variableString + ' ';
+    if (val - mean > threshold) str += lessString;
+    else if (mean - val > threshold) str += greaterString;
+    else str += similarString;
+    return str;
+}
+
+function getForecastDays(c) {
+	const fc = c.forecast;
+	const days = {};
+	const myDay = new Date((c.weatherData.dt + c.weatherData.timezone) * 1e3).toISOString().split("T")[0];
+	const myHour = new Date((c.weatherData.dt + c.weatherData.timezone) * 1e3).toISOString().split("T")[1].split(":")[0];
+	days[myDay] = {minTemp: c.weatherData.main.temp, maxTemp: c.weatherData.main.temp, aqis: [{hour: myHour, aqi: c.weatherData.airQuality.main.aqi}], maxAQI: c.weatherData.airQuality.main.aqi, weatherCode: c.weatherData.weather[0].id};
+	if (fc.list.length > 0) {
+		var lastAQI = null;
+		fc.list.forEach(l => {
+			const dateString = new Date((l.dt + fc.city.timezone) * 1e3).toISOString();
+			const itemDay = dateString.split("T")[0];
+			const itemHour = dateString.split("T")[1].split(":")[0];
+			const day = days[itemDay];
+			if (!day) {
+				days[itemDay] = {minTemp: l.main.temp, maxTemp: l.main.temp, aqis: [], maxAQI: l.airQuality.main.aqi, weatherCode: l.weather[0].id};
+				if (lastAQI) days[itemDay].aqis.push({hour: 0, aqi: lastAQI});
+				days[itemDay].aqis.push({hour: itemHour, aqi: l.airQuality.main.aqi});
+			} else {
+				if (day.minTemp > l.main.temp) day.minTemp = l.main.temp;
+				if (day.maxTemp < l.main.temp) day.maxTemp = l.main.temp;
+				day.aqis.push({hour: itemHour, aqi: l.airQuality.main.aqi});
+				if (day.maxAQI < l.airQuality.main.aqi) day.maxAQI = l.airQuality.main.aqi;
+				if (weatherCodeCompare(day.weatherCode, l.weather[0].id) > 0) day.weatherCode = l.weather[0].id;
+				lastAQI = l.airQuality.main.aqi;
+			}
+		});
+	}
+    return {myDay, days};
+}
+
+function weatherDataToString(c) {
+
+    const {myDay, days} = getForecastDays(c);
+    const today = days[myDay];
+    const minTemp = formatTemperature(today.minTemp, true);
+    const maxTemp = formatTemperature(today.maxTemp, true);
+    const todayDesc = c.weatherData.weather.map(function(wd) {
+		return wd.description;
+	}).join(" and ");
+    const weatherDesc = i18n.t(getWeatherCodeDescription(today.weatherCode));
+
+    let warning = i18n.t(WarningCodes.get(today.weatherCode)) || '';
+    if (c.rainAmount > 0.2 && c.temperature > -2) warning += i18n.t('Bring an umbrella. ');
+
+    const tomorrow = Object.values(days)[1];
+    const followingDays = Object.values(days).slice(2);
+
+    const followingDaysMinTemp = followingDays.map(d => d.minTemp).reduce((a,b) => Math.min(a,b));
+    const followingDaysMaxTemp = followingDays.map(d => d.maxTemp).reduce((a,b) => Math.max(a,b));
+
+    let followingDaysCoolerSimilarWarmer = i18n.t('similar');
+    if (followingDaysMinTemp < today.minTemp - 5) followingDaysCoolerSimilarWarmer = i18n.t('cooler');
+    if (followingDaysMaxTemp > today.maxTemp + 5) followingDaysCoolerSimilarWarmer = i18n.t('warmer');
+
+    const followingDaysWeatherCode = followingDays.map(d => d.weatherCode).sort(weatherCodeCompare)[0];
+    const followingDaysWeatherDescription = i18n.t(getWeatherCodeDescription(followingDaysWeatherCode));
+    const followingDaysAirQuality = timeSeriesCompare(followingDays.map(d => d.aqis), today.maxAQI, 1, i18n.t('better'), i18n.t('similar'), i18n.t('worse'), i18n.t('occasionally'));
+    
+    let laterDesc = '';
+    if (todayDesc === weatherDesc) {
+        laterDesc = i18n.t(` all day long.`);
+    } else {
+        laterDesc = `${i18n.t(` with `)}${weatherDesc}${i18n.t(` later today.`)}`
+    }
+
+    return `${warning}${i18n.t(`The weather in `)}${c.name}${i18n.t(` is `)}${todayDesc}${laterDesc} ${i18n.t(`The temperature is `)}${formatTemperature(c.temperature, false)}${i18n.t(` with a high of `)}${maxTemp}${i18n.t(` and a low of `)}${minTemp}. ` +
+        `${i18n.t(`The air quality is `)}${airQualityToString(c.weatherData.airQuality.main.aqi)}${(today.maxAQI > c.weatherData.airQuality.main.aqi) ? `${i18n.t(`, becoming `)}${airQualityToString(today.maxAQI)}${i18n.t(` later`)}` : ""}. ` +
+        `${i18n.t(`Tomorrow will be `)}${i18n.t(getWeatherCodeDescription(tomorrow.weatherCode))}${i18n.t(` with temperatures from `)}${formatTemperature(tomorrow.minTemp, true)} to ${formatTemperature(tomorrow.maxTemp, true)}${i18n.t(` and `)}${airQualityToString(tomorrow.maxAQI)}${i18n.t(` air quality. `)}` +
+        `${i18n.t(`The following days will be `)}${followingDaysCoolerSimilarWarmer}${i18n.t(` with `)}${followingDaysWeatherDescription} and ${followingDaysAirQuality} air quality.`;
+}
+
+function weatherDataToCurrentString(c) {
+    const {myDay, days} = getForecastDays(c);
+    const today = days[myDay];
+    const minTemp = formatTemperature(today.minTemp, true);
+    const maxTemp = formatTemperature(today.maxTemp, true);
+    const todayDesc = c.weatherData.weather.map(function(wd) {
+		return wd.description;
+	}).join(i18n.t(" and "));
+    const weatherDesc = i18n.t(getWeatherCodeDescription(today.weatherCode));
+
+    let warning = i18n.t(WarningCodes.get(today.weatherCode)) || '';
+    if (c.rainAmount > 0.2 && c.temperature > -2) warning += i18n.t('Bring an umbrella. ');
+
+    const tomorrow = Object.values(days)[1];
+    const followingDays = Object.values(days).slice(2);
+
+    const followingDaysMinTemp = followingDays.map(d => d.minTemp).reduce((a,b) => Math.min(a,b));
+    const followingDaysMaxTemp = followingDays.map(d => d.maxTemp).reduce((a,b) => Math.max(a,b));
+
+    let followingDaysCoolerSimilarWarmer = i18n.t('similar');
+    if (followingDaysMinTemp < today.minTemp - 5) followingDaysCoolerSimilarWarmer = i18n.t('cooler');
+    if (followingDaysMaxTemp > today.maxTemp + 5) followingDaysCoolerSimilarWarmer = i18n.t('warmer');
+
+    const followingDaysWeatherCode = followingDays.map(d => d.weatherCode).sort(weatherCodeCompare)[0];
+    const followingDaysWeatherDescription = i18n.t(getWeatherCodeDescription(followingDaysWeatherCode));
+    const followingDaysAirQuality = timeSeriesCompare(followingDays.map(d => d.aqis), today.maxAQI, 1, i18n.t('better'), i18n.t('similar'), i18n.t('worse'), i18n.t('occasionally'));
+
+    return `${warning}${i18n.t(`The weather outside is `)}${todayDesc}. ${i18n.t(`The temperature is `)}${formatTemperature(c.temperature, false)}. ` +
+        `${i18n.t(`The air quality is `)}${airQualityToString(c.weatherData.airQuality.main.aqi)}. `;
+}
+
 
 async function fetchHKWarnings() {
 	const warnings = await (await fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warnsum&lang=en')).json();
@@ -740,16 +1050,43 @@ function updateHKWarnings(warnings) {
 async function say(text, options) {
 	return new Promise((resolve, reject) => {
 		const u = new SpeechSynthesisUtterance(text);
+		u.voice = 
+			speechSynthesis.getVoices().find(voice => voice.name === 'Google US English')
+			|| speechSynthesis.getVoices().find(voice => voice.lang.startsWith('en'))
+			|| null;
 		if (options) Object.assign(u, options);
 		u.onend = resolve;
 		speechSynthesis.speak(u); 
 	});
 }
 
-async function speakRegionalWeather(latitude, longitude) {
-	if (latitude > 22 + 8/60 && latitude < 22 + 35/60 && longitude > 113+49/60 && longitude < 114+31/60) {
-		await say(await fetchWeatherHK())
+async function speakWeather() {
+	const button = document.getElementById('speak-weather-button');
+	if (speechSynthesis.speaking) {
+		speechSynthesis.cancel();
+		button.classList.remove('playing');
+		return;
 	}
+	const city = cities[currentLocationName || 'my location'];
+	const weatherData = city ? city.weatherData : null;
+	if (!weatherData) {
+		await say("No weather data available.");
+		return;
+	}
+	const latitude = weatherData.coord.lat;
+	const longitude = weatherData.coord.lon;
+	// Hong Kong region
+	try {
+		button.classList.add('playing');
+		if (latitude > 21 && latitude < 23 && longitude > 112 && longitude < 115) {
+			await say(await fetchWeatherHK());
+		} else {
+			await say(createWeatherSpeechText(city));
+		}
+	} catch (e) {
+		console.error(e);
+	}
+	button.classList.remove('playing');
 }
 
 /*

@@ -156,7 +156,9 @@ body {
 .fade-out #weather-desc-container,
 .fade-out #forecast,
 .fade-out #wind-data,
-.fade-out #weather-graph
+.fade-out #weather-graph,
+.fade-out #speak-weather-button,
+.fade-out #warnings
 {
     opacity: 0 !important;
     height: 0 !important;
@@ -1030,6 +1032,41 @@ hr {
 .in-city-list #toggle-city-list {
     opacity: 1;
 }
+
+#speak-weather-button {
+    position: absolute;
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    margin-top: 0px;
+    vertical-align: top;
+    top: 470px;
+    right: 252px;
+}
+#speak-weather-button.playing .vol {
+    transition: 0.5s;
+    animation: vol-fade 1s infinite both;
+}
+#speak-weather-button.playing .vol:nth-child(3) {
+    animation-delay: 0.1s;
+}
+#speak-weather-button.playing .vol:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+@keyframes vol-fade {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
 
 .black { color: #000; }
 .blue { color: #28f; }

@@ -468,9 +468,6 @@ function populateWeatherElement(el, weatherData) {
 		if (c.weatherData.rain && c.weatherData.rain['3h'] > 3*70) warnings.push('black rain');
 		// fire (30-30-30 rule)
 		if (c.weatherData.main.humidity < 30 && c.weatherData.main.temp > 30 && c.weatherData.wind.speed > 8) warnings.push('fire');
-		// air quality
-		if (c.weatherData.airQuality && c.weatherData.airQuality.main.aqi == 4) warnings.push('unhealthy air quality');
-		if (c.weatherData.airQuality && c.weatherData.airQuality.main.aqi > 4) warnings.push('hazardous air quality');
 		const weatherIcons = {
 			thunderstorm: 'wi-thunderstorm',
 			hot: 'wi-hot yellow',
@@ -495,7 +492,7 @@ function populateWeatherElement(el, weatherData) {
 				const wiIcon = weatherIcons[w] ? weatherIcons[w] + ' ' : '';
 				warningSpan.className = 'icon wi '+ wiIcon +'warning-' + w.replace(/ /g, '-');
 				warningSpan.title = w.replace(/(^|\s)\S/g, l => l.toUpperCase());
-				warningsEl.appendChild(warningSpan);
+				warningsEl.insertBefore(warningSpan, warningsEl.firstChild);
 			});
 		}
 	}

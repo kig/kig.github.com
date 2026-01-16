@@ -113,6 +113,7 @@ var updateWeatherCache = function (cityName, weatherData) {
 	c.sunrise = (weatherData.sys && weatherData.sys.sunrise) || (86400 * 1 / 4);
 	c.sunset = (weatherData.sys && weatherData.sys.sunset) || (86400 * 3 / 4);
 	c.forecast = weatherData.forecast || zeroCity.forecast;
+	c.hkWarnings = weatherData.hkWarnings || [];
 
 	var locations = document.querySelectorAll('#city-list ul .name');
 	for (var i = 0; i < locations.length; i++) {
@@ -182,7 +183,19 @@ var networkWeatherFetch = function(cityName, onSuccess, onFailure) {
 			weatherData.forecast.list.forEach(l => {
 				if (!l.airQuality) l.airQuality = {main: {aqi: -1}};
 			});
-			onSuccess(weatherData);
+			// If we're near Hong Kong, fetch HK-specific data.
+			// Lat 22°08' N to 22°35' N and Long 113°49' E to 114°31' E
+			// Add a degree of leeway.
+			if (weatherData.coord.lat > 21 && weatherData.coord.lat < 23 && weatherData.coord.lon > 112 && weatherData.coord.lon < 115) {
+				fetchHKWarnings().then(hkWarnings => {
+					weatherData.hkWarnings = hkWarnings;
+					onSuccess(weatherData);
+				}).catch(() => {
+					onSuccess(weatherData);
+				});
+			} else {
+				onSuccess(weatherData);
+			}
 		});
 	});
 
@@ -677,6 +690,51 @@ async function fetchWeatherHK() {
         stripTags(' Forecast: ' + weather.FLW.ForecastDesc) +
         stripTags(' Outlook: ' + weather.FLW.OutlookContent) + ' ' + stripTags(weather.FLW.TCInfo || '')
 	);
+}
+
+async function fetchHKWarnings() {
+	const warnings = await (await fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warnsum&lang=en')).json();
+	return warnings;
+}
+
+function updateHKWarnings(warnings) {
+	const warningsDiv = document.body.querySelector('#warnings');
+	warningsDiv.innerHTML = '';
+	for (const warningName in warnings) {
+		/*  warningName values:
+			WFIRE: Fire Danger Warning
+			WFROST: Frost Warning
+			WHOT: Hot Weather Warning
+			WCOLD: Cold Weather Warning
+			WMSGNL: Strong Monsoon Signal
+			WRAIN: Rainstorm Warning Signal
+			WFNTSA: Special Announcement on Flooding in the northern New Territories
+			WL: Landslip Warning
+			WTCSGNL: Tropical Cyclone Warning Signal
+			WTMW: Tsunami Warning
+			WTS: Thunderstorm Warning
+			WFIRE WFIREY
+
+			warning.code values:
+			WFIRE: WFIREY, WFIRER
+			WFROST: WFROST
+			WHOT: WHOT
+			WCOLD: WCOLD
+			WMSGNL: WMSGNL
+			WRAIN: WRAINA, WRAINR, WRAINB
+			WFNTSA: WFNTSA
+			WL: WL
+			WTCSGNL: TC1, TC3, TC8NE, TC8SE, TC8NW, TC8SW, TC9, TC10, CANCEL
+			WTMW: WTMW
+			WTS: WTS
+		*/
+		const warning = warnings[warningName];
+		const span = document.createElement('a');
+		span.className = 'icon hko-' + warning.code.toLowerCase();
+		span.title = warning.type + " " + warning.name;
+		span.href = 'https://www.hko.gov.hk/en/wxinfo/dailywx/wxwarntoday.htm';
+		warningsDiv.appendChild(span);
+	}
 }
 
 async function say(text, options) {

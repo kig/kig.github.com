@@ -1031,6 +1031,46 @@ hr {
     opacity: 1;
 }
 
+#warnings {
+    position: absolute;
+    height: 44px;
+    right: 292px;
+    top: 216px;
+}
+
+#warnings .icon {
+    width: 44px;
+    height: 44px;
+    display: inline-block;
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 8px;
+    vertical-align: top;
+}
+
+.hko-wcold { background-image: url('hk_warnings/cold.gif'); }
+.hko-wfirer { background-image: url('hk_warnings/firer.gif'); }
+.hko-wfirey { background-image: url('hk_warnings/firey.gif'); }
+.hko-wfrost { background-image: url('hk_warnings/frost.gif'); }
+.hko-wl { background-image: url('hk_warnings/landslip.gif'); }
+.hko-wmsgnl { background-image: url('hk_warnings/msn.gif'); }
+.hko-wfntsa { background-image: url('hk_warnings/ntfl.gif'); }
+.hko-wraina { background-image: url('hk_warnings/raina.gif'); }
+.hko-wrainb { background-image: url('hk_warnings/rainb.gif'); }
+.hko-wrainr { background-image: url('hk_warnings/rainr.gif'); }
+.hko-tc1 { background-image: url('hk_warnings/tc1.gif'); }
+.hko-tc10 { background-image: url('hk_warnings/tc10.gif'); }
+.hko-tc3 { background-image: url('hk_warnings/tc3.gif'); }
+.hko-tc8ne { background-image: url('hk_warnings/tc8ne.gif'); }
+.hko-tc8nw { background-image: url('hk_warnings/tc8nw.gif'); }
+.hko-tc8se { background-image: url('hk_warnings/tc8se.gif'); }
+.hko-tc8sw { background-image: url('hk_warnings/tc8sw.gif'); }
+.hko-tc9 { background-image: url('hk_warnings/tc9.gif'); }
+.hko-ts { background-image: url('hk_warnings/ts.gif'); }
+.hko-wtmw { background-image: url('hk_warnings/tsunami-warn.gif'); }
+.hko-wts { background-image: url('hk_warnings/ts.gif'); }
+.hko-vhot { background-image: url('hk_warnings/vhot.gif'); }
+
 @media (max-width: 1030px) {
     #time-data {
         top: 28px;

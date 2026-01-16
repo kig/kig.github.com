@@ -426,6 +426,12 @@ function populateWeatherElement(el, weatherData) {
 		// line(ctx, 'Vis', '#088', 420, fc.list.map(f => Math.round(f.visibility/1000)), dayIndexes);
 	}
 
+	if (c.weatherData.hkWarnings) {
+		updateHKWarnings(c.weatherData.hkWarnings);
+	} else {
+		updateHKWarnings([]);
+	}
+
 	// Weather warnings. Log to console for now.
 	// The weather warnings are for things like thunderstorms, heavy rain, heavy snow, hot weather, high winds and cold weather.
 	// If the feels_like temperature is above 40C, there's a hot weather warning.

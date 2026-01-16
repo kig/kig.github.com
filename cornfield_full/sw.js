@@ -1,5 +1,5 @@
-const APP_CACHE = 'cornfield-cache-v238';
-const LIB_CACHE = 'cornfield-lib-cache-v26';
+const APP_CACHE = 'cornfield-cache-v239';
+const LIB_CACHE = 'cornfield-lib-cache-v27';
 const EXT_CACHE = 'cornfield-ext-cache';
 const DEBUG = false;
 
@@ -21,6 +21,27 @@ self.addEventListener('install', (e) => {
                 './js/corn_algo_doodle.js',
                 './js/birds.js',
                 './js/cities.js',
+                './hk_warnings/cold.gif',
+                './hk_warnings/firer.gif',
+                './hk_warnings/firey.gif',
+                './hk_warnings/frost.gif',
+                './hk_warnings/landslip.gif',
+                './hk_warnings/msn.gif',
+                './hk_warnings/ntfl.gif',
+                './hk_warnings/raina.gif',
+                './hk_warnings/rainb.gif',
+                './hk_warnings/rainr.gif',
+                './hk_warnings/tc1.gif',
+                './hk_warnings/tc10.gif',
+                './hk_warnings/tc3.gif',
+                './hk_warnings/tc8ne.gif',
+                './hk_warnings/tc8nw.gif',
+                './hk_warnings/tc8se.gif',
+                './hk_warnings/tc8sw.gif',
+                './hk_warnings/tc9.gif',
+                './hk_warnings/ts.gif',
+                './hk_warnings/tsunami-warn.gif',
+                './hk_warnings/vhot.gif'
             ]);
             const appAdd = (await app).addAll([
                 './',

@@ -1040,7 +1040,7 @@ hr {
 #warnings {
     position: absolute;
     height: 44px;
-    right: 292px;
+    right: 296px;
     top: 216px;
 }
 
@@ -1050,8 +1050,22 @@ hr {
     display: inline-block;
     background-size: contain;
     background-repeat: no-repeat;
-    margin-right: 8px;
+    margin-left: 8px;
+    margin-bottom: 8px;
     vertical-align: top;
+}
+
+#warnings .icon.wi {
+    background-color: black;
+    border-radius: 50%;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#warnings .icon.wi.black {
+    background: red;
+    text-shadow: none;
 }
 
 .hko-wcold { background-image: url('hk_warnings/cold.gif'); }

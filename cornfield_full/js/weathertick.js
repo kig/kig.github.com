@@ -476,16 +476,16 @@ function populateWeatherElement(el, weatherData) {
 			cold: 'wi-snowflake-cold blue',
 			'extreme cold': 'wi-snowflake-cold purple',
 			penguin: 'wi-snowflake-cold black',
-			'high wind': 'wi-strong-wind',
-			storm: 'wi-storm-warning red',
-			typhoon: 'wi-hurricane red',
-			'yellow rain': 'wi-raindrops yellow',
-			'red rain': 'wi-raindrops red',
-			'black rain': 'wi-raindrops black',
+			'high wind': 'wi-strong-wind yellow',
+			storm: 'wi-strong-wind red',
+			typhoon: 'wi-hurricane purple',
+			'yellow rain': 'wi-rain yellow',
+			'red rain': 'wi-rain red',
+			'black rain': 'wi-rain black',
 			'fire': 'wi-fire red',
 		};
+		const warningsEl = document.getElementById('warnings');
 		if (warnings.length > 0) {
-			const warningsEl = document.getElementById('warnings');
 			warnings.forEach(w => {
 				const warningSpan = document.createElement('span');
 				const wiIcon = weatherIcons[w] ? weatherIcons[w] + ' ' : '';

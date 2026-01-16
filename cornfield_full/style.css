@@ -94,6 +94,9 @@ body {
 #weather-data.transition-end {
     transform: rotate3d(0.0, 1, 0.0, 35deg) translateX(-100vw) translateZ(-50vw)
 }
+.weather-data-elements {
+    position: relative;
+}
 
 #time-data {
     color: white;
@@ -1041,8 +1044,11 @@ hr {
     cursor: pointer;
     margin-top: 0px;
     vertical-align: top;
-    top: 470px;
+    top: 441px;
     right: 252px;
+}
+.daytime #speak-weather-button {
+    filter: invert(1);
 }
 #speak-weather-button.playing .vol {
     transition: 0.5s;
@@ -1078,7 +1084,7 @@ hr {
     position: absolute;
     height: 44px;
     right: 296px;
-    top: 216px;
+    top: 187px;
 }
 
 #warnings .icon {

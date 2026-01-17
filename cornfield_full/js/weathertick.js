@@ -426,10 +426,11 @@ function populateWeatherElement(el, weatherData) {
 		// line(ctx, 'Vis', '#088', 420, fc.list.map(f => Math.round(f.visibility/1000)), dayIndexes);
 	}
 
+	const warningsEl = document.getElementById('warnings');
+	warningsEl.innerHTML = '';
+
 	if (c.weatherData.hkWarnings) {
 		updateHKWarnings(c.weatherData.hkWarnings);
-	} else {
-		updateHKWarnings([]);
 	}
 
 	// Weather warnings. Log to console for now.
@@ -485,7 +486,6 @@ function populateWeatherElement(el, weatherData) {
 			'unhealthy air quality': 'wi-smoke yellow',
 			'hazardous air quality': 'wi-smoke purple',
 		};
-		const warningsEl = document.getElementById('warnings');
 		if (warnings.length > 0) {
 			warnings.forEach(w => {
 				const warningSpan = document.createElement('span');

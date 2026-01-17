@@ -1037,15 +1037,12 @@ hr {
 }
 
 #speak-weather-button {
-    position: absolute;
     display: inline-block;
     width: 30px;
     height: 30px;
     cursor: pointer;
     margin-top: 0px;
     vertical-align: top;
-    top: 441px;
-    right: 252px;
 }
 .daytime #speak-weather-button {
     filter: invert(1);

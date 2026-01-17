@@ -1048,6 +1048,13 @@ function updateHKWarnings(warnings) {
 }
 
 async function say(text, options) {
+	if (navigator.wakeLock && navigator.wakeLock.request) {
+		try {
+			navigator.wakeLockSentinel = await navigator.wakeLock.request('screen');
+		} catch (e) {
+			console.error('Wake lock request failed:', e);
+		}
+	}
 	return new Promise((resolve, reject) => {
 		const u = new SpeechSynthesisUtterance(text);
 		u.voice = 
@@ -1055,7 +1062,13 @@ async function say(text, options) {
 			|| speechSynthesis.getVoices().find(voice => voice.lang.startsWith('en'))
 			|| null;
 		if (options) Object.assign(u, options);
-		u.onend = resolve;
+		u.onend = () => {
+			if (navigator.wakeLockSentinel) {
+				navigator.wakeLockSentinel.release();
+				navigator.wakeLockSentinel = null;
+			}
+			resolve();
+		};
 		speechSynthesis.speak(u); 
 	});
 }
@@ -1064,11 +1077,15 @@ async function speakWeather() {
 	const button = document.getElementById('speak-weather-button');
 	if (speechSynthesis.speaking) {
 		speechSynthesis.cancel();
+		if (navigator.wakeLockSentinel) {
+			navigator.wakeLockSentinel.release();
+			navigator.wakeLockSentinel = null;
+		}
 		button.classList.remove('playing');
 		return;
 	}
-	const city = cities[currentLocationName || 'my location'];
-	const weatherData = city ? city.weatherData : null;
+	const c = cities[cityNames[targetCityIndex]] || cities[cityNames[currentCityIndex]] || zeroCity;
+	const weatherData = c ? c.weatherData : null;
 	if (!weatherData) {
 		await say("No weather data available.");
 		return;
@@ -1081,7 +1098,7 @@ async function speakWeather() {
 		if (latitude > 21 && latitude < 23 && longitude > 112 && longitude < 115) {
 			await say(await fetchWeatherHK());
 		} else {
-			await say(createWeatherSpeechText(city));
+			await say(createWeatherSpeechText(c));
 		}
 	} catch (e) {
 		console.error(e);

@@ -97,8 +97,12 @@ function fromNetwork(request, timeout, cacheName, addToCache = true) {
         // Fulfill in case of success.
         // Use a cache-bypassing URL hack because we don't have content-hash-based filenames.
         const fetchReq = request.clone();
-        if ((cacheName === LIB_CACHE || cacheName === APP_CACHE) && fetchReq.url.indexOf("?") === -1) {
-            fetchReq.url += '?' + cacheName;
+        if (cacheName === LIB_CACHE || cacheName === APP_CACHE) {
+            if ( fetchReq.url.indexOf("?") === -1) {
+                fetchReq.url += '?' + cacheName;
+            } else if (fetchReq.url.endsWith('?pwa')) {
+                fetchReq.url += '&' + cacheName;
+            }
         }
         fetch(fetchReq).then(function (response) {
             clearTimeout(timeoutId);

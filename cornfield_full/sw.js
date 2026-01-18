@@ -1,4 +1,4 @@
-const APP_CACHE = 'cornfield-cache-v249';
+const APP_CACHE = 'cornfield-cache-v250';
 const LIB_CACHE = 'cornfield-lib-cache-v27';
 const EXT_CACHE = 'cornfield-ext-cache';
 const DEBUG = false;
@@ -98,10 +98,8 @@ function fromNetwork(request, timeout, cacheName, addToCache = true) {
         // Use a cache-bypassing URL hack because we don't have content-hash-based filenames.
         const fetchReq = request.clone();
         if (cacheName === LIB_CACHE || cacheName === APP_CACHE) {
-            if ( fetchReq.url.indexOf("?") === -1) {
+            if (fetchReq.url.indexOf("?") === -1) {
                 fetchReq.url += '?' + cacheName;
-            } else if (fetchReq.url.endsWith('?pwa')) {
-                fetchReq.url += '&' + cacheName;
             }
         }
         fetch(fetchReq).then(function (response) {

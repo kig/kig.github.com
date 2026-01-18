@@ -426,8 +426,26 @@ function populateWeatherElement(el, weatherData) {
 		// line(ctx, 'Vis', '#088', 420, fc.list.map(f => Math.round(f.visibility/1000)), dayIndexes);
 	}
 
-	const warningsEl = document.getElementById('warnings');
+	let warningsEl = document.getElementById('warnings');
+	if (!warningsEl) {
+		warningsEl = document.createElement('div');
+		warningsEl.id = 'warnings';
+		const forecastEl = el.querySelector('#forecast');
+		forecastEl.parentNode.insertBefore(warningsEl, forecastEl);
+	}
 	warningsEl.innerHTML = '';
+
+	const speakWeatherEl = document.getElementById('speak-weather-button');
+	if (!speakWeatherEl) {
+		const speakEl = document.createElement('div');
+		speakEl.id = 'speak-weather-button';
+		speakEl.className = 'audio-icon';
+		speakEl.title = 'Speak weather report';
+		speakEl.onclick = speakWeather;
+		speakEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 75 75" fill="#fff" stroke="#fff"><polygon points="39.389,13.769 22.235,28.606 6,28.606 6,47.699 21.989,47.699 39.389,62.75 39.389,13.769" style="stroke-width:5;stroke-linejoin:round;"/><path class="vol" d="M 48.128,49.03 C 50.057,45.934 51.19,42.291 51.19,38.377 C 51.19,34.399 50.026,30.703 48.043,27.577" style="fill:none;stroke-width:5;stroke-linecap:round"/><path class="vol" d="M 55.082,20.537 C 58.777,25.523 60.966,31.694 60.966,38.377 C 60.966,44.998 58.815,51.115 55.178,56.076" style="fill:none;stroke-width:5;stroke-linecap:round"/><path class="vol" id="path1" d="M 61.71,62.611 C 66.977,55.945 70.128,47.531 70.128,38.378 C 70.128,29.161 66.936,20.696 61.609,14.01" style="fill:none;stroke-width:5;stroke-linecap:round"/></svg>';
+		const weatherGraphEl = el.querySelector('#weather-graph');
+		weatherGraphEl.parentNode.insertBefore(speakEl, weatherGraphEl);
+	}
 
 	if (c.weatherData.hkWarnings) {
 		updateHKWarnings(c.weatherData.hkWarnings);

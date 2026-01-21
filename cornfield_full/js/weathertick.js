@@ -470,21 +470,21 @@ function populateWeatherElement(el, weatherData) {
 		if (c.weatherData.weather.some(wd => wd.id >= 200 && wd.id < 300)) warnings.push('thunderstorm');
 		// console.log(c.weatherData);
 		// heat
-		if (c.weatherData.main.feels_like > 40) warnings.push('hot');
-		if (c.weatherData.main.feels_like > 45) warnings.push('extreme heat');
 		if (c.weatherData.main.feels_like > 50) warnings.push('deadly heat');
+		else if (c.weatherData.main.feels_like > 45) warnings.push('extreme heat');
+		else if (c.weatherData.main.feels_like > 40) warnings.push('hot');
 		// cold
-		if (c.weatherData.main.feels_like < -20) warnings.push('cold');
-		if (c.weatherData.main.feels_like < -30) warnings.push('extreme cold');
 		if (c.weatherData.main.feels_like < -60) warnings.push('penguin');
+		else if (c.weatherData.main.feels_like < -30) warnings.push('extreme cold');
+		else if (c.weatherData.main.feels_like < -20) warnings.push('cold');
 		// wind
-		if (c.weatherData.wind.speed > 15) warnings.push('high wind');
-		if (c.weatherData.wind.speed > 20) warnings.push('storm');
 		if (c.weatherData.wind.speed > 30) warnings.push('typhoon');
+		else if (c.weatherData.wind.speed > 20) warnings.push('storm');
+		else if (c.weatherData.wind.speed > 15) warnings.push('high wind');
 		// rain
-		if (c.weatherData.rain && c.weatherData.rain['3h'] > 3*30) warnings.push('yellow rain');
-		if (c.weatherData.rain && c.weatherData.rain['3h'] > 3*50) warnings.push('red rain');
 		if (c.weatherData.rain && c.weatherData.rain['3h'] > 3*70) warnings.push('black rain');
+		else if (c.weatherData.rain && c.weatherData.rain['3h'] > 3*50) warnings.push('red rain');
+		else if (c.weatherData.rain && c.weatherData.rain['3h'] > 3*30) warnings.push('yellow rain');
 		// fire (30-30-30 rule)
 		if (c.weatherData.main.humidity < 30 && c.weatherData.main.temp > 30 && c.weatherData.wind.speed > 8) warnings.push('fire');
 		const weatherIcons = {

@@ -869,7 +869,7 @@ hr {
 #add-location-form {
     /* display: none; */
     position: relative;
-    margin-right: -30px;
+    margin-right: -20px;
 }
 .show-add-location #add-location-form {
     display: block;
@@ -1232,7 +1232,7 @@ hr {
         height: 42px;
     }
     #city-list li span {
-        width: calc(100vw - 200px);
+        width: calc(100vw - 222px);
         font-size: 80%;
     }
     #city-list li span.temp {

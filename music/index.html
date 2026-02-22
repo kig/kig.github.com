@@ -106,6 +106,9 @@
                 if (track == null) {
                     document.title = originalTitle;
                 } else {
+                    if (track.metaData.title === undefined) {
+                        track.metaData.title = track.url.split("/").pop().replace(/\..*$/,'');
+                    }
                     document.title = `${track.metaData.title ?? "Unnamed song"} - ${track.metaData.artist ?? "Unknown artist"}`;
                 }
             });

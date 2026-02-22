@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sg-darkfuture-v8';
+const CACHE_NAME = 'sg-darkfuture-v9';
 const urlsToCache = [
   './index.html',
   './sgdarkfuture.wsz',

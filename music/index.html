@@ -103,12 +103,9 @@
             });
             const originalTitle = document.title;
             webamp.onTrackDidChange((track) => {
-                if (track == null) {
+                if (track === null) {
                     document.title = originalTitle;
                 } else {
-                    if (track.metaData.title === null) {
-                        track.metaData.title = track.url.split("/").pop().replace(/\..*$/,'');
-                    }
                     document.title = `${track.metaData.title ?? "Unnamed song"} - ${track.metaData.artist ?? "Unknown artist"}`;
                 }
             });

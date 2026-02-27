@@ -34,7 +34,7 @@
             import Webamp from "./js/webamp.js";
             const params = new URLSearchParams(window.location.search);
             const mediaURLs = params.getAll('m');
-            const extraHeight = Math.max(0,Math.floor((innerHeight/innerWidth-1.3)*10));
+            const extraHeight = Math.max(0,Math.floor((innerHeight/innerWidth-1.3)*9));
             const extras = {};
             if (extraHeight > 0) {
                 extras.windowLayout = {
@@ -103,11 +103,11 @@
             });
             const originalTitle = document.title;
             webamp.onTrackDidChange((track) => {
-                if (track === null) {
+                try{if (!track) {
                     document.title = originalTitle;
                 } else {
                     document.title = `${track.metaData.title ?? "Unnamed song"} - ${track.metaData.artist ?? "Unknown artist"}`;
-                }
+                }}catch(e){}
             });
 
             // Returns a promise indicating when it's done loading.

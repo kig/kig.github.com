@@ -101,14 +101,6 @@
                     { url: "music/wait_loop.m4a" },
                 ],
             });
-            const originalTitle = document.title;
-            webamp.onTrackDidChange((track) => {
-                try{if (!track) {
-                    document.title = originalTitle;
-                } else {
-                    document.title = `${track.metaData.title ?? "Unnamed song"} - ${track.metaData.artist ?? "Unknown artist"}`;
-                }}catch(e){}
-            });
 
             // Returns a promise indicating when it's done loading.
             webamp.renderWhenReady(document.getElementById("app")).then(() => window.scroll(0,0));

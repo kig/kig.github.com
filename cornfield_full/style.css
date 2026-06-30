@@ -1118,6 +1118,34 @@ hr {
     background: rgba(255, 180, 0, 0.55);
 }
 
+@media (max-width: 500px) {
+  #rain-map-wrapper {
+    position: static;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  #rain-map-wrapper.visible {
+    display: inline-block;
+  }
+
+  #rain-map-container {
+    width: 284px;
+    height: 284px;
+  }
+
+  #rain-map-scrubber {
+    width: 284px;
+  }
+
+  #rain-map-timestamp {
+    width: 284px;
+  }
+
+  #rain-map-prediction {
+    width: 284px;
+  }
+}
+
 #speak-weather-button {
     display: inline-block;
     width: 30px;

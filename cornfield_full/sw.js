@@ -1,11 +1,11 @@
-const APP_CACHE = 'cornfield-cache-v253';
-const LIB_CACHE = 'cornfield-lib-cache-v27';
+const APP_CACHE = 'cornfield-cache-v254';
+const LIB_CACHE = 'cornfield-lib-cache-v28';
 const EXT_CACHE = 'cornfield-ext-cache';
 const DEBUG = false;
 
 self.addEventListener('install', (e) => {
     self.skipWaiting();
-    e.waitUntil( 
+    e.waitUntil(
         new Promise(async (resolve, reject) => {
             const lib = caches.open(LIB_CACHE)
             const app = caches.open(APP_CACHE);

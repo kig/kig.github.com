@@ -94,6 +94,13 @@
 				<span class="weather-data-elements">
 					<div id="temperature"></div>
 					<div id="warnings"></div>
+					<div id="rain-map-wrapper">
+						<div id="rain-map-container"></div>
+						<div id="rain-map-scrubber"><div id="rain-map-scrubber-fill"></div></div>
+						<p id="rain-map-timestamp"></p>
+						<p id="rain-map-prediction"></p>
+						<button id="rain-map-playpause" title="Play/Pause">❚❚</button>
+					</div>
 					<div id="forecast"></div>
 					<div id="weather-desc-container"><span id="weather-desc"></span>, <span id="cloud-cover"><i class="wi wi-cloudy"></i></span></div>
 					<div id="wind-data"><span id="wind-direction"><svg xmlns='http://www.w3.org/2000/svg' height='15' width='15' viewBox="0 0 15 15"><g id='wind-direction-arrow' transform='rotate(220 7.5 7.5)'><polygon points="0.2,7.4 14.8,11.1 11.4,7.4 14.8,3.7 " fill="white"/></g></svg></span><span id="wind-speed"><i class="wi wi-strong-wind"></i></span></div>
@@ -104,6 +111,7 @@
 		</div>
 		<div id="fullscreen"></div>
 		<script>
+/*
 			try {
 				navigator.serviceWorker.register('./sw.js', {scope: './'});
 				var refreshing;
@@ -117,6 +125,7 @@
 			} catch(e) {
 				console.error(e);
 			}
+*/
 			// Prevent scrolling and eating of pointer move events
 			window.addEventListener('touchstart', function(ev) { ev.preventDefault(); });
 			window.addEventListener('touchmove', function(ev) {
@@ -549,6 +558,7 @@
 		<!-- <script src="js/kinect-ws.js"></script> -->
 		<!-- <script src="js/microphone.js"></script> -->
 		<script src="js/corn_algo_doodle.js"></script>
+		<script src="js/rainmap.js"></script>
 		<script src="js/cities.js"></script>
 	</body>
 </html>

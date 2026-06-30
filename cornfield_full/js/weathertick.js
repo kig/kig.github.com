@@ -659,6 +659,15 @@ var setWeather = function(elapsed) {
 	if (weatherUpdateTriggered || (currentCityIndex === -1 && targetCityIndex !== -1)) {
 		weatherUpdateTriggered = false;
 		const c = cities[cityNames[targetCityIndex]] || cities[cityNames[currentCityIndex]] || zeroCity;
+		// Show/hide rain map based on whether user is in Hong Kong region
+		if (c.weatherData && c.weatherData.coord) {
+			var isHK = c.weatherData.coord.lat > 21 && c.weatherData.coord.lat < 23 && c.weatherData.coord.lon > 112 && c.weatherData.coord.lon < 115;
+			if (!isHK && window._rainMapInstance) {
+				window._rainMapInstance.stop();
+			} else if (isHK && typeof initRainMap === 'function') {
+				initRainMap('rain-map-container', c.weatherData.coord.lat, c.weatherData.coord.lon);
+			}
+		}
 		document.getElementById('location').value = (cityNames[targetCityIndex] || cityNames[currentCityIndex] || "").split(",")[0];
 		if (!c.name) c.name = (cityNames[targetCityIndex] || cityNames[currentCityIndex] || "");
 

@@ -156,6 +156,7 @@ var tick = function() {
 	shaderMat.uniforms.uv3CameraPosition.value = camera.position;
 
 	setWeather(clampedElapsed);
+	if (typeof renderRainMap === 'function') renderRainMap(performance.now());
 	if (!slow) {
 		updateParticles(clampedElapsed);
 		birdsTick(clampedElapsed);

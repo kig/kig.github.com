@@ -97,6 +97,13 @@ var parseRainAmount = function (weatherData) {
 	return rainAmount;
 };
 
+function tryInitRainMap(lat, lon) {
+	if (typeof initRainMap !== 'function') return;
+	if (lat > 21 && lat < 23 && lon > 112 && lon < 115) {
+		initRainMap('rain-map-container', lat, lon);
+	}
+}
+
 var updateWeatherCache = function (cityName, weatherData) {
 	var c = cities[cityName];
 	if (!c) {
@@ -187,6 +194,7 @@ var networkWeatherFetch = function(cityName, onSuccess, onFailure) {
 			// Lat 22°08' N to 22°35' N and Long 113°49' E to 114°31' E
 			// Add a degree of leeway.
 			if (weatherData.coord.lat > 21 && weatherData.coord.lat < 23 && weatherData.coord.lon > 112 && weatherData.coord.lon < 115) {
+				if (typeof initRainMap === 'function') initRainMap('rain-map-container', weatherData.coord.lat, weatherData.coord.lon);
 				fetchHKWarnings().then(hkWarnings => {
 					weatherData.hkWarnings = hkWarnings;
 					onSuccess(weatherData);
@@ -299,6 +307,7 @@ function fetchMyLocationWeather() {
 				window.currentLocation = pos.coords;
 				document.getElementById('weather-data').classList.remove('locating');
 				document.body.classList.add('current-location');
+				tryInitRainMap(pos.coords.latitude, pos.coords.longitude);
 				fetchWeather({latitude: pos.coords.latitude, longitude: pos.coords.longitude});
 			},
 			function (error) {
@@ -323,12 +332,15 @@ function fetchMyLocationWeather() {
 
 function fetchGeoIPWeather() {
 	if (!window.geoIPFetched) return setTimeout(fetchGeoIPWeather, 10);
+	var loc;
 	if (window.geoIPData && !window.geolocationFetched) {
 		window.currentLocation = window.geoIPData;
-		fetchWeather(window.geoIPData);
+		loc = window.geoIPData;
 	} else {
-		fetchWeather(window.currentLocation);
+		loc = window.currentLocation;
 	}
+	tryInitRainMap(loc.latitude, loc.longitude);
+	fetchWeather(loc);
 }
 
 window.currentLocation = { "country_code": "HK", "country_name": "Hong Kong", "region_code": "", "region_name": "", "city": "Central District", "zip_code": "", "time_zone": "Asia/Hong_Kong", "latitude": 22.291, "longitude": 114.15, "metro_code": 0 };
@@ -407,6 +419,10 @@ if (false && (window.localStorage && window.localStorage.currentLocation)) {
 	}
 }
 if (!haveCurrentLocation) {
+	// Try to init rain map immediately with default location (might be HK)
+	if (window.currentLocation && window.currentLocation.latitude) {
+		tryInitRainMap(window.currentLocation.latitude, window.currentLocation.longitude);
+	}
 	fetchGeoIPWeather();
 	if (navigator.geolocation && navigator.permissions) {
 		navigator.permissions.query({

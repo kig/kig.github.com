@@ -1,6 +1,6 @@
-const APP_CACHE = 'cornfield-cache-v256';
+const APP_CACHE = 'cornfield-cache-v257';
 const LIB_CACHE = 'cornfield-lib-cache-v28';
-const EXT_CACHE = 'cornfield-ext-cache';
+const EXT_CACHE = 'cornfield-ext-cache-1';
 const DEBUG = false;
 
 self.addEventListener('install', (e) => {
@@ -65,9 +65,10 @@ self.addEventListener('activate', function (event) {
         caches.keys().then(cacheNames =>
             Promise.all(
                 cacheNames
-                    .filter(cacheName => 
+                    .filter(cacheName =>
                         (/^cornfield-cache/.test(cacheName) && cacheName !== APP_CACHE)
                         || (/^cornfield-lib-cache/.test(cacheName) && cacheName !== LIB_CACHE)
+                        || (/^cornfield-ext-cache/.test(cacheName) && cacheName !== EXT_CACHE)
                     ).map(cacheName => caches.delete(cacheName))
             )
         )

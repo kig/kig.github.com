@@ -77,7 +77,8 @@ self.addEventListener('fetch', async (evt) => {
     // Pass non-GET requests to the network
     if ((evt.request.method || '').toUpperCase() !== 'GET' ||
         evt.request.url.startsWith('https://www.googletagmanager.com/') ||
-        evt.request.url.startsWith('https://data.weather.gov.hk/')
+        evt.request.url.startsWith('https://data.weather.gov.hk/') ||
+        evt.request.url.startsWith('https://radar.fhtr.net/')
     ) return;
     // Cache typekit responses to EXT_CACHE and app sources and weather data to APP_CACHE.
     // Try cache and if it fails, go for the network copy.

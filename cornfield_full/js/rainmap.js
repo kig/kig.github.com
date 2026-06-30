@@ -15,7 +15,6 @@
   /*  Constants                                                          */
   /* ------------------------------------------------------------------ */
 
-  const BASE_URL = 'https://www.hko.gov.hk/wxinfo/radars/radar_064_kml/';
   const REFRESH_INTERVAL = 6 * 60 * 1000;
   const FRAME_MS = 500;
   const RADAR_SIZE = 800;

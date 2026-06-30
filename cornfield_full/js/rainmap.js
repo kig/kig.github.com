@@ -307,6 +307,7 @@
 
   RainMap.prototype.startRefreshLoop = function () {
     var self = this;
+    this._initialLoad = true;
     this.fetchAndProcess();
     this.refreshTimer = setInterval(function () { self.fetchAndProcess(); }, REFRESH_INTERVAL);
   };
@@ -314,28 +315,51 @@
   RainMap.prototype.fetchAndProcess = function () {
     var self = this;
     var now = Date.now();
-    // Throttle: only fetch every 30s, prevent concurrent fetches
     if (this._fetching) return;
-    if (now - this.lastRefresh < 30000) return;
+    if (!this._initialLoad && now - this.lastRefresh < 60000) return;  // 1 min throttle on refreshes
+    if (this._initialLoad && now - this.lastRefresh < 15000) return;    // 15s on initial load
     this._fetching = true;
     this.lastRefresh = now;
 
-    this.fetchKML().then(function (frames) {
-      if (!frames || frames.length < 3) { self.hide(); self._fetching = false; return; }
-      return self.loadFrames(frames).then(function (loaded) {
-        if (loaded.length < 3) { self.hide(); self._fetching = false; return; }
-        self.frames = loaded;
-        self.hasRain = loaded.some(function (f) { return f.hasRain; });
-        if (!self.hasRain) { self.hide(); self._fetching = false; return; }
+    var isRefresh = !this._initialLoad && this.frames.length > 0;
 
-        self.show();
-        self.computeFlowAndPredict();
-        self.animStart = performance.now();
-        self.paused = false;
-        self.animPhase = 'animating';
+    this.fetchKML().then(function (frames) {
+      if (!frames || frames.length < 3) {
+        // Failed or empty KML — keep old data if we have it
+        if (!isRefresh) self.hide();
+        self._fetching = false;
+        return;
+      }
+      return self.loadFrames(frames).then(function (loaded) {
+        var hasNewRain = loaded.some(function (f) { return f.hasRain; });
+        var hasOldData = self.frames.length > 0;
+
+        if (loaded.length < 3 || (!hasNewRain && !hasOldData)) {
+          // Nothing useful — hide only if we had nothing before
+          if (!hasOldData) self.hide();
+          self._fetching = false;
+          return;
+        }
+
+        if (hasNewRain) {
+          // Update with fresh data
+          self.frames = loaded;
+          self.hasRain = true;
+          self.show();
+          self.computeFlowAndPredict();
+          self.animStart = performance.now();
+          self.paused = false;
+        }
+        // else: no new rain but we have old data — keep showing it
+
+        self._initialLoad = false;
         self._fetching = false;
       });
-    }).catch(function () { self.hide(); self._fetching = false; });
+    }).catch(function () {
+      // Network error — keep old state if we have it
+      if (!isRefresh) self.hide();
+      self._fetching = false;
+    });
   };
 
   RainMap.prototype.fetchKML = function () {
@@ -560,6 +584,8 @@
     this.frames = []; this.masks = null; this.predictedMasks = null; this.allMasks = null;
     this.hasRain = false; this.predictionText = '';
     this.animPhase = 'idle';
+    this._initialLoad = true;
+    this._fetching = false;
   };
 
   RainMap.prototype.setUserLocation = function (lat, lon) {

@@ -1,5 +1,5 @@
-const APP_CACHE = 'cornfield-cache-v258';
-const LIB_CACHE = 'cornfield-lib-cache-v28';
+const APP_CACHE = 'cornfield-cache-v259';
+const LIB_CACHE = 'cornfield-lib-cache-v29';
 const EXT_CACHE = 'cornfield-ext-cache-1';
 const DEBUG = false;
 
@@ -41,7 +41,9 @@ self.addEventListener('install', (e) => {
                 './hk_warnings/tc9.gif',
                 './hk_warnings/ts.gif',
                 './hk_warnings/tsunami-warn.gif',
-                './hk_warnings/vhot.gif'
+                './hk_warnings/vhot.gif',
+                './landmasses_hk.svg',
+                './landmasses_stroke_hk.svg',
             ]);
             const appAdd = (await app).addAll([
                 './',

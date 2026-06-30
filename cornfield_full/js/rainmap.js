@@ -16,7 +16,7 @@
   /* ------------------------------------------------------------------ */
 
   const BASE_URL = 'https://www.hko.gov.hk/wxinfo/radars/radar_064_kml/';
-  const REFRESH_INTERVAL = 5 * 60 * 1000;
+  const REFRESH_INTERVAL = 6 * 60 * 1000;
   const FRAME_MS = 500;
   const RADAR_SIZE = 800;
   const FLOW_SCALE = 8;        // downscale factor for optical flow
@@ -341,7 +341,7 @@
 
   RainMap.prototype.fetchKML = function () {
     var self = this;
-    return fetch(self.proxy + 'server_Radar_064k.kml')
+    return fetch(self.proxy + 'server_Radar_064k.kml?_=' + Math.floor(Date.now() / 360000))
       .then(function (r) { return r.text(); })
       .then(function (text) {
         var xml = (new DOMParser()).parseFromString(text, 'text/xml');

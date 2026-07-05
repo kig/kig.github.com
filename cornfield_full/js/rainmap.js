@@ -233,6 +233,7 @@
     this.animStart = 0;
     this.animPhase = 'loading';
     this.paused = false;
+    this.staticFrame = null;       // latest frame shown immediately while loading rest
     this.playedOnce = false;
     this.pausedFrameIdx = 0;
     this.userLat = null; this.userLon = null;
@@ -342,13 +343,16 @@
         }
 
         if (hasNewRain) {
-          // Update with fresh data
           self.frames = loaded;
           self.hasRain = true;
-          self.show();
+          self.show();  // slide-reveal with spinner
           self.computeFlowAndPredict();
+          // Prediction ready — remove spinner, start animation
+          if (self.container) self.container.classList.remove('loading');
+          self.staticFrame = null;
           self.animStart = performance.now();
           self.paused = false;
+          self.animPhase = 'animating';
         }
         // else: no new rain but we have old data — keep showing it
 
@@ -387,9 +391,25 @@
 
   RainMap.prototype.loadFrames = function (list) {
     var self = this;
-    return Promise.all(list.map(function (f) {
-      return self.loadImage(f.url).then(function (r) { r.url=f.url; r.time=f.time; return r; }).catch(function () { return null; });
-    })).then(function (r) { return r.filter(function (x) { return x !== null; }); });
+    // Load the latest frame first for immediate display
+    var latest = list[list.length - 1];
+    var rest = list.slice(0, -1);
+
+    return self.loadImage(latest.url).then(function (latestResult) {
+      latestResult.url = latest.url; latestResult.time = latest.time;
+      if (latestResult.img && latestResult.hasRain) {
+        self.staticFrame = latestResult;
+        self.show();  // slide-reveal with spinner + static background
+      }
+      // Load remaining frames in parallel
+      return Promise.all(rest.map(function (f) {
+        return self.loadImage(f.url).then(function (r) { r.url=f.url; r.time=f.time; return r; }).catch(function () { return null; });
+      })).then(function (restResults) {
+        var all = restResults.concat([latestResult]).filter(function (x) { return x !== null; });
+        all.sort(function (a, b) { return a.time - b.time; });
+        return all;
+      });
+    });
   };
 
   RainMap.prototype.loadImage = function (url) {
@@ -572,17 +592,24 @@
   /* ---------- visibility ---------------------------------------------- */
 
   RainMap.prototype.show = function () {
-    if (this.wrapper) this.wrapper.classList.add('visible');
+    if (this.wrapper) {
+      this.wrapper.classList.add('visible');
+    }
+    if (this.container) {
+      this.container.classList.add('loading');
+    }
   };
   RainMap.prototype.hide = function () {
     if (this.wrapper) this.wrapper.classList.remove('visible');
+    if (this.container) this.container.classList.remove('loading');
     this.animPhase = 'idle';
+    this.staticFrame = null;
   };
   RainMap.prototype.stop = function () {
     if (this.refreshTimer) { clearInterval(this.refreshTimer); this.refreshTimer = null; }
     this.hide();
     this.frames = []; this.masks = null; this.predictedMasks = null; this.allMasks = null;
-    this.hasRain = false; this.predictionText = '';
+    this.hasRain = false; this.predictionText = ''; this.staticFrame = null;
     this.animPhase = 'idle';
     this._initialLoad = true;
     this._fetching = false;
@@ -620,6 +647,18 @@
     var frames = this.frames;
     var preds = this.predictedMasks;
     var total = frames.length + (preds ? preds.length : 0);
+
+    // Loading phase: show static latest frame while prediction loads
+    if (this.animPhase === 'loading') {
+      if (this.staticFrame && this.staticFrame.img) {
+        ctx.save();
+        ctx.globalAlpha = 0.8;
+        ctx.drawImage(this.staticFrame.img, 0, 0, RADAR_SIZE, RADAR_SIZE);
+        ctx.restore();
+      }
+      return;
+    }
+
     if (total === 0) return;
 
     var elapsed = (timestamp - this.animStart) % (total * FRAME_MS);
@@ -740,6 +779,30 @@
     var frames = this.frames;
     var preds = this.predictedMasks;
     var total = frames.length + (preds ? preds.length : 0);
+
+    // Check staleness: if latest frame > 30 min ago, show spinner
+    var latestFrame = frames[frames.length - 1];
+    var stale = latestFrame && (Date.now() - latestFrame.time > 30 * 60 * 1000);
+    if (this.container) {
+      if (stale || this.animPhase === 'loading') this.container.classList.add('loading');
+      else this.container.classList.remove('loading');
+    }
+
+    // Loading phase: show static frame timestamp
+    if (this.animPhase === 'loading') {
+      if (this.staticFrame && this.timestampEl) {
+        var d = new Date(this.staticFrame.time);
+        var hh = ('0' + ((d.getUTCHours() + 8) % 24)).slice(-2);
+        var mm = ('0' + d.getUTCMinutes()).slice(-2);
+        var a = Math.round((Date.now() - this.staticFrame.time) / 60000);
+        var ah = Math.floor(a/60), am = a%60;
+        this.timestampEl.textContent = hh + ':' + mm + ' (' + (ah>0?ah+'h ':'') + am + 'm ago)';
+      }
+      if (this.scrubberFill) this.scrubberFill.style.width = '100%';
+      if (this.predictionEl) this.predictionEl.textContent = this.predictionText || '';
+      return;
+    }
+
     if (total === 0) return;
 
     var idx;

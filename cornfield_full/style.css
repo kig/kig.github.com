@@ -1100,7 +1100,7 @@ hr {
     z-index: 0;
 }
 #rain-map-wrapper.visible {
-    max-height: 300px;
+    max-height: 342px;
 }
 
 #rain-map-scrubber {

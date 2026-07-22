@@ -811,6 +811,14 @@ hr {
     font-weight: 100;
     text-transform: uppercase;
 }
+
+#weather-age {
+    font-size: 12px;
+    font-family: 'Roboto Condensed', "roboto-condensed", Helvetica Neue, Segoe UI, sans-serif;
+    font-weight: 300;
+    opacity: 0.6;
+    margin-top: -4px;
+}
 #time-data small {
     font-size: 50%;
 }

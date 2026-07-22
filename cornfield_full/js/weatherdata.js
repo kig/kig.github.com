@@ -123,6 +123,7 @@ var updateWeatherCache = function (cityName, weatherData) {
 	c.hkWarnings = weatherData.hkWarnings || [];
 
 	var locations = document.querySelectorAll('#city-list ul .name');
+	c._cacheTime = Date.now();
 	for (var i = 0; i < locations.length; i++) {
 		var location = locations[i];
 		if (location.textContent === cityName) {
@@ -132,6 +133,24 @@ var updateWeatherCache = function (cityName, weatherData) {
 			timeEl.dataset.tz = weatherData.timezone;
 			li.querySelector('.weather-icon').className = 'weather-icon wi wi-owm-' + weatherData.weather[0].id + ' aqi-' + weatherData.airQuality.main.aqi;
 		}
+	}
+
+	// Cache weather data to localStorage for offline/instant display
+	try {
+		localStorage['weather-cache-' + cityName] = JSON.stringify({
+			data: weatherData,
+			timestamp: Date.now()
+		});
+	} catch(e) {}
+
+	// Also save under "my-location" key when viewing current location
+	if (document.body.classList.contains('current-location')) {
+		try {
+			localStorage['weather-cache-my-location'] = JSON.stringify({
+				data: weatherData,
+				timestamp: Date.now()
+			});
+		} catch(e) {}
 	}
 }
 
@@ -216,7 +235,11 @@ var fetchWeather = function (cityName, isRefresh) {
 		fetchWeather(cityName, true).then(() => weatherUpdateTriggered = true);
 	}, 60 * 60 * 1000);
 
-	if (!isRefresh) {
+	// Show spinner: always on initial fetch, also on refresh if the city has no cached data
+	var hasCachedData = typeof cityName === 'string' &&
+		cities[cityName] && cities[cityName].weatherData &&
+		cities[cityName].weatherData.cod === 200;
+	if (!hasCachedData) {
 		document.getElementById('weather-data').classList.add('fade-out');
 		document.getElementById('time-data').classList.add('fade-out');
 	}
@@ -373,6 +396,20 @@ var updateClock = function() {
 		sunsetEl.querySelector('.time').textContent = sunset.toLocaleTimeString(navigator.language, {hour:'numeric', minute:'numeric'});
 	}
 	clock.innerHTML = formatTimeString(t, navigator.language);
+	// Show weather data age if older than 30 minutes
+	var ageEl = document.getElementById('weather-age');
+	if (ageEl) {
+		var city = cityNames[currentCityIndex] && cities[cityNames[currentCityIndex]];
+		var cacheTime = city && city._cacheTime;
+		var ageMin = cacheTime ? Math.round((now - cacheTime) / 60000) : 0;
+		if (ageMin > 30) {
+			var ah = Math.floor(ageMin / 60), am = ageMin % 60;
+			ageEl.textContent = '· weather ' + (ah > 0 ? ah + 'h ' : '') + am + 'm ago';
+			ageEl.style.display = '';
+		} else {
+			ageEl.style.display = 'none';
+		}
+	}
 	date.textContent = t.toLocaleDateString(navigator.language, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })
 
 	var timeEls = document.querySelectorAll('#city-list .time');
@@ -507,6 +544,53 @@ var LocationList = {
 };
 
 LocationList.load();
+
+// Load cached weather data from localStorage for instant display
+function loadCachedWeather() {
+	var locations = LocationList.locations;
+	// Check cache for each saved location
+	for (var i = 0; i < locations.length; i++) {
+		var cityName = locations[i];
+		var cached = localStorage['weather-cache-' + cityName];
+		if (!cached) continue;
+		try {
+			var entry = JSON.parse(cached);
+			if (entry && entry.data && entry.data.cod === 200) {
+				updateWeatherCache(cityName, entry.data);
+				if (cities[cityName]) cities[cityName]._cacheTime = entry.timestamp;
+			}
+		} catch(e) {}
+	}
+	// If we have cached data for the current location, display it instantly
+	if (locations.length) {
+		var currentLoc = LocationList.currentLocation || locations[0];
+		var cached = localStorage['weather-cache-' + currentLoc];
+		if (cached) {
+			try {
+				var entry = JSON.parse(cached);
+				if (entry && entry.data && entry.data.cod === 200) {
+					updateWeather(currentLoc, entry.data);
+				}
+			} catch(e) {}
+		}
+	}
+	// Also check "my location" cache (works even without saved locations)
+	var myLoc = localStorage['weather-cache-my-location'];
+	if (myLoc) {
+		try {
+			var entry = JSON.parse(myLoc);
+			if (entry && entry.data && entry.data.cod === 200) {
+				var name = entry.data.name;
+				updateWeatherCache(name, entry.data);
+				if (cities[name]) cities[name]._cacheTime = entry.timestamp;
+				// If no saved locations, this becomes the current display
+				if (!locations.length) updateWeather(name, entry.data);
+			}
+		} catch(e) {}
+	}
+}
+loadCachedWeather();
+
 
 const listButton = document.getElementById('toggle-city-list');
 listButton.onclick = function(ev) {
@@ -646,6 +730,9 @@ window.addEventListener('pointermove', function (ev) {
 		if (idx === LocationList.locations.length-1) nextLocation = currentLocationName || 'my location';
 		if (idx === 0) previousLocation = currentLocationName || 'my location';
 	}
+	// Prevent swiping to the same location — bounce back instead
+	if (nextLocation === LocationList.currentLocation) nextLocation = null;
+	if (previousLocation === LocationList.currentLocation) previousLocation = null;
 	LocationList.swipeLocation = dx < 0 ? nextLocation : previousLocation;
 	if (wd2.querySelector('#location').value !== LocationList.swipeLocation) {
 		wd2.style.display = 'block';
@@ -661,7 +748,7 @@ window.addEventListener('pointerup', function (ev) {
 	ev.preventDefault();
 	wd2.style.transition = '0.3s';
 	weatherDataElement.style.transition = '0.3s';
-	if (Math.abs(dx) < 50) {
+	if (Math.abs(dx) < 50 || !LocationList.swipeLocation) {
 		weatherDataElement.style.opacity = 1;
 		wd2.style.opacity = 0;
 		weatherDataElement.style.transform = 'translateX(0px)';
@@ -683,6 +770,11 @@ window.addEventListener('pointerup', function (ev) {
 			LocationList.currentLocation = LocationList.swipeLocation;
 			weatherDataElement.querySelector('#location').value = LocationList.currentLocation;
 			populateWeatherElement(weatherDataElement, cities[LocationList.currentLocation]);
+			// Show spinner if the target location has no weather data yet
+			if (!cities[LocationList.swipeLocation] || !cities[LocationList.swipeLocation].weatherData || cities[LocationList.swipeLocation].weatherData.cod !== 200) {
+				document.getElementById('weather-data').classList.add('fade-out');
+				document.getElementById('time-data').classList.add('fade-out');
+			}
 			weatherDataElement.style.transition = '0s';
 			weatherDataElement.style.transform = 'translateX(0px)';
 			setTimeout(function() {

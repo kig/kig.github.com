@@ -318,9 +318,11 @@
     var now = Date.now();
     if (this._fetching) return;
     if (!this._initialLoad && now - this.lastRefresh < 60000) return;  // 1 min throttle on refreshes
-    if (this._initialLoad && now - this.lastRefresh < 15000) return;    // 15s on initial load
     this._fetching = true;
     this.lastRefresh = now;
+
+    // Show wrapper + spinner immediately — don't wait for first frame
+    if (this._initialLoad) this.show();
 
     var isRefresh = !this._initialLoad && this.frames.length > 0;
 

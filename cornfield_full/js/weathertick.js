@@ -701,8 +701,11 @@ var setWeather = function(elapsed) {
 		} else {
 			weatherDataElement.classList.remove('transition-0');
 		}
-		weatherDataElement.classList.remove('fade-out');
-		document.getElementById('time-data').classList.remove('fade-out');
+		var targetCity = cities[cityNames[targetCityIndex]];
+		if (targetCity && targetCity.weatherData && targetCity.weatherData.cod === 200) {
+			weatherDataElement.classList.remove('fade-out');
+			document.getElementById('time-data').classList.remove('fade-out');
+		}
 
 	}
 

@@ -1170,11 +1170,12 @@ hr {
 @media (max-width: 500px) {
   #rain-map-wrapper {
     position: static;
+    display: inline-block;
     margin-top: 10px;
     margin-bottom: 10px;
   }
   #rain-map-wrapper.visible {
-    display: inline-block;
+    max-height: 420px;
   }
 
   #rain-map-container {

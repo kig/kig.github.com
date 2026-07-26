@@ -321,25 +321,26 @@
     this._fetching = true;
     this.lastRefresh = now;
 
-    // Show wrapper + spinner immediately — don't wait for first frame
+    // Always show wrapper when in HK — rain or no rain.
+    // Spinner shows until first frame loads.
     if (this._initialLoad) this.show();
 
     var isRefresh = !this._initialLoad && this.frames.length > 0;
 
     this.fetchKML().then(function (frames) {
       if (!frames || frames.length < 3) {
-        // Failed or empty KML — keep old data if we have it
-        if (!isRefresh) self.hide();
+        // Failed or empty KML — keep showing wrapper with last-known state
+        if (!isRefresh) {
+          // Initial load with no frames: keep wrapper visible, spinner stays on container
+          self._initialLoad = false;
+        }
         self._fetching = false;
         return;
       }
       return self.loadFrames(frames).then(function (loaded) {
         var hasNewRain = loaded.some(function (f) { return f.hasRain; });
-        var hasOldData = self.frames.length > 0;
 
-        if (loaded.length < 3 || (!hasNewRain && !hasOldData)) {
-          // Nothing useful — hide only if we had nothing before
-          if (!hasOldData) self.hide();
+        if (loaded.length < 3) {
           self._fetching = false;
           return;
         }
@@ -347,7 +348,6 @@
         if (hasNewRain) {
           self.frames = loaded;
           self.hasRain = true;
-          self.show();  // slide-reveal with spinner
           self.computeFlowAndPredict();
           // Prediction ready — remove spinner, start animation
           if (self.container) self.container.classList.remove('loading');
@@ -355,15 +355,21 @@
           self.animStart = performance.now();
           self.paused = false;
           self.animPhase = 'animating';
+        } else if (!isRefresh) {
+          // No rain on initial load — show static last frame
+          self.frames = loaded;
+          self.hasRain = false;
+          if (self.container) self.container.classList.remove('loading');
+          self.staticFrame = loaded[loaded.length - 1];
+          self.animPhase = 'idle';
         }
-        // else: no new rain but we have old data — keep showing it
+        // else: no new rain but keep showing old animation (isRefresh with old frames)
 
         self._initialLoad = false;
         self._fetching = false;
       });
     }).catch(function () {
-      // Network error — keep old state if we have it
-      if (!isRefresh) self.hide();
+      // Network error — keep wrapper visible, maintain last-known state
       self._fetching = false;
     });
   };
@@ -625,7 +631,7 @@
   /* ---------- rendering ----------------------------------------------- */
 
   RainMap.prototype.render = function (timestamp) {
-    if (!this.ctx || this.animPhase === 'idle') return;
+    if (!this.ctx || (this.animPhase === 'idle' && !this.staticFrame)) return;
     if (this.wrapper && !this.wrapper.classList.contains('visible')) return;
 
     var ctx = this.ctx;
@@ -650,8 +656,8 @@
     var preds = this.predictedMasks;
     var total = frames.length + (preds ? preds.length : 0);
 
-    // Loading phase: show static latest frame while prediction loads
-    if (this.animPhase === 'loading') {
+    // Show static latest frame during loading or idle-without-rain
+    if (this.animPhase === 'loading' || (this.animPhase === 'idle' && this.staticFrame)) {
       if (this.staticFrame && this.staticFrame.img) {
         ctx.save();
         ctx.globalAlpha = 0.8;
@@ -790,7 +796,22 @@
       else this.container.classList.remove('loading');
     }
 
-    // Loading phase: show static frame timestamp
+    // Idle + static frame (no rain): show timestamp, no animation
+    if (this.animPhase === 'idle' && this.staticFrame) {
+      if (this.staticFrame && this.timestampEl) {
+        var d = new Date(this.staticFrame.time);
+        var hh = ('0' + ((d.getUTCHours() + 8) % 24)).slice(-2);
+        var mm = ('0' + d.getUTCMinutes()).slice(-2);
+        var a = Math.round((Date.now() - this.staticFrame.time) / 60000);
+        var ah = Math.floor(a/60), am = a%60;
+        this.timestampEl.textContent = hh + ':' + mm + ' (' + (ah>0?ah+'h ':'') + am + 'm ago)';
+      }
+      if (this.scrubberFill) this.scrubberFill.style.width = '0%';
+      if (this.predictionEl) this.predictionEl.textContent = '';
+      return;
+    }
+
+    // Loading phase: show static frame timestamp + spinner
     if (this.animPhase === 'loading') {
       if (this.staticFrame && this.timestampEl) {
         var d = new Date(this.staticFrame.time);
@@ -804,6 +825,7 @@
       if (this.predictionEl) this.predictionEl.textContent = this.predictionText || '';
       return;
     }
+
 
     if (total === 0) return;
 

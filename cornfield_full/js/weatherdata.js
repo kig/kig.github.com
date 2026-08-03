@@ -97,12 +97,7 @@ var parseRainAmount = function (weatherData) {
 	return rainAmount;
 };
 
-function tryInitRainMap(lat, lon) {
-	if (typeof initRainMap !== 'function') return;
-	if (lat > 21 && lat < 23 && lon > 112 && lon < 115) {
-		initRainMap('rain-map-container', lat, lon);
-	}
-}
+
 
 var updateWeatherCache = function (cityName, weatherData) {
 	var c = cities[cityName];
@@ -330,7 +325,6 @@ function fetchMyLocationWeather() {
 				window.currentLocation = pos.coords;
 				document.getElementById('weather-data').classList.remove('locating');
 				document.body.classList.add('current-location');
-				tryInitRainMap(pos.coords.latitude, pos.coords.longitude);
 				fetchWeather({latitude: pos.coords.latitude, longitude: pos.coords.longitude});
 			},
 			function (error) {
@@ -362,7 +356,6 @@ function fetchGeoIPWeather() {
 	} else {
 		loc = window.currentLocation;
 	}
-	tryInitRainMap(loc.latitude, loc.longitude);
 	fetchWeather(loc);
 }
 
@@ -456,10 +449,6 @@ if (false && (window.localStorage && window.localStorage.currentLocation)) {
 	}
 }
 if (!haveCurrentLocation) {
-	// Try to init rain map immediately with default location (might be HK)
-	if (window.currentLocation && window.currentLocation.latitude) {
-		tryInitRainMap(window.currentLocation.latitude, window.currentLocation.longitude);
-	}
 	fetchGeoIPWeather();
 	if (navigator.geolocation && navigator.permissions) {
 		navigator.permissions.query({

@@ -1048,7 +1048,8 @@ hr {
 #rain-map-container {
     width: 200px;
     height: 200px;
-    border-radius: 8px;
+    /* Equal number of px as the radar button's radius: 0.5 × 44px button width. */
+    border-radius: 22px;
     overflow: hidden;
     background: transparent;
     display: block;
@@ -1068,7 +1069,7 @@ hr {
     transition: opacity 0.3s ease 0.2s;
     pointer-events: none;
     z-index: 1;
-    border-radius: 8px;
+    border-radius: 22px; /* matches #rain-map-container = 0.5 × radar button width */
 }
 #rain-map-container.loading #rain-map-overlay {
     opacity: 1;
@@ -1109,6 +1110,9 @@ hr {
 }
 #rain-map-wrapper.visible {
     max-height: 342px;
+}
+#rain-map-wrapper.no-transition {
+    transition: none;
 }
 
 #rain-map-scrubber {
@@ -1243,6 +1247,8 @@ hr {
     right: 296px;
     top: 187px;
     z-index: 1;
+    display: flex;
+    align-items: flex-start;
 }
 
 #warnings .icon {
@@ -1267,6 +1273,37 @@ hr {
 #warnings .icon.wi.black {
     background: red;
     text-shadow: none;
+}
+
+/* Rain radar toggle — lives in the warnings row, HK only (class set from JS).
+   order: 1 keeps it the rightmost icon no matter which warning icons are present. */
+#rain-map-toggle {
+    display: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin-left: 8px;
+    margin-bottom: 8px;
+    vertical-align: top;
+    order: 1;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #007aff;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+}
+#rain-map-toggle.available {
+    display: inline-flex;
+}
+#rain-map-toggle.active {
+    background: rgba(0, 122, 255, 0.15);
+}
+#rain-map-toggle svg {
+    width: 26px;
+    height: 26px;
+    display: block;
 }
 
 .hko-wcold { background-image: url('hk_warnings/cold.gif'); }

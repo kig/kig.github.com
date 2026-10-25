@@ -433,7 +433,8 @@ function populateWeatherElement(el, weatherData) {
 		const forecastEl = el.querySelector('#forecast');
 		forecastEl.parentNode.insertBefore(warningsEl, forecastEl);
 	}
-	warningsEl.innerHTML = '';
+	// Only remove warning icons — the rain-map toggle button lives here too.
+	warningsEl.querySelectorAll('.icon').forEach(el => el.remove());
 
 	const speakWeatherEl = document.getElementById('speak-weather-button');
 	if (!speakWeatherEl) {
@@ -659,13 +660,18 @@ var setWeather = function(elapsed) {
 	if (weatherUpdateTriggered || (currentCityIndex === -1 && targetCityIndex !== -1)) {
 		weatherUpdateTriggered = false;
 		const c = cities[cityNames[targetCityIndex]] || cities[cityNames[currentCityIndex]] || zeroCity;
-		// Show/hide rain map based on whether user is in Hong Kong region
-		if (c.weatherData && c.weatherData.coord) {
-			var isHK = c.weatherData.coord.lat > 21 && c.weatherData.coord.lat < 23 && c.weatherData.coord.lon > 112 && c.weatherData.coord.lon < 115;
+		// Rain radar: Hong Kong only. A toggle button in the warnings row
+		// opens it; it also auto-opens when rain is due within the hour.
+		// Any other location stops the radar with zero transition.
+		{
+			var rmToggle = document.getElementById('rain-map-toggle');
+			var isHK = !!(c.weatherData && c.weatherData.coord && isHKCoords(c.weatherData.coord));
+			if (rmToggle) rmToggle.classList.toggle('available', isHK);
 			if (!isHK && window._rainMapInstance) {
 				window._rainMapInstance.stop();
 			} else if (isHK && typeof initRainMap === 'function') {
-				initRainMap('rain-map-container', c.weatherData.coord.lat, c.weatherData.coord.lon);
+				var rm = initRainMap('rain-map-container', c.weatherData.coord.lat, c.weatherData.coord.lon);
+				if (rm) rm.setAuto(isRainSoon(c));
 			}
 		}
 		document.getElementById('location').value = (cityNames[targetCityIndex] || cityNames[currentCityIndex] || "").split(",")[0];
@@ -776,3 +782,14 @@ var setWeather = function(elapsed) {
 };
 
 var windOffset = new THREE.Vector3();
+
+// Auto-open can become true purely by the clock moving (rain entering the
+// hour-ahead window), not just when weather data refreshes — re-check so the
+// radar opens on time.
+setInterval(function () {
+	var rm = window._rainMapInstance;
+	if (!rm) return;
+	var c = cities[cityNames[targetCityIndex]] || cities[cityNames[currentCityIndex]];
+	if (!c || !c.weatherData || !isHKCoords(c.weatherData.coord)) return;
+	rm.setAuto(isRainSoon(c));
+}, 60 * 1000);

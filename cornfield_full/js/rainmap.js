@@ -17,6 +17,7 @@
 
   const REFRESH_INTERVAL = 6 * 60 * 1000;
   const FRAME_MS = 500;
+  const HOLD_MS = 3000;         // sit on the current state before looping the animation
   const RADAR_SIZE = 800;
   const FLOW_SCALE = 8;        // downscale factor for optical flow
   const FLOW_SIZE = RADAR_SIZE / FLOW_SCALE;  // 100
@@ -229,8 +230,8 @@
   function RainMap() {
     this.wrapper = null; this.container = null; this.canvas = null; this.ctx = null;
     this.frames = [];
-    this.hasRain = false;
     this.animStart = 0;
+    this.holdStart = 0;         // 'hold' phase: showing the current frame
     this.animPhase = 'loading';
     this.paused = false;
     this.staticFrame = null;       // latest frame shown immediately while loading rest
@@ -238,6 +239,9 @@
     this.pausedFrameIdx = 0;
     this.userLat = null; this.userLon = null;
     this.pinPulseStart = 0;
+    this.userOpen = false;      // opened via the warnings-row button
+    this.suppressAuto = false;  // user closed it; don't auto-open until rain clears
+    this.rainSoon = false;      // last auto-open decision (rain within an hour)
 
     // Optical flow & prediction
     this.masks = null;              // Float32Array[] rain masks per historical frame
@@ -277,13 +281,30 @@
     this.ctx = this.canvas.getContext('2d');
     container.appendChild(this.canvas);
 
-    // Tap canvas to replay animation from present into prediction
+    // Tap canvas to replay: hold on the current state, then loop again
     this.canvas.style.cursor = 'pointer';
     this.canvas.addEventListener('click', function () {
-      self.paused = false;
-      self.animStart = performance.now();
-      if (self.playBtn) self.playBtn.textContent = '❚❚';
+      self.startPlayback();
     });
+
+    // Toggle button in the warnings row — the manual way to open/close the radar.
+    this.toggleBtn = document.getElementById('rain-map-toggle');
+    if (this.toggleBtn) {
+      this.toggleBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var opening = !(self.wrapper && self.wrapper.classList.contains('visible'));
+        if (opening) {
+          self.userOpen = true;
+          self.suppressAuto = false;
+          self.show();
+        } else {
+          self.userOpen = false;
+          // Closing while rain is still due suppresses auto-reopen until it clears.
+          self.suppressAuto = !!self.rainSoon;
+          self.hide();
+        }
+      });
+    }
 
     // Play/pause button
     if (this.playBtn) {
@@ -321,9 +342,8 @@
     this._fetching = true;
     this.lastRefresh = now;
 
-    // Always show wrapper when in HK — rain or no rain.
-    // Spinner shows until first frame loads.
-    if (this._initialLoad) this.show();
+    // NB: the wrapper is never shown just because data loaded — visibility is
+    // driven by the warnings-row button and the auto-open (rain soon) logic.
 
     var isRefresh = !this._initialLoad && this.frames.length > 0;
 
@@ -345,25 +365,28 @@
           return;
         }
 
+        self.frames = loaded;
+        self.staticFrame = null;
+        if (self.container) self.container.classList.remove('loading');
         if (hasNewRain) {
-          self.frames = loaded;
-          self.hasRain = true;
-          self.computeFlowAndPredict();
-          // Prediction ready — remove spinner, start animation
-          if (self.container) self.container.classList.remove('loading');
-          self.staticFrame = null;
-          self.animStart = performance.now();
-          self.paused = false;
-          self.animPhase = 'animating';
-        } else if (!isRefresh) {
-          // No rain on initial load — show static last frame
-          self.frames = loaded;
-          self.hasRain = false;
-          if (self.container) self.container.classList.remove('loading');
-          self.staticFrame = loaded[loaded.length - 1];
-          self.animPhase = 'idle';
+          // A prediction failure must not block playback — catch it here so
+          // startPlayback() below always runs (the outer catch would skip it).
+          try {
+            self.computeFlowAndPredict();
+          } catch (e) {
+            console.error('rainmap: prediction failed', e);
+            self.predictedMasks = null;
+            self.allMasks = null;
+            self.predictionText = '';
+          }
+        } else {
+          // Nothing to predict without rain — loop the historical frames only.
+          self.predictedMasks = null;
+          self.allMasks = null;
+          self.predictionText = '';
         }
-        // else: no new rain but keep showing old animation (isRefresh with old frames)
+        // Autoplay regardless of rain: hold on the current frame, then loop.
+        self.startPlayback();
 
         self._initialLoad = false;
         self._fetching = false;
@@ -407,7 +430,6 @@
       latestResult.url = latest.url; latestResult.time = latest.time;
       if (latestResult.img && latestResult.hasRain) {
         self.staticFrame = latestResult;
-        self.show();  // slide-reveal with spinner + static background
       }
       // Load remaining frames in parallel
       return Promise.all(rest.map(function (f) {
@@ -599,25 +621,78 @@
 
   /* ---------- visibility ---------------------------------------------- */
 
+  RainMap.prototype.syncToggleButton = function () {
+    if (!this.toggleBtn) return;
+    var open = this.wrapper && this.wrapper.classList.contains('visible');
+    this.toggleBtn.classList.toggle('active', !!open);
+    this.toggleBtn.setAttribute('aria-pressed', open ? 'true' : 'false');
+  };
+
+  // Autoplay on reveal: sit on the current radar state for a few seconds,
+  // then loop the history → prediction animation.
+  RainMap.prototype.startPlayback = function () {
+    if (this.frames.length === 0) return;
+    this.paused = false;
+    this.animPhase = 'hold';
+    this.holdStart = performance.now();
+    if (this.playBtn) this.playBtn.textContent = '❚❚';
+  };
+
   RainMap.prototype.show = function () {
     if (this.wrapper) {
       this.wrapper.classList.add('visible');
     }
-    if (this.container) {
+    // Only show the spinner if there's nothing loaded to display yet.
+    if (this.container && this.animPhase === 'loading') {
       this.container.classList.add('loading');
     }
+    this.startPlayback();
+    this.syncToggleButton();
   };
-  RainMap.prototype.hide = function () {
-    if (this.wrapper) this.wrapper.classList.remove('visible');
+
+  // hide(instant) — when instant, the wrapper is torn down with zero
+  // transition so the widget never animates out of a non-HK location.
+  RainMap.prototype.hide = function (instant) {
+    if (this.wrapper) {
+      if (instant) this.wrapper.classList.add('no-transition');
+      this.wrapper.classList.remove('visible');
+      if (instant) {
+        // Flush the style change while transitions are off, then re-enable
+        // them so a later HK open animates in normally.
+        void this.wrapper.offsetHeight;
+        this.wrapper.classList.remove('no-transition');
+      }
+    }
     if (this.container) this.container.classList.remove('loading');
-    this.animPhase = 'idle';
-    this.staticFrame = null;
+    this.syncToggleButton();
   };
+
+  // Auto-open driven by the weather forecast (rain within an hour).
+  // Stays hidden if the user manually closed it while rain was still due;
+  // re-arms once the rain is no longer forecast.
+  RainMap.prototype.setAuto = function (open) {
+    this.rainSoon = !!open;
+    if (!this.rainSoon) {
+      this.suppressAuto = false;
+      // Retire an auto-opened radar when the rain clears; one the user
+      // opened stays until they close it.
+      if (!this.userOpen && this.wrapper && this.wrapper.classList.contains('visible')) {
+        this.hide();
+      }
+    } else if (!this.suppressAuto && !this.userOpen &&
+        !(this.wrapper && this.wrapper.classList.contains('visible'))) {
+      this.show();
+    }
+  };
+
   RainMap.prototype.stop = function () {
     if (this.refreshTimer) { clearInterval(this.refreshTimer); this.refreshTimer = null; }
-    this.hide();
+    this.userOpen = false;
+    this.suppressAuto = false;
+    this.rainSoon = false;
+    this.hide(true);
     this.frames = []; this.masks = null; this.predictedMasks = null; this.allMasks = null;
-    this.hasRain = false; this.predictionText = ''; this.staticFrame = null;
+    this.predictionText = ''; this.staticFrame = null;
     this.animPhase = 'idle';
     this._initialLoad = true;
     this._fetching = false;
@@ -665,6 +740,23 @@
         ctx.restore();
       }
       return;
+    }
+
+    // Hold phase: park on the latest frame, then fall into the loop.
+    if (this.animPhase === 'hold') {
+      if (timestamp - this.holdStart >= HOLD_MS) {
+        this.animPhase = 'animating';
+        this.animStart = timestamp;
+      } else {
+        var cur = frames[frames.length - 1];
+        if (cur && cur.img) {
+          ctx.save();
+          ctx.globalAlpha = 0.8;
+          ctx.drawImage(cur.img, 0, 0, RADAR_SIZE, RADAR_SIZE);
+          ctx.restore();
+        }
+        return;
+      }
     }
 
     if (total === 0) return;
@@ -830,8 +922,8 @@
     if (total === 0) return;
 
     var idx;
-    if (this.paused) {
-      idx = frames.length - 1;  // paused at last historical frame
+    if (this.paused || this.animPhase === 'hold') {
+      idx = frames.length - 1;  // parked on the latest historical frame
     } else {
       var elapsed = (timestamp - this.animStart) % (total * FRAME_MS);
       idx = Math.floor(elapsed / FRAME_MS);
@@ -881,6 +973,9 @@
       rm = new RainMap();
       rm.init(container);
       window._rainMapInstance = rm;
+    } else if (!rm.refreshTimer) {
+      // stop() ran when we last left HK — restart the fetch loop.
+      rm.startRefreshLoop();
     }
     rm.setUserLocation(lat, lon);
     rm.fetchAndProcess();

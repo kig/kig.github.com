@@ -97,6 +97,34 @@ var parseRainAmount = function (weatherData) {
 	return rainAmount;
 };
 
+// The HK radar covers lat 21–23, lon 112–115 (HKO range plus a degree of leeway).
+function isHKCoords(coord) {
+	return !!coord && coord.lat > 21 && coord.lat < 23 && coord.lon > 112 && coord.lon < 115;
+}
+
+// True when the weather says rain at some point within an hour of now:
+// raining now, rain within the past hour, or rain forecast within the next hour.
+var isRainSoon = function (c, now) {
+	now = now || Date.now() / 1000;
+	var HOUR = 3600;
+	var wd = c && c.weatherData;
+	if (!wd) return false;
+	// Current conditions: raining now, or rain measured in the last hour.
+	if (parseRainAmount(wd) > 0) return true;
+	if (wd.rain && wd.rain['1h'] > 0) return true;
+	// Forecast blocks are 3 hours long; any rain block overlapping [now-1h, now+1h]
+	// counts as "was raining" or "will rain" within the window.
+	var list = (c.forecast && c.forecast.list) || [];
+	for (var i = 0; i < list.length; i++) {
+		var l = list[i];
+		if (l.dt > now + HOUR) break; // list is chronological; past the window
+		if (l.dt + 3 * HOUR < now - HOUR) continue; // block ended before the window
+		if (parseRainAmount(l) > 0) return true;
+		if (l.rain && l.rain['3h'] > 0) return true;
+	}
+	return false;
+};
+
 
 
 var updateWeatherCache = function (cityName, weatherData) {
@@ -207,8 +235,10 @@ var networkWeatherFetch = function(cityName, onSuccess, onFailure) {
 			// If we're near Hong Kong, fetch HK-specific data.
 			// Lat 22°08' N to 22°35' N and Long 113°49' E to 114°31' E
 			// Add a degree of leeway.
-			if (weatherData.coord.lat > 21 && weatherData.coord.lat < 23 && weatherData.coord.lon > 112 && weatherData.coord.lon < 115) {
-				if (typeof initRainMap === 'function') initRainMap('rain-map-container', weatherData.coord.lat, weatherData.coord.lon);
+			// NB: the radar itself is only initialised for the *displayed*
+			// location (see setWeather in weathertick.js), never here —
+			// background fetches for saved locations must not wake it up.
+			if (isHKCoords(weatherData.coord)) {
 				fetchHKWarnings().then(hkWarnings => {
 					weatherData.hkWarnings = hkWarnings;
 					onSuccess(weatherData);
@@ -1106,7 +1136,8 @@ async function fetchHKWarnings() {
 
 function updateHKWarnings(warnings) {
 	const warningsDiv = document.body.querySelector('#warnings');
-	warningsDiv.innerHTML = '';
+	// Only remove warning icons — the rain-map toggle button lives here too.
+	warningsDiv.querySelectorAll('.icon').forEach(el => el.remove());
 	for (const warningName in warnings) {
 		/*  warningName values:
 			WFIRE: Fire Danger Warning
